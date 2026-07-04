@@ -34,6 +34,10 @@ jobs:
         shell: bash
         run: mkdir -p .godot
 
+      - name: Import project resources
+        shell: bash
+        run: godot --headless --path . --import
+
       - name: Run GUT tests
         shell: bash
         run: |

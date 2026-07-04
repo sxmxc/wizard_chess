@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: GUT Tests
+    runs-on: ubuntu-latest
+
+    env:
+      GODOT_VERSION: "4.7-stable"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Godot
+        shell: bash
+        run: |
+          set -euo pipefail
+          GODOT_ZIP="Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          GODOT_URL="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${GODOT_ZIP}"
+          curl -L "$GODOT_URL" -o "$GODOT_ZIP"
+          unzip -q "$GODOT_ZIP"
+          chmod +x "Godot_v${GODOT_VERSION}_linux.x86_64"
+          sudo mv "Godot_v${GODOT_VERSION}_linux.x86_64" /usr/local/bin/godot
+
+      - name: Prepare runtime directories
+        shell: bash
+        run: mkdir -p .godot
+
+      - name: Run GUT tests
+        shell: bash
+        run: |
+          godot --headless --path . --log-file .godot/gut.log --script res://addons/gut/gut_cmdln.gd -gconfig=res://.gutconfig.json -gdir=res://tests -ginclude_subdirs -gexit -gexit_on_success

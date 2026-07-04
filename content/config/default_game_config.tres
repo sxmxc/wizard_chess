@@ -1,0 +1,11 @@
+[gd_resource type="Resource" format=3 uid="uid://d3f8nad8m4n6t"]
+
+[ext_resource type="Script" path="res://scripts/core/game_config.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+project_name = "Wizard Chess"
+build_label = "Milestone 1 foundation"
+default_log_level = 1
+auto_quit_on_headless = true
+enable_debug_overlay = false

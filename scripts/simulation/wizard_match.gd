@@ -26,6 +26,10 @@ const TARGET_TYPE_SQUARE := "square"
 const ACTION_TYPE_ADVANCE_PHASE := "advance_phase"
 const ACTION_TYPE_PLAY_CARD := "play_card"
 const ACTION_TYPE_MOVE := "move"
+const EFFECT_DURATION_UNTIL_END_OF_TURN := "until_end_of_turn"
+const EFFECT_DURATION_WHILE_ATTACHED := "while_attached"
+const EFFECT_DURATION_WHILE_ON_BATTLEFIELD := "while_on_battlefield"
+const EFFECT_DURATION_UNTIL_TRIGGERED := "until_triggered"
 
 var chess_state := ChessState.new()
 var chess_engine := ChessEngine.new(chess_state)
@@ -38,6 +42,10 @@ var turn_number: int = 0
 var rng_seed: int = 1
 var pending_hand_limit_discard_color: String = ""
 var pending_hand_limit_discard_count: int = 0
+var reaction_priority_color: String = ""
+var consecutive_reaction_passes: int = 0
+var reaction_window: Array = []
+var active_effects: Array = []
 var _next_card_instance_id: int = 1
 var _shuffle_nonce: int = 0
 var players := {}
@@ -67,6 +75,10 @@ func start_match(white_deck: DeckDefinition, black_deck: DeckDefinition, seed: i
 	_shuffle_nonce = 0
 	pending_hand_limit_discard_color = ""
 	pending_hand_limit_discard_count = 0
+	reaction_priority_color = ""
+	consecutive_reaction_passes = 0
+	reaction_window = []
+	active_effects = []
 	_next_card_instance_id = 1
 	_reset_players()
 	_initialize_player(ChessMatch.WHITE, white_deck)
@@ -195,6 +207,7 @@ func apply_move_action(action: Dictionary) -> Dictionary:
 	if not _can_run_phase(PHASE_MOVE):
 		return _result(false, "wrong_phase")
 
+	var acting_color := _turn_player_color()
 	var legal_move: Variant = _resolve_action_to_legal_move(action)
 	if legal_move == null:
 		return _result(false, "illegal_move")
@@ -207,6 +220,7 @@ func apply_move_action(action: Dictionary) -> Dictionary:
 	event_queue.enqueue({
 		"type": "chess_move_resolved",
 		"payload": {
+			"color": acting_color,
 			"action": action.duplicate(true),
 			"move": legal_move.duplicate(true),
 			"fen": chess_engine.to_fen(),
@@ -214,13 +228,50 @@ func apply_move_action(action: Dictionary) -> Dictionary:
 	})
 	event_queue.resolve_all()
 	phase = PHASE_REACTION
+	reaction_priority_color = acting_color
+	consecutive_reaction_passes = 0
+	reaction_window = [_build_reaction_window_entry("after_piece_moves", {
+		"color": acting_color,
+		"from": str(action["from"]),
+		"to": str(action["to"]),
+	})]
+	if bool(legal_move.get("is_capture", false)):
+		reaction_window.append(_build_reaction_window_entry("after_piece_captured", {
+			"color": acting_color,
+			"captured_square": chess_engine.square_to_algebraic(legal_move["captured_square"]),
+			"captured_piece_type": str(legal_move.get("captured_piece_type", "")),
+		}))
+	if chess_engine.is_in_check(chess_state.active_color):
+		reaction_window.append(_build_reaction_window_entry("when_king_in_check", {
+			"checked_color": chess_state.active_color,
+		}))
+	_resolve_traps_for_move(acting_color, legal_move)
 	return _result(true)
 
 
 func pass_reaction_phase() -> bool:
 	if not _can_run_phase(PHASE_REACTION):
 		return false
+
+	consecutive_reaction_passes += 1
+	var passed_color := reaction_priority_color
+	reaction_priority_color = _opponent(reaction_priority_color)
+	event_queue.enqueue({
+		"type": "reaction_priority_passed",
+		"payload": {
+			"color": passed_color,
+			"next_priority": reaction_priority_color,
+			"consecutive_passes": consecutive_reaction_passes,
+		},
+	})
+	event_queue.resolve_all()
+	if consecutive_reaction_passes < 2:
+		return true
+
 	phase = PHASE_END
+	reaction_priority_color = ""
+	consecutive_reaction_passes = 0
+	reaction_window = []
 	event_queue.enqueue({
 		"type": "reaction_phase_passed",
 		"payload": {
@@ -250,6 +301,7 @@ func resolve_end_phase() -> bool:
 		event_queue.resolve_all()
 		return true
 
+	_expire_temporary_effects("end_of_turn")
 	_finish_turn(completing_color)
 	return true
 
@@ -281,6 +333,7 @@ func discard_cards_for_hand_limit(card_instance_ids: Array[String]) -> Dictionar
 	var completing_color := pending_hand_limit_discard_color
 	pending_hand_limit_discard_color = ""
 	pending_hand_limit_discard_count = 0
+	_expire_temporary_effects("end_of_turn")
 	_finish_turn(completing_color)
 	return _result(true)
 
@@ -291,15 +344,21 @@ func play_card_from_hand(card_instance_id: String, targets: Array = []) -> Dicti
 	if pending_hand_limit_discard_count > 0:
 		return _result(false, "hand_limit_discard_pending")
 
-	var active_color := chess_state.active_color
-	var player: Dictionary = players[active_color]
-	var hand: Array = player["hand"]
-	var hand_index := _find_card_index(hand, card_instance_id)
-	if hand_index < 0:
+	var owner_color := _find_hand_owner(card_instance_id)
+	if owner_color.is_empty():
 		return _result(false, "card_not_in_hand")
 
+	var acting_color := owner_color
+	if phase == PHASE_PREPARATION and acting_color != _turn_player_color():
+		return _result(false, "wrong_phase")
+	if phase != PHASE_PREPARATION and phase != PHASE_REACTION:
+		return _result(false, "wrong_phase")
+
+	var player: Dictionary = players[acting_color]
+	var hand: Array = player["hand"]
+	var hand_index := _find_card_index(hand, card_instance_id)
 	var card_state: Dictionary = hand[hand_index]
-	var play_error := _validate_card_play(card_state, targets)
+	var play_error := _validate_card_play(acting_color, card_state, targets)
 	if not play_error.is_empty():
 		return _result(false, play_error)
 
@@ -309,13 +368,15 @@ func play_card_from_hand(card_instance_id: String, targets: Array = []) -> Dicti
 	var destination_zone := _resolve_destination_zone(resolved_card_state)
 	_apply_card_targets_to_state(resolved_card_state, targets)
 	_apply_unit_attachment_replacement(player, resolved_card_state)
+	_replace_environment_if_needed(resolved_card_state)
 	player[destination_zone].append(resolved_card_state)
-	players[active_color] = player
+	players[acting_color] = player
+	_register_card_effects(resolved_card_state)
 
 	event_queue.enqueue({
 		"type": "mana_spent",
 		"payload": {
-			"color": active_color,
+			"color": acting_color,
 			"mana_cost": resolved_card_state["mana_cost"],
 			"remaining_mana": player["mana"],
 		},
@@ -323,14 +384,20 @@ func play_card_from_hand(card_instance_id: String, targets: Array = []) -> Dicti
 	event_queue.enqueue({
 		"type": "card_played",
 		"payload": {
-			"color": active_color,
+			"color": acting_color,
 			"card_id": resolved_card_state["card_id"],
 			"card_instance_id": resolved_card_state["instance_id"],
 			"destination_zone": destination_zone,
+			"card_type": resolved_card_state["card_type"],
+			"trigger_condition": str(resolved_card_state.get("trigger_condition", "")),
 			"targets": _serialize_targets(targets),
 		},
 	})
 	event_queue.resolve_all()
+	_record_reaction_window_for_play(acting_color, resolved_card_state, destination_zone)
+	if phase == PHASE_REACTION:
+		consecutive_reaction_passes = 0
+		reaction_priority_color = _opponent(acting_color)
 	return _result(true)
 
 
@@ -358,6 +425,10 @@ func get_pending_hand_limit_discard_count(color: String) -> int:
 	return pending_hand_limit_discard_count
 
 
+func get_active_effects() -> Array:
+	return active_effects.duplicate(true)
+
+
 func create_state_snapshot() -> Dictionary:
 	return {
 		"state": state,
@@ -368,6 +439,10 @@ func create_state_snapshot() -> Dictionary:
 		"shuffle_nonce": _shuffle_nonce,
 		"pending_hand_limit_discard_color": pending_hand_limit_discard_color,
 		"pending_hand_limit_discard_count": pending_hand_limit_discard_count,
+		"reaction_priority_color": reaction_priority_color,
+		"consecutive_reaction_passes": consecutive_reaction_passes,
+		"reaction_window": reaction_window.duplicate(true),
+		"active_effects": active_effects.duplicate(true),
 		"next_card_instance_id": _next_card_instance_id,
 		"rules": {
 			"opening_hand_size": rules.opening_hand_size,
@@ -405,6 +480,10 @@ func load_state_snapshot(snapshot: Dictionary) -> void:
 	_shuffle_nonce = int(snapshot.get("shuffle_nonce", 0))
 	pending_hand_limit_discard_color = str(snapshot.get("pending_hand_limit_discard_color", ""))
 	pending_hand_limit_discard_count = int(snapshot.get("pending_hand_limit_discard_count", 0))
+	reaction_priority_color = str(snapshot.get("reaction_priority_color", ""))
+	consecutive_reaction_passes = int(snapshot.get("consecutive_reaction_passes", 0))
+	reaction_window = snapshot.get("reaction_window", []).duplicate(true)
+	active_effects = snapshot.get("active_effects", []).duplicate(true)
 	_next_card_instance_id = int(snapshot.get("next_card_instance_id", 1))
 	players = snapshot.get("players", {}).duplicate(true)
 	chess_engine.load_state_snapshot(snapshot.get("chess_state", snapshot.get("chess_match", {})))
@@ -456,6 +535,9 @@ func _create_runtime_deck(color: String, deck: DeckDefinition) -> Array:
 			"rules_text": card.rules_text,
 			"target_requirements": Array(card.target_requirements),
 			"keywords": Array(card.keywords),
+			"trigger_condition": card.trigger_condition,
+			"effect_duration": card.effect_duration,
+			"effect_tags": Array(card.effect_tags),
 			"owner": color,
 			"controller": color,
 			"persistent": card.is_persistent_type(),
@@ -492,7 +574,7 @@ func _draw_cards(color: String, count: int) -> void:
 	players[color] = player
 
 
-func _validate_card_play(card_state: Dictionary, targets: Array) -> String:
+func _validate_card_play(acting_color: String, card_state: Dictionary, targets: Array) -> String:
 	if phase != PHASE_PREPARATION and phase != PHASE_REACTION:
 		return "wrong_phase"
 
@@ -502,14 +584,20 @@ func _validate_card_play(card_state: Dictionary, targets: Array) -> String:
 	if phase == PHASE_REACTION and str(card_state["card_type"]) != CardDefinition.TYPE_REACTION:
 		return "preparation_only_card_type"
 
-	var player: Dictionary = players[chess_state.active_color]
+	if phase == PHASE_REACTION:
+		if acting_color != reaction_priority_color:
+			return "not_reaction_priority"
+		if not _is_reaction_trigger_active(card_state, acting_color):
+			return "reaction_trigger_inactive"
+
+	var player: Dictionary = players[acting_color]
 	if int(player["mana"]) < int(card_state["mana_cost"]):
 		return "insufficient_mana"
 
-	return _validate_targets(card_state, targets)
+	return _validate_targets(acting_color, card_state, targets)
 
 
-func _validate_targets(card_state: Dictionary, targets: Array) -> String:
+func _validate_targets(acting_color: String, card_state: Dictionary, targets: Array) -> String:
 	var requirements: Array = card_state.get("target_requirements", [])
 	if requirements.is_empty():
 		if not targets.is_empty():
@@ -520,12 +608,12 @@ func _validate_targets(card_state: Dictionary, targets: Array) -> String:
 		return "incorrect_target_count"
 
 	for index in range(requirements.size()):
-		if not _requirement_matches_target(str(requirements[index]), targets[index]):
+		if not _requirement_matches_target(acting_color, str(requirements[index]), targets[index]):
 			return "invalid_target"
 	return ""
 
 
-func _requirement_matches_target(requirement_text: String, target: Dictionary) -> bool:
+func _requirement_matches_target(acting_color: String, requirement_text: String, target: Dictionary) -> bool:
 	var normalized := requirement_text.strip_edges().trim_suffix(".").to_lower()
 	if normalized.begins_with("target "):
 		normalized = normalized.substr(7)
@@ -534,7 +622,7 @@ func _requirement_matches_target(requirement_text: String, target: Dictionary) -
 
 	if normalized.contains(" or "):
 		for option in normalized.split(" or "):
-			if _requirement_matches_target(option, target):
+			if _requirement_matches_target(acting_color, option, target):
 				return true
 		return false
 
@@ -553,9 +641,9 @@ func _requirement_matches_target(requirement_text: String, target: Dictionary) -
 		return false
 
 	if normalized == "friendly piece":
-		return piece["color"] == chess_state.active_color
+		return piece["color"] == acting_color
 	if normalized == "opposing piece":
-		return piece["color"] != chess_state.active_color
+		return piece["color"] != acting_color
 	if normalized == "any piece":
 		return true
 	if normalized == "pawn" or normalized == "knight" or normalized == "bishop" or normalized == "rook" or normalized == "queen" or normalized == "king":
@@ -563,7 +651,7 @@ func _requirement_matches_target(requirement_text: String, target: Dictionary) -
 	if normalized == "threatened rook":
 		return piece["type"] == ChessMatch.PIECE_ROOK and chess_engine.is_square_attacked(target_square, _opponent(piece["color"]))
 	if normalized == "bishop adjacent to your king":
-		return piece["type"] == ChessMatch.PIECE_BISHOP and piece["color"] == chess_state.active_color and _is_adjacent_to_own_king(target_square, piece["color"])
+		return piece["type"] == ChessMatch.PIECE_BISHOP and piece["color"] == acting_color and _is_adjacent_to_own_king(target_square, piece["color"])
 	if normalized == "pawn beyond rank 5":
 		return piece["type"] == ChessMatch.PIECE_PAWN and _is_pawn_beyond_rank_five(target_square, piece["color"])
 
@@ -591,6 +679,8 @@ func _apply_card_targets_to_state(card_state: Dictionary, targets: Array) -> voi
 	else:
 		card_state["targeted_square"] = square_name
 
+	card_state["targeted_by"] = _serialize_targets(targets)
+
 
 func _apply_unit_attachment_replacement(player: Dictionary, card_state: Dictionary) -> void:
 	if str(card_state.get("card_type", "")) != CardDefinition.TYPE_UNIT:
@@ -608,6 +698,7 @@ func _apply_unit_attachment_replacement(player: Dictionary, card_state: Dictiona
 		if str(existing_card.get("attached_to", "")) != attached_to:
 			continue
 		battlefield.remove_at(index)
+		_remove_effects_for_card(str(existing_card["instance_id"]))
 		player["graveyard"].append(existing_card)
 		event_queue.enqueue({
 			"type": "unit_replaced",
@@ -650,6 +741,7 @@ func _capture_attached_units_at_square(square: Vector2i) -> void:
 			if str(card_state.get("attached_to", "")) != square_name:
 				continue
 			battlefield.remove_at(index)
+			_remove_effects_for_card(str(card_state["instance_id"]))
 			card_state["attached_to"] = ""
 			player["graveyard"].append(card_state)
 			event_queue.enqueue({
@@ -678,6 +770,7 @@ func _move_attached_unit(from_square: Vector2i, to_square: Vector2i) -> void:
 				continue
 			card_state["attached_to"] = to_name
 			battlefield[index] = card_state
+			_update_effect_square(str(card_state["instance_id"]), to_name)
 		players[color] = player
 
 
@@ -724,6 +817,9 @@ func _finish_turn(completing_color: String) -> void:
 	event_queue.resolve_all()
 	turn_number += 1
 	phase = PHASE_BEGINNING
+	reaction_priority_color = ""
+	consecutive_reaction_passes = 0
+	reaction_window = []
 	_refresh_state_from_chess()
 
 
@@ -831,6 +927,12 @@ func _opponent(color: String) -> String:
 	return ChessMatch.BLACK if color == ChessMatch.WHITE else ChessMatch.WHITE
 
 
+func _turn_player_color() -> String:
+	if phase == PHASE_REACTION or phase == PHASE_END:
+		return _inactive_color()
+	return chess_state.active_color
+
+
 func _can_run_phase(expected_phase: String) -> bool:
 	return state == STATE_ACTIVE and phase == expected_phase and pending_hand_limit_discard_count == 0
 
@@ -840,6 +942,216 @@ func _find_card_index(cards: Array, card_instance_id: String) -> int:
 		if str(cards[index].get("instance_id", "")) == card_instance_id:
 			return index
 	return -1
+
+
+func _find_hand_owner(card_instance_id: String) -> String:
+	for color in [ChessMatch.WHITE, ChessMatch.BLACK]:
+		if _find_card_index(players[color]["hand"], card_instance_id) >= 0:
+			return color
+	return ""
+
+
+func _is_reaction_trigger_active(card_state: Dictionary, acting_color: String) -> bool:
+	var trigger_condition := str(card_state.get("trigger_condition", "")).strip_edges().to_lower()
+	if trigger_condition.is_empty():
+		return true
+	for window_entry_value in reaction_window:
+		var window_entry: Dictionary = window_entry_value
+		var window_trigger := str(window_entry.get("trigger", ""))
+		var payload: Dictionary = window_entry.get("payload", {})
+		match trigger_condition:
+			"after_piece_moves":
+				if window_trigger != "after_piece_moves":
+					continue
+				return true
+			"after_piece_captured":
+				if window_trigger != "after_piece_captured":
+					continue
+				return true
+			"when_card_played":
+				if window_trigger != "when_card_played":
+					continue
+				return true
+			"when_friendly_card_played":
+				if window_trigger != "when_card_played":
+					continue
+				return str(payload.get("color", "")) == acting_color
+			"when_opposing_card_played":
+				if window_trigger != "when_card_played":
+					continue
+				return str(payload.get("color", "")) == _opponent(acting_color)
+			"when_king_in_check":
+				if window_trigger != "when_king_in_check":
+					continue
+				return str(payload.get("checked_color", "")) == acting_color
+			"at_end_of_turn":
+				return phase == PHASE_REACTION
+			_:
+				if window_trigger != trigger_condition:
+					continue
+				if trigger_condition == str(payload.get("trigger_tag", "")):
+					return true
+	return false
+
+
+func _build_reaction_window_entry(trigger_name: String, payload: Dictionary = {}) -> Dictionary:
+	return {
+		"trigger": trigger_name,
+		"payload": payload.duplicate(true),
+	}
+
+
+func _record_reaction_window_for_play(acting_color: String, card_state: Dictionary, destination_zone: String) -> void:
+	if phase != PHASE_REACTION:
+		return
+	reaction_window.append(_build_reaction_window_entry("when_card_played", {
+		"color": acting_color,
+		"card_id": str(card_state["card_id"]),
+		"card_instance_id": str(card_state["instance_id"]),
+		"card_type": str(card_state["card_type"]),
+		"destination_zone": destination_zone,
+	}))
+
+
+func _replace_environment_if_needed(card_state: Dictionary) -> void:
+	if str(card_state.get("card_type", "")) != CardDefinition.TYPE_ENVIRONMENT:
+		return
+	for color in [ChessMatch.WHITE, ChessMatch.BLACK]:
+		var player: Dictionary = players[color]
+		var battlefield: Array = player["battlefield"]
+		for index in range(battlefield.size() - 1, -1, -1):
+			var existing_card: Dictionary = battlefield[index]
+			if str(existing_card.get("card_type", "")) != CardDefinition.TYPE_ENVIRONMENT:
+				continue
+			battlefield.remove_at(index)
+			_remove_effects_for_card(str(existing_card["instance_id"]))
+			player["graveyard"].append(existing_card)
+			event_queue.enqueue({
+				"type": "environment_replaced",
+				"payload": {
+					"color": color,
+					"card_id": existing_card["card_id"],
+					"card_instance_id": existing_card["instance_id"],
+				},
+			})
+		players[color] = player
+
+
+func _register_card_effects(card_state: Dictionary) -> void:
+	var card_type := str(card_state.get("card_type", ""))
+	var effect_duration := str(card_state.get("effect_duration", ""))
+	if effect_duration.is_empty():
+		match card_type:
+			CardDefinition.TYPE_UNIT:
+				effect_duration = EFFECT_DURATION_WHILE_ATTACHED
+			CardDefinition.TYPE_TRAP:
+				effect_duration = EFFECT_DURATION_UNTIL_TRIGGERED
+			CardDefinition.TYPE_ENVIRONMENT:
+				effect_duration = EFFECT_DURATION_WHILE_ON_BATTLEFIELD
+			CardDefinition.TYPE_ARTIFACT:
+				effect_duration = EFFECT_DURATION_WHILE_ON_BATTLEFIELD
+			_:
+				effect_duration = EFFECT_DURATION_UNTIL_END_OF_TURN if card_type == CardDefinition.TYPE_REACTION else ""
+	if effect_duration.is_empty():
+		return
+
+	var effect_entry := {
+		"source_card_id": str(card_state["card_id"]),
+		"source_card_instance_id": str(card_state["instance_id"]),
+		"source_card_type": card_type,
+		"controller": str(card_state["controller"]),
+		"duration": effect_duration,
+		"effect_tags": Array(card_state.get("effect_tags", [])),
+		"attached_to": str(card_state.get("attached_to", "")),
+		"placed_on": str(card_state.get("placed_on", "")),
+		"face_down": bool(card_state.get("face_down", false)),
+	}
+	active_effects.append(effect_entry)
+	event_queue.enqueue({
+		"type": "effect_activated",
+		"payload": effect_entry.duplicate(true),
+	})
+
+
+func _remove_effects_for_card(card_instance_id: String) -> void:
+	for index in range(active_effects.size() - 1, -1, -1):
+		var effect_entry: Dictionary = active_effects[index]
+		if str(effect_entry.get("source_card_instance_id", "")) != card_instance_id:
+			continue
+		active_effects.remove_at(index)
+		event_queue.enqueue({
+			"type": "effect_removed",
+			"payload": effect_entry,
+		})
+
+
+func _update_effect_square(card_instance_id: String, square_name: String) -> void:
+	for index in range(active_effects.size()):
+		var effect_entry: Dictionary = active_effects[index]
+		if str(effect_entry.get("source_card_instance_id", "")) != card_instance_id:
+			continue
+		effect_entry["attached_to"] = square_name
+		active_effects[index] = effect_entry
+
+
+func _resolve_traps_for_move(moving_color: String, move: Dictionary) -> void:
+	var destination_name := chess_engine.square_to_algebraic(move["to"])
+	for color in [ChessMatch.WHITE, ChessMatch.BLACK]:
+		var player: Dictionary = players[color]
+		var battlefield: Array = player["battlefield"]
+		for index in range(battlefield.size() - 1, -1, -1):
+			var trap_card: Dictionary = battlefield[index]
+			if str(trap_card.get("card_type", "")) != CardDefinition.TYPE_TRAP:
+				continue
+			if str(trap_card.get("placed_on", "")) != destination_name:
+				continue
+			if not _does_trap_trigger(trap_card, moving_color):
+				continue
+			battlefield.remove_at(index)
+			trap_card["face_down"] = false
+			player["graveyard"].append(trap_card)
+			_remove_effects_for_card(str(trap_card["instance_id"]))
+			event_queue.enqueue({
+				"type": "trap_triggered",
+				"payload": {
+					"color": color,
+					"card_id": trap_card["card_id"],
+					"card_instance_id": trap_card["instance_id"],
+					"square": destination_name,
+					"triggered_by": moving_color,
+				},
+			})
+		players[color] = player
+	event_queue.resolve_all()
+
+
+func _does_trap_trigger(trap_card: Dictionary, moving_color: String) -> bool:
+	var trigger_condition := str(trap_card.get("trigger_condition", "")).strip_edges().to_lower()
+	if trigger_condition.is_empty():
+		return moving_color != str(trap_card.get("controller", ""))
+	match trigger_condition:
+		"when_opposing_piece_enters":
+			return moving_color != str(trap_card.get("controller", ""))
+		"when_any_piece_enters":
+			return true
+		"when_friendly_piece_enters":
+			return moving_color == str(trap_card.get("controller", ""))
+		_:
+			return false
+
+
+func _expire_temporary_effects(expiry_point: String) -> void:
+	if expiry_point != "end_of_turn":
+		return
+	for index in range(active_effects.size() - 1, -1, -1):
+		var effect_entry: Dictionary = active_effects[index]
+		if str(effect_entry.get("duration", "")) != EFFECT_DURATION_UNTIL_END_OF_TURN:
+			continue
+		active_effects.remove_at(index)
+		event_queue.enqueue({
+			"type": "effect_expired",
+			"payload": effect_entry,
+		})
 
 
 func _reset_players() -> void:

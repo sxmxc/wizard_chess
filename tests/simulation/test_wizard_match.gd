@@ -117,6 +117,119 @@ func test_unit_card_requires_valid_target_and_replaces_existing_unit() -> void:
 	assert_eq(white_state["battlefield"].size(), 1)
 	assert_eq(white_state["graveyard"].size(), 1)
 	assert_eq(white_state["battlefield"][0]["attached_to"], "e2")
+	assert_eq(wizard_match.get_active_effects().size(), 1)
+	assert_eq(wizard_match.get_active_effects()[0]["attached_to"], "e2")
+
+
+func test_reaction_card_requires_trigger_and_reaction_priority() -> void:
+	var rules := _make_rules()
+	rules.mana_gained_per_turn = 1
+	var wizard_match := WizardMatch.new(rules)
+	var white_deck := _make_uniform_deck(_make_card(CardDefinition.TYPE_SPELL, 0, "white_spell"))
+	var reaction := _make_card(CardDefinition.TYPE_REACTION, 0, "black_reaction")
+	reaction.trigger_condition = "after_piece_moves"
+	reaction.effect_duration = WizardMatch.EFFECT_DURATION_UNTIL_END_OF_TURN
+	reaction.effect_tags = PackedStringArray(["ward"])
+	var black_deck := _make_uniform_deck(reaction)
+
+	assert_true(wizard_match.start_match(white_deck, black_deck, 5)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessMatch.WHITE)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessMatch.BLACK)["ok"])
+	assert_true(wizard_match.resolve_beginning_phase())
+	assert_true(wizard_match.finish_preparation_phase())
+	assert_true(wizard_match.apply_move_action(
+		wizard_match.chess_engine.create_move_action(_sq("e2"), _sq("e4"))
+	)["ok"])
+
+	var black_state := wizard_match.get_player_state(ChessMatch.BLACK)
+	var reaction_id := str(black_state["hand"][0]["instance_id"])
+	var denied_result := wizard_match.play_card_from_hand(reaction_id)
+	assert_false(denied_result["ok"])
+	assert_eq(denied_result["reason"], "not_reaction_priority")
+
+	assert_true(wizard_match.pass_reaction_phase())
+	assert_true(wizard_match.play_card_from_hand(reaction_id)["ok"])
+	assert_eq(wizard_match.get_player_state(ChessMatch.BLACK)["graveyard"].size(), 1)
+	assert_eq(wizard_match.get_active_effects().size(), 1)
+	assert_eq(wizard_match.get_active_effects()[0]["source_card_type"], CardDefinition.TYPE_REACTION)
+
+	assert_true(wizard_match.pass_reaction_phase())
+	assert_true(wizard_match.pass_reaction_phase())
+	assert_true(wizard_match.resolve_end_phase())
+	assert_eq(wizard_match.get_active_effects().size(), 0)
+
+
+func test_trap_card_triggers_when_opposing_piece_enters_square() -> void:
+	var rules := _make_rules()
+	rules.mana_gained_per_turn = 1
+	var wizard_match := WizardMatch.new(rules)
+	var trap := _make_card(CardDefinition.TYPE_TRAP, 0, "explosive_rune", ["Play on empty square."])
+	trap.trigger_condition = "when_opposing_piece_enters"
+	trap.effect_tags = PackedStringArray(["burning"])
+	var white_deck := _make_uniform_deck(trap)
+	var black_deck := _make_uniform_deck(_make_card(CardDefinition.TYPE_SPELL, 0, "black_spell"))
+
+	assert_true(wizard_match.start_match(white_deck, black_deck, 6)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessMatch.WHITE)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessMatch.BLACK)["ok"])
+	assert_true(wizard_match.resolve_beginning_phase())
+
+	var white_state := wizard_match.get_player_state(ChessMatch.WHITE)
+	var trap_id := str(white_state["hand"][0]["instance_id"])
+	assert_true(wizard_match.play_card_from_hand(trap_id, [wizard_match.create_square_target(_sq("e5"))])["ok"])
+	assert_eq(wizard_match.get_active_effects().size(), 1)
+	assert_true(wizard_match.finish_preparation_phase())
+	assert_true(wizard_match.apply_move_action(
+		wizard_match.chess_engine.create_move_action(_sq("a2"), _sq("a3"))
+	)["ok"])
+	assert_true(wizard_match.pass_reaction_phase())
+	assert_true(wizard_match.pass_reaction_phase())
+	assert_true(wizard_match.resolve_end_phase())
+	assert_true(wizard_match.resolve_beginning_phase())
+	assert_true(wizard_match.finish_preparation_phase())
+	assert_true(wizard_match.apply_move_action(
+		wizard_match.chess_engine.create_move_action(_sq("e7"), _sq("e5"))
+	)["ok"])
+
+	white_state = wizard_match.get_player_state(ChessMatch.WHITE)
+	assert_eq(white_state["battlefield"].size(), 0)
+	assert_eq(white_state["graveyard"].size(), 1)
+	assert_eq(wizard_match.get_active_effects().size(), 0)
+
+
+func test_environment_replaces_previous_environment_and_artifact_persists() -> void:
+	var rules := _make_rules()
+	rules.mana_gained_per_turn = 3
+	var wizard_match := WizardMatch.new(rules)
+	var environment_a := _make_card(CardDefinition.TYPE_ENVIRONMENT, 1, "blizzard")
+	environment_a.effect_tags = PackedStringArray(["slow"])
+	var environment_b := _make_card(CardDefinition.TYPE_ENVIRONMENT, 1, "holy_ground")
+	environment_b.effect_tags = PackedStringArray(["sanctified"])
+	var artifact := _make_card(CardDefinition.TYPE_ARTIFACT, 1, "crystal_ball")
+	artifact.effect_tags = PackedStringArray(["scry"])
+	var white_deck := DeckDefinition.new()
+	white_deck.cards = [environment_a, environment_b, artifact]
+	var black_deck := _make_uniform_deck(_make_card(CardDefinition.TYPE_SPELL, 0, "black_spell"))
+
+	assert_true(wizard_match.start_match(white_deck, black_deck, 12)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessMatch.WHITE)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessMatch.BLACK)["ok"])
+	assert_true(wizard_match.resolve_beginning_phase())
+
+	var white_state := wizard_match.get_player_state(ChessMatch.WHITE)
+	assert_true(wizard_match.play_card_from_hand(_hand_card_instance_id(white_state, "blizzard"))["ok"])
+	assert_true(wizard_match.play_card_from_hand(_hand_card_instance_id(wizard_match.get_player_state(ChessMatch.WHITE), "holy_ground"))["ok"])
+	assert_true(wizard_match.play_card_from_hand(_hand_card_instance_id(wizard_match.get_player_state(ChessMatch.WHITE), "crystal_ball"))["ok"])
+
+	white_state = wizard_match.get_player_state(ChessMatch.WHITE)
+	assert_eq(white_state["battlefield"].size(), 2)
+	assert_eq(white_state["graveyard"].size(), 1)
+	var active_effect_ids := []
+	for effect_value in wizard_match.get_active_effects():
+		active_effect_ids.append(effect_value["source_card_id"])
+	assert_eq(active_effect_ids.size(), 2)
+	assert_has(active_effect_ids, "holy_ground")
+	assert_has(active_effect_ids, "crystal_ball")
 
 
 func test_chess_move_is_phase_gated_and_advances_to_reaction() -> void:
@@ -144,6 +257,7 @@ func test_end_phase_requires_explicit_hand_limit_discard() -> void:
 	assert_true(wizard_match.apply_move_action(
 		wizard_match.chess_engine.create_move_action(_sq("e2"), _sq("e4"))
 	)["ok"])
+	assert_true(wizard_match.pass_reaction_phase())
 	assert_true(wizard_match.pass_reaction_phase())
 	assert_true(wizard_match.resolve_end_phase())
 
@@ -247,8 +361,16 @@ func _make_card(card_type: String, mana_cost: int, card_id: String, target_requi
 	card.mana_cost = mana_cost
 	card.school = "Prototype"
 	card.target_requirements = PackedStringArray(target_requirements)
+	card.effect_tags = PackedStringArray()
 	return card
 
 
 func _sq(value: String) -> Vector2i:
 	return ChessMatch.new().algebraic_to_square(value)
+
+
+func _hand_card_instance_id(player_state: Dictionary, card_id: String) -> String:
+	for card_state in player_state["hand"]:
+		if str(card_state["card_id"]) == card_id:
+			return str(card_state["instance_id"])
+	return ""

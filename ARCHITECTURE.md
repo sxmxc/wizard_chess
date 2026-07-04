@@ -233,7 +233,27 @@ This keeps chess deterministic and reusable while creating a clear place for fut
 
 Milestone 4 is therefore complete enough to treat as finished.
 
-The next architectural step belongs to Milestone 5: extending the framework into full card-type resolution and richer effect handling.
+Milestone 5 now extends that framework into prototype-complete card-type validation:
+
+* `CardDefinition` carries explicit trigger and effect metadata rather than relying on hardcoded card-specific branches.
+* `WizardMatch` tracks reaction priority and the current reaction window so Reaction cards validate against authoritative game events.
+* Trap cards remain face-down on the battlefield, trigger from deterministic move outcomes, reveal, resolve, and then leave play.
+* Environment cards replace previous Environments through match rules instead of presentation-side assumptions.
+* Artifacts, Environments, Units, Traps, and temporary Reaction effects all register into an explicit `active_effects` state slice.
+* Attached Unit effects move with their piece and are removed when the source card leaves play.
+
+The prototype still does not implement bespoke card-text execution.
+
+Instead, Milestone 5 proves the architectural boundary needed for future content work:
+
+* Card-type timing and legality are simulation rules.
+* Trigger windows are public deterministic state.
+* Ongoing effects are represented as data in match state.
+* Content can define trigger/effect metadata through Resources without embedding gameplay logic in UI or networking layers.
+
+Milestone 5 is complete enough to treat as finished as of July 4, 2026.
+
+The next architectural step belongs to Milestone 6: using this deterministic chess-plus-cards action surface to support AI evaluation and turn planning.
 
 ---
 

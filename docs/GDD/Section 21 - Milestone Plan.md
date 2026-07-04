@@ -140,6 +140,8 @@ The game framework is capable of supporting cards.
 
 # Milestone 5 - Core Card System
 
+Status: Complete as of July 4, 2026.
+
 ## Goals
 
 Validate every card type.
@@ -170,6 +172,13 @@ Validate every card type.
 ## Exit Criteria
 
 Every supported card type functions correctly within a multiplayer match.
+
+## Completion Notes
+
+- Unit, Spell, Reaction, Trap, Environment, and Artifact card flows are validated in the authoritative simulation.
+- Card timing, targeting, reaction priority, trap triggering, Environment replacement, and active-effect tracking are implemented in `WizardMatch`.
+- Automated regression coverage for the Milestone 5 framework passes in headless test runs.
+- Production gameplay UI for exercising these systems interactively remains Milestone 7 work.
 
 ---
 

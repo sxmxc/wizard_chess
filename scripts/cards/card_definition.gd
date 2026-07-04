@@ -23,6 +23,9 @@ const RARITY_LEGENDARY := "legendary"
 @export_multiline var rules_text: String = ""
 @export var target_requirements: PackedStringArray = PackedStringArray()
 @export var keywords: PackedStringArray = PackedStringArray()
+@export var trigger_condition: String = ""
+@export var effect_duration: String = ""
+@export var effect_tags: PackedStringArray = PackedStringArray()
 
 
 func is_persistent_type() -> bool:

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_id = "sample_flash_barrier"
+display_name = "Flash Barrier"
+card_type = "reaction"
+school = "Order"
+rarity = "common"
+mana_cost = 1
+rules_text = "Play after a piece moves."
+trigger_condition = "after_piece_moves"
+effect_duration = "until_end_of_turn"
+effect_tags = PackedStringArray("ward")
+

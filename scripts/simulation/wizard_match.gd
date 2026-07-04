@@ -429,6 +429,45 @@ func get_active_effects() -> Array:
 	return active_effects.duplicate(true)
 
 
+func get_event_history() -> Array:
+	return event_queue.get_resolved_events()
+
+
+func clone() -> WizardMatch:
+	var copy := WizardMatch.new()
+	copy.load_state_snapshot(create_state_snapshot())
+	return copy
+
+
+func get_legal_card_actions(color: String) -> Array:
+	if not players.has(color):
+		return []
+
+	var legal_actions: Array = []
+	var player: Dictionary = players[color]
+	for card_state_value in player["hand"]:
+		var card_state: Dictionary = card_state_value
+		var play_error := _validate_card_play(color, card_state, [])
+		if play_error.is_empty():
+			legal_actions.append({
+				"card_instance_id": str(card_state["instance_id"]),
+				"card_id": str(card_state["card_id"]),
+				"targets": [],
+			})
+			continue
+
+		if play_error != "incorrect_target_count":
+			continue
+
+		for targets in _enumerate_legal_targets_for_card(color, card_state):
+			legal_actions.append({
+				"card_instance_id": str(card_state["instance_id"]),
+				"card_id": str(card_state["card_id"]),
+				"targets": _serialize_targets(targets),
+			})
+	return legal_actions
+
+
 func create_state_snapshot() -> Dictionary:
 	return {
 		"state": state,
@@ -611,6 +650,61 @@ func _validate_targets(acting_color: String, card_state: Dictionary, targets: Ar
 		if not _requirement_matches_target(acting_color, str(requirements[index]), targets[index]):
 			return "invalid_target"
 	return ""
+
+
+func _enumerate_legal_targets_for_card(acting_color: String, card_state: Dictionary) -> Array:
+	var requirements: Array = card_state.get("target_requirements", [])
+	if requirements.is_empty():
+		return []
+
+	var target_options: Array = []
+	for requirement_value in requirements:
+		var requirement := str(requirement_value)
+		var options := _candidate_targets_for_requirement(acting_color, requirement)
+		if options.is_empty():
+			return []
+		target_options.append(options)
+
+	var combinations: Array = []
+	_build_target_combinations(acting_color, card_state, target_options, 0, [], combinations)
+	return combinations
+
+
+func _build_target_combinations(
+	acting_color: String,
+	card_state: Dictionary,
+	target_options: Array,
+	index: int,
+	current_targets: Array,
+	combinations: Array
+) -> void:
+	if index >= target_options.size():
+		if _validate_targets(acting_color, card_state, current_targets).is_empty():
+			combinations.append(_serialize_targets(current_targets))
+		return
+
+	for target_value in target_options[index]:
+		current_targets.append((target_value as Dictionary).duplicate(true))
+		_build_target_combinations(acting_color, card_state, target_options, index + 1, current_targets, combinations)
+		current_targets.pop_back()
+
+
+func _candidate_targets_for_requirement(acting_color: String, requirement_text: String) -> Array:
+	var options: Array = []
+	for rank in range(8):
+		for file in range(8):
+			var square := Vector2i(file, rank)
+			var piece = chess_engine.get_piece(square)
+			if piece == null:
+				var square_target := create_square_target(square)
+				if _requirement_matches_target(acting_color, requirement_text, square_target):
+					options.append(square_target)
+				continue
+
+			var piece_target := create_piece_target(square)
+			if _requirement_matches_target(acting_color, requirement_text, piece_target):
+				options.append(piece_target)
+	return options
 
 
 func _requirement_matches_target(acting_color: String, requirement_text: String, target: Dictionary) -> bool:

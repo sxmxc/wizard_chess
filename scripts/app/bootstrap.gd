@@ -2,6 +2,7 @@ extends Node
 
 const DEV_LAUNCHER_SCENE := preload("res://scenes/app/dev_launcher_screen.tscn")
 const LOCAL_CHESS_SCENE := preload("res://scenes/chess/local_chess_screen.tscn")
+const LOCAL_WIZARD_MATCH_SCENE := preload("res://scenes/chess/local_wizard_match_screen.tscn")
 const NETWORK_CHESS_SCENE := preload("res://scenes/chess/network_chess_screen.tscn")
 
 @onready var match_bridge: NetworkMatchBridge = $NetworkRoot/MatchBridge
@@ -66,6 +67,11 @@ func _load_content_scene(scene: PackedScene) -> void:
 func start_local_session() -> void:
 	_log_info("Starting local hotseat session.", "Local")
 	_load_content_scene(LOCAL_CHESS_SCENE)
+
+
+func start_local_ai_session() -> void:
+	_log_info("Starting local Wizard Match AI session.", "LocalAI")
+	_load_content_scene(LOCAL_WIZARD_MATCH_SCENE)
 
 
 func start_dedicated_server(port: int, max_clients: int, quit_on_failure: bool = false) -> bool:

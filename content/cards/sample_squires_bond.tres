@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_id = "sample_squires_bond"
+display_name = "Squire's Bond"
+card_type = "unit"
+school = "Order"
+rarity = "common"
+mana_cost = 1
+rules_text = "Attach to a friendly piece."
+target_requirements = PackedStringArray("Target friendly piece.")
+effect_tags = PackedStringArray("guard")
+

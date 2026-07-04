@@ -1,0 +1,20 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://scripts/ai/wizard_match_ai_profile.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+profile_id = "intermediate_positional"
+display_name = "Intermediate Positional"
+difficulty = "intermediate"
+personality = "positional"
+chess_search_depth = 2
+max_root_moves_considered = 6
+max_search_branching = 6
+max_preparation_cards_per_turn = 1
+card_play_threshold = 0.85
+aggression_weight = 1.0
+defense_weight = 1.1
+position_weight = 1.2
+reaction_weight = 1.0
+trap_weight = 1.0

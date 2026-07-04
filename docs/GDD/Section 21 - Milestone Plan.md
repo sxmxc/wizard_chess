@@ -184,6 +184,8 @@ Every supported card type functions correctly within a multiplayer match.
 
 # Milestone 6 - Artificial Intelligence
 
+Status: Complete as of July 4, 2026.
+
 ## Goals
 
 Implement the first playable AI opponent.
@@ -204,6 +206,14 @@ Implement the first playable AI opponent.
 ## Exit Criteria
 
 Players can complete full matches against AI opponents.
+
+## Completion Notes
+
+- `WizardMatchAiController` now drives setup, preparation, move, reaction, and end-phase decisions entirely through the authoritative `WizardMatch` action API.
+- Chess move choice uses deterministic evaluation with material, mobility, center control, king safety, and check/checkmate pressure, with search depth varying by AI profile.
+- Card play evaluation and turn planning are implemented for the prototype card framework, including legal target enumeration, reaction timing, trap placement, and hand-limit discards.
+- Difficulty and personality are represented through data-driven `WizardMatchAiProfile` Resources, with starter aggressive and positional profiles under `content/ai/`.
+- A local Wizard Match development screen now supports human-vs-AI and AI-vs-AI testing with board interaction, card-play controls, summaries, and event logs.
 
 ---
 

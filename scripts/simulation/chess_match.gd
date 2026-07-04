@@ -111,7 +111,8 @@ func to_fen(include_counters: bool = true) -> String:
 
 func clone() -> ChessMatch:
 	var copy := ChessMatch.new(true)
-	copy.load_state_snapshot(create_state_snapshot())
+	copy.state = state.duplicate_deep()
+	copy.engine = ChessEngine.new(copy.state, true)
 	return copy
 
 

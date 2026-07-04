@@ -598,9 +598,31 @@ func _find_matching_legal_move(move: Dictionary):
 
 
 func _would_leave_king_in_check(move: Dictionary, color: String) -> bool:
-	var simulated := clone()
-	simulated._apply_move_unchecked(move, false, false)
-	return simulated.is_in_check(color)
+	var snapshot := _create_ephemeral_snapshot()
+	_apply_move_unchecked(move, false, false)
+	var leaves_king_in_check := is_in_check(color)
+	_restore_ephemeral_snapshot(snapshot)
+	return leaves_king_in_check
+
+
+func _create_ephemeral_snapshot() -> Dictionary:
+	return {
+		"board": state._duplicate_board(),
+		"active_color": state.active_color,
+		"castling_rights": state.castling_rights.duplicate(true),
+		"en_passant_target": state.en_passant_target,
+		"halfmove_clock": state.halfmove_clock,
+		"fullmove_number": state.fullmove_number,
+	}
+
+
+func _restore_ephemeral_snapshot(snapshot: Dictionary) -> void:
+	state.board = snapshot["board"]
+	state.active_color = str(snapshot["active_color"])
+	state.castling_rights = snapshot["castling_rights"]
+	state.en_passant_target = snapshot["en_passant_target"]
+	state.halfmove_clock = int(snapshot["halfmove_clock"])
+	state.fullmove_number = int(snapshot["fullmove_number"])
 
 
 func _apply_move_unchecked(move: Dictionary, record_history: bool, refresh_state: bool = true) -> void:

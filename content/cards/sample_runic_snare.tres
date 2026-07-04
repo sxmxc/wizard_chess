@@ -1,0 +1,17 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_id = "sample_runic_snare"
+display_name = "Runic Snare"
+card_type = "trap"
+school = "Arcane"
+rarity = "common"
+mana_cost = 1
+rules_text = "Play on an empty square. Triggers when an opposing piece enters."
+target_requirements = PackedStringArray("Play on empty square.")
+trigger_condition = "when_opposing_piece_enters"
+effect_tags = PackedStringArray("snare")
+

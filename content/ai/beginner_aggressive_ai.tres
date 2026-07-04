@@ -1,0 +1,20 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://scripts/ai/wizard_match_ai_profile.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+profile_id = "beginner_aggressive"
+display_name = "Beginner Aggressive"
+difficulty = "beginner"
+personality = "aggressive"
+chess_search_depth = 1
+max_root_moves_considered = 6
+max_search_branching = 6
+max_preparation_cards_per_turn = 1
+card_play_threshold = 0.95
+aggression_weight = 1.25
+defense_weight = 0.9
+position_weight = 0.9
+reaction_weight = 0.9
+trap_weight = 1.1

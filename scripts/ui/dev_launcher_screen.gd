@@ -70,6 +70,11 @@ func _build_ui() -> void:
 	local_button.pressed.connect(_on_local_pressed)
 	root.add_child(local_button)
 
+	var local_ai_button := Button.new()
+	local_ai_button.text = "Play Vs AI (Dev)"
+	local_ai_button.pressed.connect(_on_local_ai_pressed)
+	root.add_child(local_ai_button)
+
 	var host_button := Button.new()
 	host_button.text = "Host Network Match"
 	host_button.pressed.connect(_on_host_pressed)
@@ -117,6 +122,10 @@ func _build_ui() -> void:
 
 func _on_local_pressed() -> void:
 	_bootstrap().start_local_session()
+
+
+func _on_local_ai_pressed() -> void:
+	_bootstrap().start_local_ai_session()
 
 
 func _on_host_pressed() -> void:

@@ -255,6 +255,17 @@ Milestone 5 is complete enough to treat as finished as of July 4, 2026.
 
 The next architectural step belongs to Milestone 6: using this deterministic chess-plus-cards action surface to support AI evaluation and turn planning.
 
+Milestone 6 now establishes that prototype boundary:
+
+* `WizardMatchAiController` evaluates only the same public match/chess state available to a legal player and submits normal match actions back into `WizardMatch`.
+* `WizardMatch` exposes clone/snapshot helpers and legal card-action enumeration so AI and UI do not duplicate authoritative rule validation.
+* AI behavior differences live in `WizardMatchAiProfile` Resources, keeping difficulty and personality data-driven rather than hardcoded into scenes.
+* The local Wizard Match dev screen exercises the same simulation and AI controller stack used by tests, preserving the simulation/presentation split.
+
+This is intentionally still prototype scope.
+
+The AI does not yet execute bespoke card-text logic beyond the existing framework metadata, but the architectural goal for Milestone 6 is now proven: a deterministic opponent can complete matches without bypassing the simulation.
+
 ---
 
 # Artificial Intelligence

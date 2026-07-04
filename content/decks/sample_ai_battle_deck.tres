@@ -1,0 +1,16 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/deck_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://content/cards/sample_arcane_burst.tres" id="2"]
+[ext_resource type="Resource" path="res://content/cards/sample_guardian_aegis.tres" id="3"]
+[ext_resource type="Resource" path="res://content/cards/sample_squires_bond.tres" id="4"]
+[ext_resource type="Resource" path="res://content/cards/sample_flash_barrier.tres" id="5"]
+[ext_resource type="Resource" path="res://content/cards/sample_runic_snare.tres" id="6"]
+[ext_resource type="Resource" path="res://content/cards/sample_mana_storm.tres" id="7"]
+
+[resource]
+script = ExtResource("1")
+deck_id = "sample_ai_battle_deck"
+display_name = "Sample AI Battle Deck"
+cards = [ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7")]
+

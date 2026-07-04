@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+          uses: actions/checkout@v7
 
       - name: Install Godot
         shell: bash
@@ -42,3 +42,98 @@ jobs:
         shell: bash
         run: |
           godot --headless --path . --log-file .godot/gut.log --script res://addons/gut/gut_cmdln.gd -gconfig=res://.gutconfig.json -gdir=res://tests -ginclude_subdirs -gexit -gexit_on_success
+
+  build-linux:
+    name: Export Linux Build
+    needs: test
+    runs-on: ubuntu-latest
+
+    env:
+      GODOT_VERSION: "4.7-stable"
+
+    steps:
+      - name: Checkout
+          uses: actions/checkout@v7
+
+      - name: Install Godot
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v4.7-stable_linux.x86_64.zip" -o "Godot_v4.7-stable_linux.x86_64.zip"
+          unzip -q "Godot_v4.7-stable_linux.x86_64.zip"
+          chmod +x "Godot_v4.7-stable_linux.x86_64"
+          sudo mv "Godot_v4.7-stable_linux.x86_64" /usr/local/bin/godot
+
+      - name: Install export templates
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v4.7-stable_export_templates.tpz" -o "Godot_v4.7-stable_export_templates.tpz"
+          templatesDir="$HOME/.local/share/godot/export_templates/4.7.stable"
+          mkdir -p "$templatesDir"
+          unzip -q "Godot_v4.7-stable_export_templates.tpz" -d "$templatesDir"
+
+      - name: Prepare build directories
+        shell: bash
+        run: mkdir -p builds/linux
+
+      - name: Import project resources
+        shell: bash
+        run: godot --headless --path . --import
+
+      - name: Export project
+        shell: bash
+        run: godot --headless --path . --export-release "Linux" "builds/linux/Wizard Chess.x86_64"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: builds/linux
+
+  build-windows:
+    name: Export Windows Build
+    needs: test
+    runs-on: windows-latest
+
+    env:
+      GODOT_VERSION: "4.7-stable"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Godot
+        shell: pwsh
+        run: |
+          $zip = "Godot_v4.7-stable_win64.exe.zip"
+          Invoke-WebRequest -Uri "https://github.com/godotengine/godot/releases/download/$env:GODOT_VERSION/$zip" -OutFile $zip
+          Expand-Archive -LiteralPath $zip -DestinationPath .
+          $env:GODOT_EXE = Join-Path $PWD "Godot_v4.7-stable_win64.exe"
+
+      - name: Install export templates
+        shell: pwsh
+        run: |
+          $templateZip = "Godot_v4.7-stable_export_templates.tpz"
+          Invoke-WebRequest -Uri "https://github.com/godotengine/godot/releases/download/$env:GODOT_VERSION/$templateZip" -OutFile $templateZip
+          $templatesDir = Join-Path $env:APPDATA "Godot\export_templates\4.7.stable"
+          New-Item -ItemType Directory -Force -Path $templatesDir | Out-Null
+          Expand-Archive -LiteralPath $templateZip -DestinationPath $templatesDir -Force
+
+      - name: Prepare build directories
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force -Path builds\windows | Out-Null
+
+      - name: Import project resources
+        shell: pwsh
+        run: .\Godot_v4.7-stable_win64.exe --headless --path . --import
+
+      - name: Export project
+        shell: pwsh
+        run: .\Godot_v4.7-stable_win64.exe --headless --path . --export-release "Windows Desktop" "builds/windows/Wizard Chess.exe"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: builds/windows

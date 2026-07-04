@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 project_name = "Wizard Chess"
-build_label = "Milestone 1 foundation"
+build_label = "Milestone 2 core chess"
 default_log_level = 1
 auto_quit_on_headless = true
 enable_debug_overlay = false

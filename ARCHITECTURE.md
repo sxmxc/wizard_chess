@@ -189,6 +189,32 @@ The replay system should execute the same gameplay systems used during live matc
 
 ---
 
+# Current Prototype Boundary
+
+Milestone 2 introduces a deterministic chess simulation as the first authoritative gameplay system.
+
+The current playable stack is intentionally small:
+
+* `ChessMatch` owns board state, turn state, legal move validation, outcome detection, and move history.
+* The local chess screen only reads from `ChessMatch` and submits move intents back into it.
+* Automated tests exercise the same `ChessMatch` API used by the playable scene.
+
+This keeps the simulation reusable for future multiplayer, AI, and replay work.
+
+This boundary is intentionally provisional.
+
+`ChessMatch` currently centralizes several responsibilities so Milestone 2 could validate complete standard chess quickly. That was acceptable for the prototype, but it is not the desired final multiplayer architecture.
+
+Milestone 3 should use the working rules implementation as a baseline while splitting responsibilities into smaller simulation-facing systems, especially around:
+
+* Match state ownership
+* Action validation
+* Deterministic move resolution
+* State serialization and synchronization
+* Replay-safe and network-safe public interfaces
+
+---
+
 # Artificial Intelligence
 
 The AI should interact with gameplay through the same interfaces as a human player.

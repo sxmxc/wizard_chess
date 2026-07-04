@@ -68,10 +68,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl -L "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v4.7-stable_export_templates.tpz" -o "Godot_v4.7-stable_export_templates.tpz"
+          template_zip="Godot_v${GODOT_VERSION}_export_templates.tpz"
+          curl -L "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${template_zip}" -o "$template_zip"
           templatesDir="$HOME/.local/share/godot/export_templates/4.7.stable"
           mkdir -p "$templatesDir"
-          unzip -q "Godot_v4.7-stable_export_templates.tpz" -d "$templatesDir"
+          tmpDir="$(mktemp -d)"
+          unzip -q "$template_zip" -d "$tmpDir"
+          cp -R "$tmpDir/templates/." "$templatesDir"
 
       - name: Prepare build directories
         shell: bash
@@ -114,11 +117,15 @@ jobs:
       - name: Install export templates
         shell: pwsh
         run: |
-          $templateZip = "Godot_v4.7-stable_export_templates.tpz"
+          $templateZip = "Godot_v$env:GODOT_VERSION`_export_templates.tpz"
           Invoke-WebRequest -Uri "https://github.com/godotengine/godot/releases/download/$env:GODOT_VERSION/$templateZip" -OutFile $templateZip
           $templatesDir = Join-Path $env:APPDATA "Godot\export_templates\4.7.stable"
           New-Item -ItemType Directory -Force -Path $templatesDir | Out-Null
-          Expand-Archive -LiteralPath $templateZip -DestinationPath $templatesDir -Force
+          $tmpDir = Join-Path $env:RUNNER_TEMP "godot_templates"
+          Remove-Item -Recurse -Force $tmpDir -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $tmpDir | Out-Null
+          Expand-Archive -LiteralPath $templateZip -DestinationPath $tmpDir -Force
+          Copy-Item -Path (Join-Path $tmpDir "templates\*") -Destination $templatesDir -Recurse -Force
 
       - name: Prepare build directories
         shell: pwsh

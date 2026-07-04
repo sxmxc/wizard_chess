@@ -89,7 +89,7 @@ jobs:
         run: godot --headless --path . --export-release "Linux" "builds/linux/Wizard Chess.x86_64"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linux-build
           path: builds/linux
@@ -104,7 +104,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install Godot
         shell: pwsh
@@ -140,7 +140,7 @@ jobs:
         run: .\Godot_v4.7-stable_win64.exe --headless --path . --export-release "Windows Desktop" "builds/windows/Wizard Chess.exe"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-build
           path: builds/windows

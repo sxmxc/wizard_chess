@@ -11,6 +11,7 @@ func _ready() -> void:
 	match_bridge.connection_succeeded.connect(_on_connection_succeeded)
 	match_bridge.connection_failed.connect(_on_connection_failed)
 	match_bridge.server_disconnected.connect(_on_server_disconnected)
+	match_bridge.session_updated.connect(_on_session_updated)
 	super._ready()
 
 
@@ -23,6 +24,15 @@ func _initialize_match() -> ChessMatch:
 func _refresh_status() -> void:
 	super._refresh_status()
 	var local_color := match_bridge.get_local_player_color()
+	var local_player_id := match_bridge.get_local_player_id()
+	if local_color.is_empty():
+		status_label.text = "Seat: pending assignment"
+	else:
+		status_label.text = "Seat: %s (%s)\n%s" % [
+			local_color.capitalize(),
+			local_player_id,
+			status_label.text,
+		]
 	if local_color.is_empty():
 		detail_label.text = "Waiting for a player assignment from the server."
 		return
@@ -39,6 +49,7 @@ func _refresh_status() -> void:
 				local_color.capitalize(),
 				_match_color_name(chess_match.active_color),
 			]
+	detail_label.text += "\n%s" % _seat_summary_text()
 
 
 func _request_move(move: Dictionary) -> void:
@@ -90,8 +101,19 @@ func _on_server_disconnected() -> void:
 	_refresh_ui()
 
 
+func _on_session_updated(_player_id: String, _color: String) -> void:
+	transient_message = ""
+	_refresh_ui()
+
+
 func _rejection_text(reason: String) -> String:
 	match reason:
+		"peer_not_registered":
+			return "You are not registered with the match yet."
+		"match_full":
+			return "That match is already full."
+		"session_already_active":
+			return "That saved session is already active. Use a different client profile for another local client."
 		"peer_not_assigned":
 			return "The server has not assigned you a seat yet."
 		"not_your_turn":
@@ -102,3 +124,23 @@ func _rejection_text(reason: String) -> String:
 			return "A draw cannot be claimed right now."
 		_:
 			return "Action rejected: %s" % reason
+
+
+func _seat_summary_text() -> String:
+	var assignments := match_bridge.get_player_color_assignments()
+	var white_assignment: Dictionary = assignments.get(ChessMatch.WHITE, {})
+	var black_assignment: Dictionary = assignments.get(ChessMatch.BLACK, {})
+	return "White: %s | Black: %s" % [
+		_format_seat_summary(white_assignment),
+		_format_seat_summary(black_assignment),
+	]
+
+
+func _format_seat_summary(assignment: Dictionary) -> String:
+	if assignment.is_empty():
+		return "open"
+
+	return "%s (%s)" % [
+		str(assignment.get("player_id", "")),
+		"connected" if bool(assignment.get("connected", false)) else "disconnected",
+	]

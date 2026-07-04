@@ -14,6 +14,7 @@ Chess is always the foundation. Cards create exceptions to chess, but do not rep
 - GUT coverage added for legal moves, castling, en passant, promotion, checkmate, stalemate, and draw handling
 - CI workflow still runs tests and exports for Linux and Windows
 - Milestone 3 foundation started with a dedicated multiplayer bridge node, action payloads, and full-state snapshot sync
+- Non-headless development runs now open a launcher screen for local, host, or connect flows
 - Next major focus is Milestone 3: multiplayer foundation
 
 ## Project Structure
@@ -45,9 +46,50 @@ Examples:
 godot --headless --path . --log-file .godot/check-only.log --check-only
 godot --headless --path . --log-file .godot/local-scene.log --scene res://scenes/chess/local_chess_screen.tscn --quit-after 2
 godot --headless --path . --log-file .godot/server.log --server --port=7000
-godot --path . --host --port=7000
-godot --path . --connect=127.0.0.1 --port=7000
+godot --path . --host --port=7000 --profile=host_a
+godot --path . --connect=127.0.0.1 --port=7000 --profile=client_a
+godot --path . --connect=127.0.0.1 --port=7000 --profile=client_b
 ```
+
+Running the project normally in the editor or with `godot --path .` now opens a development launcher instead of dropping straight into local hotseat. Use that screen to:
+
+- Play local hotseat
+- Host a network match
+- Connect to a running server by IP and port
+
+For local multiplayer testing on one machine:
+
+- Run the dedicated server with `--server`
+- Run each player client with a different `--profile`
+- If using the editor launcher, the `Client Profile` field should also be different for each local client
+- Dedicated servers do not use client profiles
+
+Examples:
+
+- Host machine client profile: `host_a`
+- First standalone client profile: `client_a`
+- Second standalone client profile: `client_b`
+
+Reconnect behavior in the prototype:
+
+- A client reconnects by reusing the same `address:port:profile`
+- The reconnect token is stored under `user://network_session.cfg`
+- Two live clients must never share the same profile for the same server endpoint
+
+The multiplayer bridge now also emits explicit lifecycle logs for:
+
+- Server startup
+- Client startup
+- Peer connect and disconnect
+- Seat assignment
+- Action submission, acceptance, and rejection
+- Snapshot broadcast and apply
+
+Log prefixes:
+
+- Dedicated server and host-side authority logs: `[Server][NetworkMatchBridge]`
+- Remote client logs: `[Client][NetworkMatchBridge]`
+- Startup flow logs: `[Bootstrap][Server]`, `[Bootstrap][Host]`, `[Bootstrap][Client]`, `[Bootstrap][Launcher]`
 
 ## Milestone 2
 
@@ -82,6 +124,11 @@ Current prototype shape:
 - `ChessMatch` now exposes action payload and snapshot methods that are safe to reuse for networking and replay work.
 - `NetworkMatchBridge` centralizes all current RPC declarations under a stable `/root/Bootstrap/NetworkRoot/MatchBridge` path on both peers.
 - Bootstrap keeps the RPC node alive while loading either local hotseat content or the first network chess screen.
+- Session identity is server-issued and match-scoped: seat ownership is tracked by `player_id`, while reconnect uses a stored session token keyed by `address:port:profile`.
+
+## Milestone 3 Validation
+
+Use the checklist in [docs/MILESTONE_3_VALIDATION.md](/D:/Projects/Godot/4/wizard-chess/docs/MILESTONE_3_VALIDATION.md:1) when doing final milestone-3 multiplayer validation.
 
 ## Notes
 

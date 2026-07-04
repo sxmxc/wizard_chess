@@ -12,8 +12,8 @@ Chess is always the foundation. Cards create exceptions to chess, but do not rep
 - Godot project initialized
 - GUT testing configured
 - Log.gd enabled
-- CI workflow added
-- Export presets still need to be added
+- CI workflow added for tests and exports
+- Linux and Windows export presets configured
 
 ## Project Structure
 
@@ -38,7 +38,7 @@ The same command is used by the CI workflow.
 
 ## Milestone 1
 
-Milestone 1 establishes the project foundation:
+Milestone 1 established the project foundation:
 
 - Repository structure
 - Coding conventions
@@ -47,8 +47,6 @@ Milestone 1 establishes the project foundation:
 - Basic configuration
 - CI/CD pipeline
 - Build pipeline
-
-The build/export portion is pending export preset work.
 
 ## Notes
 

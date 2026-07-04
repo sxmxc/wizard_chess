@@ -9,13 +9,14 @@ Chess is always the foundation. Cards create exceptions to chess, but do not rep
 
 ## Current Status
 
-- Milestone 2 is complete enough to treat as finished
+- Milestone 3 is complete enough to treat as finished
 - Standard chess simulation implemented and playable through the default local hotseat scene
 - GUT coverage added for legal moves, castling, en passant, promotion, checkmate, stalemate, and draw handling
 - CI workflow still runs tests and exports for Linux and Windows
-- Milestone 3 foundation started with a dedicated multiplayer bridge node, action payloads, and full-state snapshot sync
+- Dedicated multiplayer bridge validates server-authoritative chess with reconnect-oriented session handling
+- Milestone 4 foundation started with `WizardMatch`, turn phases, mana, card zones, a FIFO event queue, and data-driven card/deck resources
 - Non-headless development runs now open a launcher screen for local, host, or connect flows
-- Next major focus is Milestone 3: multiplayer foundation
+- Next major focus is Milestone 4: gameplay framework
 
 ## Project Structure
 
@@ -107,24 +108,25 @@ Milestone 2 exit status:
 - The rules engine is covered by automated tests
 - Further work on chess should now be driven by Milestone 3 networking needs rather than standalone feature polish
 
-## Milestone 3 Direction
+## Milestone 4 Direction
 
-The current chess implementation is intentionally still prototype-shaped. The `ChessMatch` script is functional, but it should not be treated as the final long-term multiplayer architecture.
+The current gameplay implementation is still intentionally prototype-shaped. `ChessMatch` remains the compatibility-facing chess API, while `WizardMatch` owns the broader Wizard Chess match state and delegates chess rules to `ChessEngine`.
 
-Milestone 3 should focus on splitting responsibilities needed for server-authoritative play, including:
+Milestone 4 should focus on validating the gameplay framework needed for cards, including:
 
-- Match state
-- Move validation
-- Move application and resolution
-- Serialization for synchronization and replay
-- Player action submission and server validation
+- Match state and phase ownership
+- Mana, deck, hand, and graveyard state
+- FIFO game event processing
+- Data-driven card and deck resources
+- Phase-aware card and chess action flow
 
 Current prototype shape:
 
-- `ChessMatch` now exposes action payload and snapshot methods that are safe to reuse for networking and replay work.
-- `NetworkMatchBridge` centralizes all current RPC declarations under a stable `/root/Bootstrap/NetworkRoot/MatchBridge` path on both peers.
-- Bootstrap keeps the RPC node alive while loading either local hotseat content or the first network chess screen.
-- Session identity is server-issued and match-scoped: seat ownership is tracked by `player_id`, while reconnect uses a stored session token keyed by `address:port:profile`.
+- `ChessEngine` now owns deterministic standard chess rules, while `WizardMatch` owns the embedded chess-state slice used during full Wizard Chess matches.
+- `ChessMatch` remains as a compatibility wrapper for the existing chess-only scenes, tests, and multiplayer bridge.
+- `WizardMatch` owns match-level phases, mana refresh, card zones, and a basic play-card pipeline.
+- Card and deck definitions are now represented as Resources under `content/`.
+- `NetworkMatchBridge` still synchronizes chess-only play; networking integration with `WizardMatch` has not started yet.
 
 ## Milestone 3 Validation
 

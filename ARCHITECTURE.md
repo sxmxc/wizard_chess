@@ -195,7 +195,7 @@ Milestone 2 introduces a deterministic chess simulation as the first authoritati
 
 The current playable stack is intentionally small:
 
-* `ChessMatch` owns board state, turn state, legal move validation, outcome detection, and move history.
+* `ChessMatch` currently exposes the playable chess API, but the underlying rules/data split now lives in `ChessEngine` and `ChessState`.
 * The local chess screen only reads from `ChessMatch` and submits move intents back into it.
 * Automated tests exercise the same `ChessMatch` API used by the playable scene.
 
@@ -203,7 +203,7 @@ This keeps the simulation reusable for future multiplayer, AI, and replay work.
 
 This boundary is intentionally provisional.
 
-`ChessMatch` currently centralizes several responsibilities so Milestone 2 could validate complete standard chess quickly. That was acceptable for the prototype, but it is not the desired final multiplayer architecture.
+`ChessMatch` originally centralized several responsibilities so Milestone 2 could validate complete standard chess quickly. That was acceptable for the prototype, but it is not the desired final multiplayer architecture.
 
 Milestone 3 should use the working rules implementation as a baseline while splitting responsibilities into smaller simulation-facing systems, especially around:
 
@@ -220,6 +220,16 @@ The first Milestone 3 networking prototype now adds:
 * A single dedicated RPC bridge node kept at a stable `/root/Bootstrap/NetworkRoot/MatchBridge` path on both client and server.
 
 This keeps RPC behavior centralized and aligned with Godot's high-level multiplayer constraints while the broader multiplayer architecture is still being validated.
+
+Milestone 4 now starts splitting match-level responsibilities above the chess core:
+
+* `WizardMatch` now owns match-level state, including the chess-state slice used for full Wizard Chess matches.
+* `ChessEngine` owns chess rules evaluation and mutation against a supplied `ChessState`.
+* `ChessMatch` remains as a compatibility wrapper while older chess-only systems are migrated.
+* Match phases, mana, decks, hands, graveyards, and a FIFO event queue now live outside the chess rules engine.
+* Card and deck data are represented as Resources, keeping content loading separate from simulation logic.
+
+This keeps chess deterministic and reusable while creating a clear place for future card resolution work.
 
 ---
 

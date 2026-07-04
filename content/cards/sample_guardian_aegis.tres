@@ -1,0 +1,13 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_id = "sample_guardian_aegis"
+display_name = "Guardian Aegis"
+card_type = "artifact"
+school = "Order"
+rarity = "common"
+mana_cost = 2
+rules_text = "Prototype artifact used to validate persistent battlefield cards."

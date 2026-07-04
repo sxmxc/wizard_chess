@@ -1,0 +1,13 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_id = "sample_arcane_burst"
+display_name = "Arcane Burst"
+card_type = "spell"
+school = "Arcane"
+rarity = "common"
+mana_cost = 1
+rules_text = "Prototype spell used to validate resource loading."

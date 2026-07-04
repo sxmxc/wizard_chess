@@ -1,0 +1,12 @@
+[gd_resource type="Resource" format=3]
+
+[ext_resource type="Script" path="res://scripts/simulation/wizard_match_rules.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+opening_hand_size = 3
+maximum_hand_size = 7
+starting_mana = 0
+maximum_mana_cap = 10
+mana_gained_per_turn = 1
+cards_drawn_per_turn = 1

@@ -10,3 +10,5 @@ starting_mana = 0
 maximum_mana_cap = 10
 mana_gained_per_turn = 1
 cards_drawn_per_turn = 1
+required_deck_size = 6
+maximum_card_copies = 3

@@ -10,13 +10,15 @@ Chess is always the foundation. Cards create exceptions to chess, but do not rep
 ## Current Status
 
 - Milestone 3 is complete enough to treat as finished
+- Milestone 4 is complete enough to treat as finished
 - Standard chess simulation implemented and playable through the default local hotseat scene
 - GUT coverage added for legal moves, castling, en passant, promotion, checkmate, stalemate, and draw handling
 - CI workflow still runs tests and exports for Linux and Windows
 - Dedicated multiplayer bridge validates server-authoritative chess with reconnect-oriented session handling
-- Milestone 4 foundation started with `WizardMatch`, turn phases, mana, card zones, a FIFO event queue, and data-driven card/deck resources
+- `WizardMatch` now owns match state, mulligan flow, turn phases, mana, deck/hand/graveyard state, basic target validation, and explicit hand-limit discard flow
+- `ChessEngine` and `ChessState` now separate chess rules from chess-owned data, while `ChessMatch` remains as a compatibility wrapper
 - Non-headless development runs now open a launcher screen for local, host, or connect flows
-- Next major focus is Milestone 4: gameplay framework
+- Next major focus is Milestone 5: core card system
 
 ## Project Structure
 
@@ -108,29 +110,36 @@ Milestone 2 exit status:
 - The rules engine is covered by automated tests
 - Further work on chess should now be driven by Milestone 3 networking needs rather than standalone feature polish
 
-## Milestone 4 Direction
+## Milestone 4 Status
 
-The current gameplay implementation is still intentionally prototype-shaped. `ChessMatch` remains the compatibility-facing chess API, while `WizardMatch` owns the broader Wizard Chess match state and delegates chess rules to `ChessEngine`.
+Milestone 4 is now complete enough to treat as finished. `WizardMatch` owns the authoritative match framework above the chess layer, while `ChessEngine` owns chess rules and `ChessState` carries the embedded chess-state slice.
 
-Milestone 4 should focus on validating the gameplay framework needed for cards, including:
+Validated framework areas:
 
 - Match state and phase ownership
+- Setup flow and mulligans
 - Mana, deck, hand, and graveyard state
 - FIFO game event processing
 - Data-driven card and deck resources
 - Phase-aware card and chess action flow
+- Basic deck and target validation
+- Explicit end-phase hand-limit discard choice
 
 Current prototype shape:
 
 - `ChessEngine` now owns deterministic standard chess rules, while `WizardMatch` owns the embedded chess-state slice used during full Wizard Chess matches.
 - `ChessMatch` remains as a compatibility wrapper for the existing chess-only scenes, tests, and multiplayer bridge.
-- `WizardMatch` owns match-level phases, mana refresh, card zones, and a basic play-card pipeline.
+- `WizardMatch` owns setup, phases, mana refresh, card zones, mulligans, target validation, and hand-limit discard flow.
 - Card and deck definitions are now represented as Resources under `content/`.
 - `NetworkMatchBridge` still synchronizes chess-only play; networking integration with `WizardMatch` has not started yet.
 
 ## Milestone 3 Validation
 
 Use the checklist in [docs/MILESTONE_3_VALIDATION.md](/D:/Projects/Godot/4/wizard-chess/docs/MILESTONE_3_VALIDATION.md:1) when doing final milestone-3 multiplayer validation.
+
+## Milestone 4 Validation
+
+Use the checklist in [docs/MILESTONE_4_VALIDATION.md](/D:/Projects/Godot/4/wizard-chess/docs/MILESTONE_4_VALIDATION.md:1) when doing final milestone-4 gameplay-framework validation.
 
 ## Notes
 

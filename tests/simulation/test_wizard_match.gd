@@ -1,16 +1,17 @@
 extends GutTest
 
 
-func test_start_match_initializes_zones_and_opening_hands() -> void:
-	var match_rules := _make_rules()
-	var wizard_match := WizardMatch.new(match_rules)
+func test_start_match_initializes_setup_state_and_opening_hands() -> void:
+	var wizard_match := WizardMatch.new(_make_rules())
 	var deck := _make_mixed_deck()
 
-	wizard_match.start_match(deck, deck, 7)
+	var result := wizard_match.start_match(deck, deck, 7)
 
 	var white_state := wizard_match.get_player_state(ChessMatch.WHITE)
 	var black_state := wizard_match.get_player_state(ChessMatch.BLACK)
-	assert_eq(wizard_match.state, WizardMatch.STATE_ACTIVE)
+	assert_true(result["ok"])
+	assert_eq(wizard_match.state, WizardMatch.STATE_SETUP)
+	assert_eq(wizard_match.setup_step, WizardMatch.SETUP_STEP_MULLIGAN)
 	assert_eq(wizard_match.phase, WizardMatch.PHASE_BEGINNING)
 	assert_eq(white_state["hand"].size(), 2)
 	assert_eq(black_state["hand"].size(), 2)
@@ -18,11 +19,38 @@ func test_start_match_initializes_zones_and_opening_hands() -> void:
 	assert_eq(black_state["deck"].size(), 1)
 
 
-func test_beginning_phase_refreshes_mana_and_draws_card() -> void:
+func test_keep_opening_hands_completes_setup() -> void:
 	var wizard_match := WizardMatch.new(_make_rules())
 	var deck := _make_mixed_deck()
 
-	wizard_match.start_match(deck, deck, 3)
+	assert_true(wizard_match.start_match(deck, deck, 3)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessMatch.WHITE)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessMatch.BLACK)["ok"])
+
+	assert_eq(wizard_match.state, WizardMatch.STATE_ACTIVE)
+	assert_eq(wizard_match.setup_step, WizardMatch.SETUP_STEP_READY)
+
+
+func test_mulligan_returns_selected_cards_and_draws_replacements() -> void:
+	var wizard_match := WizardMatch.new(_make_rules())
+	var deck := _make_mixed_deck()
+
+	assert_true(wizard_match.start_match(deck, deck, 9)["ok"])
+	var white_state := wizard_match.get_player_state(ChessMatch.WHITE)
+	var replaced_id := str(white_state["hand"][0]["instance_id"])
+
+	assert_true(wizard_match.perform_mulligan(ChessMatch.WHITE, [replaced_id])["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessMatch.BLACK)["ok"])
+
+	white_state = wizard_match.get_player_state(ChessMatch.WHITE)
+	assert_false(white_state["mulligan_available"])
+	assert_eq(white_state["hand"].size(), 2)
+	assert_eq(white_state["deck"].size(), 1)
+	assert_eq(wizard_match.state, WizardMatch.STATE_ACTIVE)
+
+
+func test_beginning_phase_refreshes_mana_and_draws_card() -> void:
+	var wizard_match := _start_active_match()
 
 	assert_true(wizard_match.resolve_beginning_phase())
 	var white_state := wizard_match.get_player_state(ChessMatch.WHITE)
@@ -34,11 +62,15 @@ func test_beginning_phase_refreshes_mana_and_draws_card() -> void:
 
 
 func test_play_card_spends_mana_and_moves_spell_to_graveyard() -> void:
-	var wizard_match := WizardMatch.new(_make_rules())
+	var rules := _make_rules()
+	rules.mana_gained_per_turn = 2
+	var wizard_match := WizardMatch.new(rules)
 	var white_deck := _make_uniform_deck(_make_card(CardDefinition.TYPE_SPELL, 1, "spell_a"))
 	var black_deck := _make_uniform_deck(_make_card(CardDefinition.TYPE_SPELL, 1, "spell_b"))
 
-	wizard_match.start_match(white_deck, black_deck, 2)
+	assert_true(wizard_match.start_match(white_deck, black_deck, 2)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessMatch.WHITE)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessMatch.BLACK)["ok"])
 	assert_true(wizard_match.resolve_beginning_phase())
 
 	var white_state := wizard_match.get_player_state(ChessMatch.WHITE)
@@ -47,33 +79,49 @@ func test_play_card_spends_mana_and_moves_spell_to_graveyard() -> void:
 
 	assert_true(result["ok"])
 	white_state = wizard_match.get_player_state(ChessMatch.WHITE)
-	assert_eq(white_state["mana"], 0)
+	assert_eq(white_state["mana"], 1)
 	assert_eq(white_state["graveyard"].size(), 1)
 	assert_eq(white_state["battlefield"].size(), 0)
 
 
-func test_play_card_moves_persistent_card_to_battlefield() -> void:
-	var wizard_match := WizardMatch.new(_make_rules())
-	var artifact_deck := _make_uniform_deck(_make_card(CardDefinition.TYPE_ARTIFACT, 1, "artifact_a"))
+func test_unit_card_requires_valid_target_and_replaces_existing_unit() -> void:
+	var rules := _make_rules()
+	rules.mana_gained_per_turn = 2
+	var wizard_match := WizardMatch.new(rules)
+	var unit_a := _make_card(CardDefinition.TYPE_UNIT, 0, "unit_a", ["Target friendly piece."])
+	var unit_b := _make_card(CardDefinition.TYPE_UNIT, 0, "unit_b", ["Target friendly piece."])
+	var white_deck := DeckDefinition.new()
+	white_deck.cards = [unit_a, unit_b, unit_a]
+	var black_deck := _make_uniform_deck(_make_card(CardDefinition.TYPE_SPELL, 0, "spell_b"))
 
-	wizard_match.start_match(artifact_deck, artifact_deck, 5)
+	assert_true(wizard_match.start_match(white_deck, black_deck, 4)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessMatch.WHITE)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessMatch.BLACK)["ok"])
 	assert_true(wizard_match.resolve_beginning_phase())
 
 	var white_state := wizard_match.get_player_state(ChessMatch.WHITE)
-	var card_instance_id := str(white_state["hand"][0]["instance_id"])
-	var result := wizard_match.play_card_from_hand(card_instance_id)
+	var first_unit_id := str(white_state["hand"][0]["instance_id"])
+	var second_unit_id := str(white_state["hand"][1]["instance_id"])
+	var target := wizard_match.create_piece_target(_sq("e2"))
 
-	assert_true(result["ok"])
+	assert_true(wizard_match.play_card_from_hand(first_unit_id, [target])["ok"])
+	var invalid_target_result := wizard_match.play_card_from_hand(second_unit_id, [wizard_match.create_piece_target(_sq("e7"))])
+	assert_false(invalid_target_result["ok"])
+	assert_eq(invalid_target_result["reason"], "invalid_target")
+
+	white_state = wizard_match.get_player_state(ChessMatch.WHITE)
+	second_unit_id = str(white_state["hand"][0]["instance_id"])
+	assert_true(wizard_match.play_card_from_hand(second_unit_id, [target])["ok"])
+
 	white_state = wizard_match.get_player_state(ChessMatch.WHITE)
 	assert_eq(white_state["battlefield"].size(), 1)
-	assert_eq(white_state["graveyard"].size(), 0)
+	assert_eq(white_state["graveyard"].size(), 1)
+	assert_eq(white_state["battlefield"][0]["attached_to"], "e2")
 
 
 func test_chess_move_is_phase_gated_and_advances_to_reaction() -> void:
-	var wizard_match := WizardMatch.new(_make_rules())
-	var deck := _make_mixed_deck()
+	var wizard_match := _start_active_match()
 
-	wizard_match.start_match(deck, deck, 11)
 	assert_true(wizard_match.resolve_beginning_phase())
 	assert_true(wizard_match.finish_preparation_phase())
 
@@ -86,11 +134,34 @@ func test_chess_move_is_phase_gated_and_advances_to_reaction() -> void:
 	assert_eq(wizard_match.chess_engine.to_fen(), "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1")
 
 
-func test_snapshot_round_trip_preserves_framework_state() -> void:
-	var wizard_match := WizardMatch.new(_make_rules())
-	var deck := _make_mixed_deck()
+func test_end_phase_requires_explicit_hand_limit_discard() -> void:
+	var rules := _make_rules()
+	rules.maximum_hand_size = 2
+	var wizard_match := _start_active_match(rules)
 
-	wizard_match.start_match(deck, deck, 13)
+	assert_true(wizard_match.resolve_beginning_phase())
+	assert_true(wizard_match.finish_preparation_phase())
+	assert_true(wizard_match.apply_move_action(
+		wizard_match.chess_engine.create_move_action(_sq("e2"), _sq("e4"))
+	)["ok"])
+	assert_true(wizard_match.pass_reaction_phase())
+	assert_true(wizard_match.resolve_end_phase())
+
+	assert_eq(wizard_match.get_pending_hand_limit_discard_count(ChessMatch.WHITE), 1)
+	var white_state := wizard_match.get_player_state(ChessMatch.WHITE)
+	var discard_id := str(white_state["hand"][0]["instance_id"])
+	assert_true(wizard_match.discard_cards_for_hand_limit([discard_id])["ok"])
+
+	white_state = wizard_match.get_player_state(ChessMatch.WHITE)
+	assert_eq(white_state["hand"].size(), 2)
+	assert_eq(white_state["graveyard"].size(), 1)
+	assert_eq(wizard_match.phase, WizardMatch.PHASE_BEGINNING)
+	assert_eq(wizard_match.turn_number, 2)
+
+
+func test_snapshot_round_trip_preserves_framework_state() -> void:
+	var wizard_match := _start_active_match()
+
 	assert_true(wizard_match.resolve_beginning_phase())
 	assert_true(wizard_match.finish_preparation_phase())
 	assert_true(wizard_match.apply_move_action(
@@ -114,6 +185,31 @@ func test_card_catalog_loads_sample_resources() -> void:
 	assert_eq(deck.card_count(), 6)
 
 
+func test_deck_validation_rejects_oversized_legendary_copies() -> void:
+	var rules := _make_rules()
+	var wizard_match := WizardMatch.new(rules)
+	var legendary := _make_card(CardDefinition.TYPE_ARTIFACT, 0, "legendary_artifact")
+	legendary.rarity = CardDefinition.RARITY_LEGENDARY
+	var illegal_deck := DeckDefinition.new()
+	illegal_deck.cards = [legendary, legendary, legendary]
+	var legal_deck := _make_uniform_deck(_make_card(CardDefinition.TYPE_SPELL, 0, "legal_spell"))
+
+	var result := wizard_match.start_match(illegal_deck, legal_deck, 15)
+
+	assert_false(result["ok"])
+	assert_eq(result["reason"], "too_many_legendary_copies")
+
+
+func _start_active_match(rules: WizardMatchRules = null) -> WizardMatch:
+	var match_rules := rules if rules != null else _make_rules()
+	var wizard_match := WizardMatch.new(match_rules)
+	var deck := _make_mixed_deck()
+	assert_true(wizard_match.start_match(deck, deck, 11)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessMatch.WHITE)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessMatch.BLACK)["ok"])
+	return wizard_match
+
+
 func _make_rules() -> WizardMatchRules:
 	var rules := WizardMatchRules.new()
 	rules.opening_hand_size = 2
@@ -122,6 +218,8 @@ func _make_rules() -> WizardMatchRules:
 	rules.maximum_mana_cap = 10
 	rules.mana_gained_per_turn = 1
 	rules.cards_drawn_per_turn = 1
+	rules.required_deck_size = 3
+	rules.maximum_card_copies = 3
 	return rules
 
 
@@ -137,17 +235,18 @@ func _make_mixed_deck() -> DeckDefinition:
 
 func _make_uniform_deck(card: CardDefinition) -> DeckDefinition:
 	var deck := DeckDefinition.new()
-	deck.cards = [card, card, card]
+	deck.cards = [card, card.duplicate(true), card.duplicate(true)]
 	return deck
 
 
-func _make_card(card_type: String, mana_cost: int, card_id: String) -> CardDefinition:
+func _make_card(card_type: String, mana_cost: int, card_id: String, target_requirements: Array = []) -> CardDefinition:
 	var card := CardDefinition.new()
 	card.card_id = card_id
 	card.display_name = card_id.capitalize()
 	card.card_type = card_type
 	card.mana_cost = mana_cost
 	card.school = "Prototype"
+	card.target_requirements = PackedStringArray(target_requirements)
 	return card
 
 

@@ -221,15 +221,19 @@ The first Milestone 3 networking prototype now adds:
 
 This keeps RPC behavior centralized and aligned with Godot's high-level multiplayer constraints while the broader multiplayer architecture is still being validated.
 
-Milestone 4 now starts splitting match-level responsibilities above the chess core:
+Milestone 4 completes the initial split of match-level responsibilities above the chess core:
 
 * `WizardMatch` now owns match-level state, including the chess-state slice used for full Wizard Chess matches.
 * `ChessEngine` owns chess rules evaluation and mutation against a supplied `ChessState`.
 * `ChessMatch` remains as a compatibility wrapper while older chess-only systems are migrated.
-* Match phases, mana, decks, hands, graveyards, and a FIFO event queue now live outside the chess rules engine.
+* Match phases, setup flow, mana, decks, hands, graveyards, and a FIFO event queue now live outside the chess rules engine.
 * Card and deck data are represented as Resources, keeping content loading separate from simulation logic.
 
 This keeps chess deterministic and reusable while creating a clear place for future card resolution work.
+
+Milestone 4 is therefore complete enough to treat as finished.
+
+The next architectural step belongs to Milestone 5: extending the framework into full card-type resolution and richer effect handling.
 
 ---
 

@@ -1,17 +1,26 @@
 # Components
 
-> **Status:** Draft Rulebook v0.1
+A full game of Wizard Chess uses the following components.
 
-This chapter is intentionally maintained separately from the Game Design Document.
+## Required Components
 
-It explains the rules from the perspective of a player.
+- A standard 8x8 chessboard
+- A full set of chess pieces for both players
+- A deck of Wizard Chess cards for each player
+- A way to track mana
+- A way to track turn order
+- A way to track cards in play, in hand, and in the graveyard
 
-Core principles:
+## Optional Components
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+- Counters or markers for lasting effects
+- A record sheet for deck lists or match notes
+- A reference sheet for card keywords and school identities
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+## Public and Hidden Information
+
+- The board state is public.
+- Piece locations are public.
+- Cards in hand are hidden.
+- Deck order is hidden.
+- Face-down Trap cards are hidden until revealed.

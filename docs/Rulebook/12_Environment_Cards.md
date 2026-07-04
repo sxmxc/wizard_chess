@@ -1,17 +1,22 @@
 # Environment Cards
 
-> **Status:** Draft Rulebook v0.1
+Environment cards create ongoing conditions that affect the battlefield.
 
-This chapter is intentionally maintained separately from the Game Design Document.
+## How They Work
 
-It explains the rules from the perspective of a player.
+- An Environment remains in play after it is cast.
+- Its rules apply while it remains active.
+- It lasts until a card or rule removes it.
 
-Core principles:
+## Scope
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+An Environment may affect:
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+- A single square
+- A row, file, or region
+- One or more piece types
+- The whole board
+
+## Replacement
+
+If a new Environment would replace an existing one, follow the text of the cards involved.

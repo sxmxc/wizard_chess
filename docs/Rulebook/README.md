@@ -1,14 +1,9 @@
 # Wizard Chess Rulebook
 
-This is the full rulebook structure for Wizard Chess.
+This folder contains the player-facing rules for Wizard Chess.
 
-It is intended to grow alongside development. As the prototype validates mechanics,
-each chapter should be expanded with:
-- diagrams
-- examples
-- FAQs
-- timing edge cases
-- illustrations
-- reference tables
+It is written as a rulebook, not a design document. If someone had a chessboard, a deck of cards, and this book, they should be able to play the game.
 
-The rulebook is intentionally separate from the Game Design Document.
+The rulebook is organized into short reference chapters so that core rules, card types, deckbuilding, timing, and victory conditions can be read independently.
+
+When a card or special rule directly contradicts a general rule, the card or special rule applies only for that interaction.

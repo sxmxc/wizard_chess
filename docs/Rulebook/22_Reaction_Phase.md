@@ -1,17 +1,16 @@
 # Reaction Phase
 
-> **Status:** Draft Rulebook v0.1
+The Reaction Phase is when players answer events that happened earlier in the turn.
 
-This chapter is intentionally maintained separately from the Game Design Document.
+## Reactions
 
-It explains the rules from the perspective of a player.
+- Reaction cards may be played only when their trigger is true.
+- Reaction abilities may be used only when their trigger is true.
 
-Core principles:
+## Priority
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+Players alternate responses until both players pass in succession.
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+## End of the Phase
+
+When no more legal reactions remain and both players have passed, the game proceeds to the End Phase.

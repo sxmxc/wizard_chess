@@ -1,17 +1,35 @@
 # Game Setup
 
-> **Status:** Draft Rulebook v0.1
+Follow these steps to begin a match.
 
-This chapter is intentionally maintained separately from the Game Design Document.
+## 1. Choose Wizards
 
-It explains the rules from the perspective of a player.
+Each player chooses a Wizard allowed by the match format.
 
-Core principles:
+## 2. Build Decks
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+Each player uses a legal deck built according to that Wizard's deck restrictions.
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+## 3. Prepare the Board
+
+Set up the chess pieces in the standard starting position.
+
+## 4. Shuffle Decks
+
+Each player shuffles their deck.
+
+## 5. Draw Opening Hands
+
+Each player draws the opening hand required by the match format.
+
+## 6. Mulligan
+
+If the match format allows a mulligan, each player may take one mulligan unless a card says otherwise.
+
+## 7. Determine the First Player
+
+The match format determines who takes the first turn.
+
+## 8. Begin Play
+
+The starting player takes the first turn.

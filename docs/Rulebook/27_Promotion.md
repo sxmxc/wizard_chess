@@ -1,17 +1,15 @@
-# Pawn Promotion
+# Promotion
 
-> **Status:** Draft Rulebook v0.1
+When a Pawn reaches the farthest rank from its starting side, it is promoted.
 
-This chapter is intentionally maintained separately from the Game Design Document.
+## Promotion Choice
 
-It explains the rules from the perspective of a player.
+The player chooses the promoted piece according to the standard chess rules for promotion, unless a card says otherwise.
 
-Core principles:
+## Timing
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+Promotion is resolved immediately when the Pawn reaches the promotion rank.
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+## Effects on the Pawn
+
+The promoted piece replaces the Pawn on that square.

@@ -1,17 +1,17 @@
 # Wizards
 
-> **Status:** Draft Rulebook v0.1
+A Wizard is the identity you choose for your deck.
 
-This chapter is intentionally maintained separately from the Game Design Document.
+## What a Wizard Defines
 
-It explains the rules from the perspective of a player.
+- Which Schools of Magic your deck may include
+- Which starter deck that Wizard uses
+- Thematic identity and presentation
 
-Core principles:
+## What a Wizard Does Not Do
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+Unless a card or special mode says otherwise, a Wizard does not grant passive powers, special actions, or hidden advantages during a match.
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+## Starter Decks
+
+Each Wizard begins with an associated starter deck that may be modified if the result remains legal.

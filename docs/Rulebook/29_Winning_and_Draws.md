@@ -1,17 +1,25 @@
-# Winning & Draw Conditions
+# Winning and Draws
 
-> **Status:** Draft Rulebook v0.1
+## Winning
 
-This chapter is intentionally maintained separately from the Game Design Document.
+The primary way to win is to checkmate the opposing King.
 
-It explains the rules from the perspective of a player.
+Cards or special formats may define other victory conditions.
 
-Core principles:
+## Concession
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+A player may concede if the match format allows it. Conceding ends the game immediately and awards victory to the opponent.
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+## Draws
+
+A game may end in a draw through standard chess draw conditions, including:
+
+- Stalemate
+- Threefold repetition
+- Fifty-move rule
+- Insufficient material
+- Mutual agreement, if the match format allows it
+
+## End of Game
+
+When the game ends, no further gameplay actions are taken unless needed to determine the result.

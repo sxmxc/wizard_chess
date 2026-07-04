@@ -1,17 +1,27 @@
 # Schools of Magic
 
-> **Status:** Draft Rulebook v0.1
+Every card belongs to a School of Magic.
 
-This chapter is intentionally maintained separately from the Game Design Document.
+## Arcane
 
-It explains the rules from the perspective of a player.
+Arcane focuses on manipulation, repositioning, and tactical flexibility.
 
-Core principles:
+## Pyromancy
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+Pyromancy focuses on destruction, pressure, and forcing difficult choices.
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+## Nature
+
+Nature focuses on growth, adaptation, and resilience.
+
+## Divine
+
+Divine focuses on protection, order, and stability.
+
+## Necromancy
+
+Necromancy focuses on sacrifice, curses, and graveyard interaction.
+
+## Deckbuilding
+
+A legal deck may only use the Schools allowed by its chosen Wizard and match format.

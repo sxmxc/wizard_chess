@@ -1,17 +1,17 @@
 # Trap Cards
 
-> **Status:** Draft Rulebook v0.1
+Trap cards are placed face down and remain hidden until they trigger.
 
-This chapter is intentionally maintained separately from the Game Design Document.
+## Playing a Trap
 
-It explains the rules from the perspective of a player.
+- A Trap must follow its placement restriction.
+- If the card says it is played on a square, that square must be legal.
+- If the card says it is attached to something, that target must be legal.
 
-Core principles:
+## Triggering a Trap
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+When the trigger condition is met, reveal the Trap and resolve its effect.
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+## After Triggering
+
+Unless a card says otherwise, a triggered Trap goes to its owner's graveyard.

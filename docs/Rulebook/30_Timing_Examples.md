@@ -1,17 +1,17 @@
 # Timing Examples
 
-> **Status:** Draft Rulebook v0.1
+## Example 1: Reaction After a Capture
 
-This chapter is intentionally maintained separately from the Game Design Document.
+If a card says "after a piece is captured," it can be played after that capture is completed and before the turn moves to the next phase.
 
-It explains the rules from the perspective of a player.
+## Example 2: A Unit With a Move Trigger
 
-Core principles:
+If a Unit says "when this piece moves," its effect is checked after the move finishes.
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+## Example 3: Replacement Effect
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+If a card says "instead of being captured," the replacement happens before the capture is completed.
+
+## Example 4: Two Effects At Once
+
+If both players have effects that trigger from the same event, resolve them in the order allowed by the current rules and the active player's choices.

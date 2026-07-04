@@ -1,17 +1,10 @@
 # End Phase
 
-> **Status:** Draft Rulebook v0.1
+During the End Phase, resolve the following in order unless a card says otherwise:
 
-This chapter is intentionally maintained separately from the Game Design Document.
+1. End-of-turn effects
+2. Effects that expire at end of turn
+3. Hand size limits
+4. Any effects created by those actions
 
-It explains the rules from the perspective of a player.
-
-Core principles:
-
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
-
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+When the phase ends, the turn passes to the opposing player.

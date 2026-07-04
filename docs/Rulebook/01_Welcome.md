@@ -1,17 +1,22 @@
 # Welcome to Wizard Chess
 
-> **Status:** Draft Rulebook v0.1
+Wizard Chess is a strategy game built on a standard game of chess and modified by magical cards.
 
-This chapter is intentionally maintained separately from the Game Design Document.
+Every match begins with chess as the foundation. Cards can bend the rules, but they do not replace chess.
 
-It explains the rules from the perspective of a player.
+## Core Principles
 
-Core principles:
+- Chess is the base game.
+- Cards only do what they say.
+- If a card text and a general rule conflict, the card text wins for that interaction.
+- Every outcome must be deterministic.
+- The game must be playable with a chessboard, printed cards, and this rulebook.
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+## What This Rulebook Covers
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+- The board and pieces
+- Card types and card anatomy
+- Wizards and deck construction
+- Mana and turn structure
+- Timing, targeting, and resolution
+- Promotion, check, checkmate, wins, and draws

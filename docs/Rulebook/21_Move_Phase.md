@@ -1,17 +1,15 @@
 # Move Phase
 
-> **Status:** Draft Rulebook v0.1
+During the Move Phase, the active player must make exactly one legal chess move unless a card says otherwise.
 
-This chapter is intentionally maintained separately from the Game Design Document.
+## Legal Move
 
-It explains the rules from the perspective of a player.
+A legal move is a move that would be legal under the current game state and all applicable card effects.
 
-Core principles:
+## Mandatory Move
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+You may not skip the Move Phase voluntarily unless a card specifically replaces or removes the requirement.
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+## After the Move
+
+Any effects caused by the move are resolved before the next phase begins.

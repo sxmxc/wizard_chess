@@ -1,17 +1,29 @@
 # Unit Cards
 
-> **Status:** Draft Rulebook v0.1
+A Unit card attaches to a chess piece and changes how that piece works.
 
-This chapter is intentionally maintained separately from the Game Design Document.
+## Playing a Unit
 
-It explains the rules from the perspective of a player.
+- A Unit must name a legal target piece.
+- If no legal target exists, the card cannot be played.
+- When the Unit resolves, it attaches to the target piece.
 
-Core principles:
+## Effects of a Unit
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+A Unit may grant:
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+- New movement rules
+- Keywords
+- Passive effects
+- Activated abilities
+- Triggered abilities
+
+## One Unit Per Piece
+
+Each piece may have only one Unit attached at a time.
+
+If a piece already has a Unit, the old Unit is discarded when the new Unit is attached unless the card says otherwise.
+
+## Identity
+
+Attaching a Unit does not change the piece's identity unless the card says it does.

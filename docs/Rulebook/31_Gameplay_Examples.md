@@ -1,17 +1,17 @@
 # Gameplay Examples
 
-> **Status:** Draft Rulebook v0.1
+## Example 1: A Unit Card
 
-This chapter is intentionally maintained separately from the Game Design Document.
+You play a Unit on one of your Knights. That Knight keeps being a Knight, but it now uses the new Unit's rules.
 
-It explains the rules from the perspective of a player.
+## Example 2: A Spell
 
-Core principles:
+You cast a Spell that moves a piece. After the Spell resolves, that card goes to the graveyard unless the card says otherwise.
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+## Example 3: A Trap
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+You place a Trap face down on an empty square. If an opposing piece enters that square, the Trap is revealed and resolves.
+
+## Example 4: Promotion
+
+A Pawn reaches the last rank. It is immediately promoted according to the standard promotion rules.

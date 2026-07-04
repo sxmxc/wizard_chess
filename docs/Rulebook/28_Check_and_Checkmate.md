@@ -1,17 +1,13 @@
-# Check & Checkmate
+# Check and Checkmate
 
-> **Status:** Draft Rulebook v0.1
+## Check
 
-This chapter is intentionally maintained separately from the Game Design Document.
+A King is in check when it is under attack by one or more opposing pieces.
 
-It explains the rules from the perspective of a player.
+## Checkmate
 
-Core principles:
+A King is checkmated when it is in check and there is no legal move, capture, or card effect available to remove the check.
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+## Illegal Moves
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+You may not make a move that leaves your own King in check unless a card specifically allows it.

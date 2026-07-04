@@ -1,17 +1,26 @@
 # Deck Construction
 
-> **Status:** Draft Rulebook v0.1
+Each player brings one legal deck to a match.
 
-This chapter is intentionally maintained separately from the Game Design Document.
+## Legal Decks
 
-It explains the rules from the perspective of a player.
+A legal deck must satisfy all of the following:
 
-Core principles:
+- It contains the required number of cards for the chosen match format.
+- Every card belongs to a School allowed by the chosen Wizard.
+- It obeys any copy limits for that format.
+- It obeys any card-specific restrictions.
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+## Copies
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+Cards may appear more than once unless a rule says otherwise.
+
+Legendary cards are normally limited to one copy per deck.
+
+## Hidden Order
+
+The order of cards in a deck is hidden information.
+
+## Empty Decks
+
+If a player must draw and cannot because their deck is empty, follow the match format or card text that applies.

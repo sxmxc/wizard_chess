@@ -1,17 +1,13 @@
 # Artifact Cards
 
-> **Status:** Draft Rulebook v0.1
+Artifacts are persistent magical objects.
 
-This chapter is intentionally maintained separately from the Game Design Document.
+## How They Work
 
-It explains the rules from the perspective of a player.
+- An Artifact enters play and remains until removed.
+- It may grant passive abilities, activated abilities, or triggered abilities.
+- It is not attached to a piece unless the card says so.
 
-Core principles:
+## Removing Artifacts
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
-
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+Artifacts leave play only when a card or rule removes them.

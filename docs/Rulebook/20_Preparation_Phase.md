@@ -1,17 +1,20 @@
 # Preparation Phase
 
-> **Status:** Draft Rulebook v0.1
+During the Preparation Phase, the active player may usually play cards and activate abilities that are legal at that time.
 
-This chapter is intentionally maintained separately from the Game Design Document.
+## What You Can Do
 
-It explains the rules from the perspective of a player.
+- Play legal Unit cards
+- Play legal Spell cards
+- Play legal Trap cards
+- Play legal Environment cards
+- Play legal Artifact cards
+- Activate abilities that are allowed in this phase
 
-Core principles:
+## Resolution
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+Any card or ability played during this phase resolves immediately before you choose your next action.
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+## Leaving the Phase
+
+The active player remains in the Preparation Phase until they choose to continue to the Move Phase.

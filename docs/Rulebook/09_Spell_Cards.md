@@ -1,17 +1,25 @@
 # Spell Cards
 
-> **Status:** Draft Rulebook v0.1
+A Spell card resolves its effect and then usually goes to the graveyard.
 
-This chapter is intentionally maintained separately from the Game Design Document.
+## Playing a Spell
 
-It explains the rules from the perspective of a player.
+- You must pay its Mana Cost.
+- You must meet its timing restriction.
+- You must choose legal targets if it requires any.
 
-Core principles:
+## Spell Effects
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+Spells may:
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+- Move pieces
+- Capture pieces
+- Create lasting effects
+- Draw cards
+- Restore mana
+- Remove effects
+- Change board conditions
+
+## After Resolution
+
+Unless a card says otherwise, a Spell is placed in its owner's graveyard after it resolves.

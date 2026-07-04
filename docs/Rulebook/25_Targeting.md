@@ -1,17 +1,17 @@
 # Targeting
 
-> **Status:** Draft Rulebook v0.1
+Many cards require targets.
 
-This chapter is intentionally maintained separately from the Game Design Document.
+## Legal Targets
 
-It explains the rules from the perspective of a player.
+A target is legal only if it satisfies every requirement in the card's text.
 
-Core principles:
+## If No Target Exists
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+If a card requires a target and no legal target exists, the card cannot be played.
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+## Precision
+
+Target text should be read exactly as written.
+
+If a card says "target Pawn," then only a Pawn is legal.

@@ -1,17 +1,27 @@
 # Chess Pieces
 
-> **Status:** Draft Rulebook v0.1
+Wizard Chess uses the standard chess pieces:
 
-This chapter is intentionally maintained separately from the Game Design Document.
+- Pawn
+- Knight
+- Bishop
+- Rook
+- Queen
+- King
 
-It explains the rules from the perspective of a player.
+## Standard Movement
 
-Core principles:
+- Pawns move and capture according to standard chess rules.
+- Knights move in an L-shape and can jump over pieces.
+- Bishops move diagonally.
+- Rooks move orthogonally.
+- Queens move like a rook or bishop.
+- Kings move one square in any direction, except where castling applies.
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+## Piece Identity
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+A piece remains its printed type unless a card or special rule changes it.
+
+## Chess Rules Still Apply
+
+Standard rules for capture, check, castling, en passant, promotion, stalemate, and draw conditions still apply unless a card says otherwise.

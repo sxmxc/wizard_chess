@@ -1,17 +1,19 @@
 # Reaction Cards
 
-> **Status:** Draft Rulebook v0.1
+Reaction cards are played in response to something that has just happened.
 
-This chapter is intentionally maintained separately from the Game Design Document.
+## When Reactions Can Be Played
 
-It explains the rules from the perspective of a player.
+A Reaction card can only be played if its trigger condition is currently true.
 
-Core principles:
+## Examples of Triggers
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+- After a piece moves
+- After a piece is captured
+- When a card is played
+- When a King is placed in check
+- At the end of a turn
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+## Timing
+
+Reaction cards are used during the Reaction phase unless a card specifically says they may be used elsewhere.

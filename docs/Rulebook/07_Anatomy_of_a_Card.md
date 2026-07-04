@@ -1,17 +1,26 @@
 # Anatomy of a Card
 
-> **Status:** Draft Rulebook v0.1
+Every card includes the information needed to play it without outside reference.
 
-This chapter is intentionally maintained separately from the Game Design Document.
+## Card Fields
 
-It explains the rules from the perspective of a player.
+- Name
+- Card Type
+- School
+- Mana Cost
+- Rarity
+- Rules Text
+- Keywords, if any
+- Flavor Text, if any
 
-Core principles:
+## Rules Text
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+Rules text tells you when the card can be played and what it does.
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+## Flavor Text
+
+Flavor text is thematic only. It has no game effect.
+
+## Keywords
+
+Keywords are standardized rules terms used across multiple cards.

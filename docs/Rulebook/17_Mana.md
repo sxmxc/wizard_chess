@@ -1,17 +1,17 @@
 # Mana
 
-> **Status:** Draft Rulebook v0.1
+Mana is the resource used to play cards.
 
-This chapter is intentionally maintained separately from the Game Design Document.
+## Mana Basics
 
-It explains the rules from the perspective of a player.
+- Some cards cost mana to play.
+- You must have enough mana to play the card.
+- If you cannot pay the cost, you cannot play the card.
 
-Core principles:
+## Turn Growth
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+Mana may increase or refresh at the start of a turn according to the match rules.
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+## Tracking Mana
+
+Both players should be able to see each player's current mana total.

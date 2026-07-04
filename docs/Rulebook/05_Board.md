@@ -1,17 +1,23 @@
-# The Chessboard
+# Board
 
-> **Status:** Draft Rulebook v0.1
+Wizard Chess uses the standard 8x8 chessboard.
 
-This chapter is intentionally maintained separately from the Game Design Document.
+## Coordinates
 
-It explains the rules from the perspective of a player.
+Squares may be identified by their file and rank, such as `e4` or `h8`.
 
-Core principles:
+## Occupied Squares
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+Only one chess piece may occupy a square at a time unless a card specifically allows otherwise.
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+## Movement
+
+Unless a card says otherwise, pieces move according to standard chess rules.
+
+## Board State
+
+The position of every piece on the board is public information.
+
+## Empty Squares
+
+Cards may target, affect, or be placed on empty squares if their text allows it.

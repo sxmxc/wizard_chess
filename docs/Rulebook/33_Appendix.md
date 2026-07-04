@@ -1,17 +1,18 @@
 # Appendix
 
-> **Status:** Draft Rulebook v0.1
+## Rule Priority
 
-This chapter is intentionally maintained separately from the Game Design Document.
+When rules conflict, use this order:
 
-It explains the rules from the perspective of a player.
+1. The text of the card currently being applied
+2. The specific special rule
+3. The general rule in this rulebook
+4. Standard chess rules
 
-Core principles:
+## Physical Play
 
-- Chess is the foundation.
-- Cards create exceptions only where explicitly stated.
-- Standard chess rules apply unless overridden by card text.
-- Every rule is deterministic.
-- The game is fully playable with physical components.
+If a situation is unclear during physical play, stop and check the exact card text. If the card text does not answer the question, use the general rule that most closely matches the situation.
 
-This chapter will be expanded with illustrations, diagrams, examples, and edge cases as implementation progresses.
+## Rulebook Use
+
+This book is intended as the primary reference for Wizard Chess. It may be expanded over time, but it should always describe the current rules of play.

@@ -10,6 +10,9 @@ const STATUS_CHECKMATE := "checkmate"
 const STATUS_STALEMATE := "stalemate"
 const STATUS_DRAW := "draw"
 
+const ACTION_TYPE_MOVE := "move"
+const ACTION_TYPE_CLAIM_DRAW := "claim_draw"
+
 const DRAW_INSUFFICIENT_MATERIAL := "insufficient_material"
 const DRAW_THREEFOLD_REPETITION := "threefold_repetition"
 const DRAW_FIFTY_MOVE_RULE := "fifty_move_rule"
@@ -219,6 +222,53 @@ func claim_draw() -> bool:
 		"reason": claimable_draw_reason,
 	}
 	return true
+
+
+func create_state_snapshot() -> Dictionary:
+	return {
+		"fen": to_fen(),
+		"move_history": move_history.duplicate(true),
+		"position_history": position_history.duplicate(true),
+		"claimable_draw_reason": claimable_draw_reason,
+		"outcome": outcome.duplicate(true),
+	}
+
+
+func load_state_snapshot(snapshot: Dictionary) -> void:
+	load_fen(str(snapshot.get("fen", STARTING_FEN)))
+	move_history = snapshot.get("move_history", []).duplicate(true)
+	position_history = snapshot.get("position_history", {}).duplicate(true)
+	claimable_draw_reason = str(snapshot.get("claimable_draw_reason", ""))
+	outcome = snapshot.get("outcome", outcome).duplicate(true)
+
+
+func create_move_action(from_square: Vector2i, to_square: Vector2i, promotion: String = "") -> Dictionary:
+	return {
+		"type": ACTION_TYPE_MOVE,
+		"from": square_to_algebraic(from_square),
+		"to": square_to_algebraic(to_square),
+		"promotion": promotion,
+	}
+
+
+func apply_action_payload(action: Dictionary) -> Dictionary:
+	var action_type := str(action.get("type", ""))
+	match action_type:
+		ACTION_TYPE_MOVE:
+			if not action.has("from") or not action.has("to"):
+				return _action_result(false, "missing_move_coordinates")
+			var promotion := str(action.get("promotion", ""))
+			var from_square := algebraic_to_square(str(action["from"]))
+			var to_square := algebraic_to_square(str(action["to"]))
+			if not apply_coordinate_move(from_square, to_square, promotion):
+				return _action_result(false, "illegal_move")
+			return _action_result(true)
+		ACTION_TYPE_CLAIM_DRAW:
+			if not claim_draw():
+				return _action_result(false, "draw_unavailable")
+			return _action_result(true)
+		_:
+			return _action_result(false, "unknown_action")
 
 
 func is_in_check(color: String) -> bool:
@@ -794,3 +844,10 @@ func _opponent(color: String) -> String:
 
 func _is_light_square(square: Vector2i) -> bool:
 	return (square.x + square.y) % 2 == 0
+
+
+func _action_result(ok: bool, reason: String = "") -> Dictionary:
+	return {
+		"ok": ok,
+		"reason": reason,
+	}

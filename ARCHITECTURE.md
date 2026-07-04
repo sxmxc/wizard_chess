@@ -213,6 +213,14 @@ Milestone 3 should use the working rules implementation as a baseline while spli
 * State serialization and synchronization
 * Replay-safe and network-safe public interfaces
 
+The first Milestone 3 networking prototype now adds:
+
+* Action payload submission into `ChessMatch` rather than direct state mutation across the network boundary.
+* Full-state snapshot serialization for authoritative synchronization.
+* A single dedicated RPC bridge node kept at a stable `/root/Bootstrap/NetworkRoot/MatchBridge` path on both client and server.
+
+This keeps RPC behavior centralized and aligned with Godot's high-level multiplayer constraints while the broader multiplayer architecture is still being validated.
+
 ---
 
 # Artificial Intelligence

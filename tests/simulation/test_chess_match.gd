@@ -1,7 +1,5 @@
 extends GutTest
 
-const ChessMatch := preload("res://scripts/simulation/chess_match.gd")
-
 
 func test_initial_position_has_standard_setup_and_legal_moves() -> void:
 	var chess_match := ChessMatch.new()

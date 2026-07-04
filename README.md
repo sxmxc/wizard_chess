@@ -13,6 +13,7 @@ Chess is always the foundation. Cards create exceptions to chess, but do not rep
 - Standard chess simulation implemented and playable through the default local hotseat scene
 - GUT coverage added for legal moves, castling, en passant, promotion, checkmate, stalemate, and draw handling
 - CI workflow still runs tests and exports for Linux and Windows
+- Milestone 3 foundation started with a dedicated multiplayer bridge node, action payloads, and full-state snapshot sync
 - Next major focus is Milestone 3: multiplayer foundation
 
 ## Project Structure
@@ -43,6 +44,9 @@ Examples:
 ```powershell
 godot --headless --path . --log-file .godot/check-only.log --check-only
 godot --headless --path . --log-file .godot/local-scene.log --scene res://scenes/chess/local_chess_screen.tscn --quit-after 2
+godot --headless --path . --log-file .godot/server.log --server --port=7000
+godot --path . --host --port=7000
+godot --path . --connect=127.0.0.1 --port=7000
 ```
 
 ## Milestone 2
@@ -72,6 +76,12 @@ Milestone 3 should focus on splitting responsibilities needed for server-authori
 - Move application and resolution
 - Serialization for synchronization and replay
 - Player action submission and server validation
+
+Current prototype shape:
+
+- `ChessMatch` now exposes action payload and snapshot methods that are safe to reuse for networking and replay work.
+- `NetworkMatchBridge` centralizes all current RPC declarations under a stable `/root/Bootstrap/NetworkRoot/MatchBridge` path on both peers.
+- Bootstrap keeps the RPC node alive while loading either local hotseat content or the first network chess screen.
 
 ## Notes
 

@@ -129,6 +129,8 @@ The preferred architecture is to use a small number of dedicated networking node
 
 Behavior should differ based on runtime role rather than different RPC interfaces.
 
+The current prototype follows this by keeping a single multiplayer bridge node at `/root/Bootstrap/NetworkRoot/MatchBridge` for both dedicated-server and client flows.
+
 Gameplay objects such as:
 
 - Chess pieces

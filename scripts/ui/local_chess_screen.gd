@@ -16,12 +16,17 @@ var detail_label: Label
 var claim_draw_button: Button
 var history_list: ItemList
 var promotion_bar: HBoxContainer
+var reset_button: Button
 
 
 func _ready() -> void:
-	chess_match = ChessMatch.new()
+	chess_match = _initialize_match()
 	_build_ui()
 	_refresh_ui()
+
+
+func _initialize_match() -> ChessMatch:
+	return ChessMatch.new()
 
 
 func _build_ui() -> void:
@@ -80,7 +85,7 @@ func _build_ui() -> void:
 	sidebar.add_theme_constant_override("separation", 10)
 	root.add_child(sidebar)
 
-	var reset_button := Button.new()
+	reset_button = Button.new()
 	reset_button.text = "New Match"
 	reset_button.pressed.connect(_on_reset_pressed)
 	sidebar.add_child(reset_button)
@@ -106,6 +111,7 @@ func _refresh_ui() -> void:
 	_refresh_board()
 	_refresh_history()
 	_refresh_claim_button()
+	_refresh_reset_button()
 
 
 func _refresh_status() -> void:
@@ -142,13 +148,21 @@ func _refresh_history() -> void:
 
 func _refresh_claim_button() -> void:
 	var reason := chess_match.claimable_draw_reason
-	claim_draw_button.disabled = reason.is_empty() or chess_match.outcome["status"] != ChessMatch.STATUS_ACTIVE
+	claim_draw_button.disabled = (
+		reason.is_empty()
+		or chess_match.outcome["status"] != ChessMatch.STATUS_ACTIVE
+		or not _can_submit_actions()
+	)
 	if reason == ChessMatch.DRAW_THREEFOLD_REPETITION:
 		claim_draw_button.text = "Claim Draw (Threefold)"
 	elif reason == ChessMatch.DRAW_FIFTY_MOVE_RULE:
 		claim_draw_button.text = "Claim Draw (50-Move)"
 	else:
 		claim_draw_button.text = "Claim Draw"
+
+
+func _refresh_reset_button() -> void:
+	reset_button.disabled = not _can_reset_match()
 
 
 func _square_text(square: Vector2i) -> String:
@@ -203,7 +217,7 @@ func _on_board_square_pressed(square: Vector2i) -> void:
 		return
 
 	var piece = chess_match.get_piece(square)
-	if piece != null and piece["color"] == chess_match.active_color:
+	if piece != null and _can_select_piece(piece):
 		selected_square = square
 		selected_moves = chess_match.get_legal_moves_from(square)
 	else:
@@ -240,7 +254,7 @@ func _on_promotion_selected(move: Dictionary) -> void:
 
 
 func _commit_move(move: Dictionary) -> void:
-	chess_match.apply_move(move)
+	_request_move(move)
 	_clear_selection()
 	_refresh_ui()
 
@@ -253,13 +267,13 @@ func _clear_selection() -> void:
 
 
 func _on_claim_draw_pressed() -> void:
-	chess_match.claim_draw()
+	_request_claim_draw()
 	_clear_selection()
 	_refresh_ui()
 
 
 func _on_reset_pressed() -> void:
-	chess_match.reset()
+	_request_reset()
 	_clear_selection()
 	_refresh_ui()
 
@@ -286,3 +300,27 @@ func _outcome_text() -> String:
 
 func _match_color_name(color: String) -> String:
 	return color.capitalize()
+
+
+func _request_move(move: Dictionary) -> void:
+	chess_match.apply_move(move)
+
+
+func _request_claim_draw() -> void:
+	chess_match.claim_draw()
+
+
+func _request_reset() -> void:
+	chess_match.reset()
+
+
+func _can_select_piece(piece: Dictionary) -> bool:
+	return piece["color"] == chess_match.active_color and _can_submit_actions()
+
+
+func _can_submit_actions() -> bool:
+	return true
+
+
+func _can_reset_match() -> bool:
+	return true

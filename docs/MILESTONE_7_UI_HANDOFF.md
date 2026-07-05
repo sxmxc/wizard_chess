@@ -140,6 +140,7 @@ The current local match screen now has:
 - a fixed authored 736x736 board frame; responsive layout no longer shrinks the board to create HUD space
 - enlarged half-revealed local and opponent hands with complete-card scaling instead of partial child stretching
 - a card-focused inspector that renders the actual composed card widget rather than a raw art image plus metadata panel
+- the card inspector now uses a tighter composed presentation so hover and targeting review do not leave as much empty dead space beside the board
 - face-down opponent Trap slots and board markers that do not reveal the hidden trap square to the viewer
 - captured-piece slots that use the piece atlas rather than textual lists
 - a composed turn/action panel with primary-action styling

@@ -7,7 +7,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/hand_fan_view.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/ui/targeting_overlay.tscn" id="7"]
 [ext_resource type="Script" uid="uid://bt72n28k1avh2" path="res://scripts/ui/card_interaction_controller.gd" id="8"]
-[ext_resource type="PackedScene" path="res://scenes/ui/wizard_match_inspector_view.tscn" id="9"]
+[ext_resource type="PackedScene" uid="uid://bq74g7qu1d60y" path="res://scenes/ui/wizard_match_inspector_view.tscn" id="9"]
 [ext_resource type="PackedScene" path="res://scenes/ui/wizard_match_hud_sidebar.tscn" id="10"]
 [ext_resource type="PackedScene" path="res://scenes/ui/wizard_match_hud_layout.tscn" id="11"]
 [ext_resource type="PackedScene" uid="uid://dsdy7tb78n4vs" path="res://scenes/ui/wizard_match_player_status_view.tscn" id="12"]
@@ -274,7 +274,7 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -384.0
-offset_top = -231.0
+offset_top = -252.0
 offset_right = -71.0
 offset_bottom = -71.0
 grow_horizontal = 0
@@ -282,26 +282,40 @@ grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxEmpty_cuksk")
 script = ExtResource("17_turn")
 
+[node name="TrayBackground" type="TextureRect" parent="HudLayer/TurnPanel" unique_id=28916316]
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("23_utility_tray")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="TurnContent" type="VBoxContainer" parent="HudLayer/TurnPanel" unique_id=349967618]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 10
 
 [node name="DetailLabel" type="Label" parent="HudLayer/TurnPanel/TurnContent" unique_id=1447302110]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.84, 0.62, 1)
+theme_override_font_sizes/font_size = 18
 text = "Detail"
+horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="ActionHintLabel" type="Label" parent="HudLayer/TurnPanel/TurnContent" unique_id=398528343]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.84, 0.84, 1)
+theme_override_font_sizes/font_size = 15
 text = "Action Hint"
+horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="ActionBar" type="HBoxContainer" parent="HudLayer/TurnPanel/TurnContent" unique_id=2036340336]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 6
+alignment = 1
 
 [node name="EnvironmentZonePanel" type="PanelContainer" parent="HudLayer" unique_id=129260926]
 layout_mode = 1
@@ -694,7 +708,7 @@ anchors_preset = 10
 anchor_right = 1.0
 offset_left = 465.0
 offset_right = 133.0
-offset_bottom = 42.0
+offset_bottom = 142.0
 grow_horizontal = 2
 portrait_texture = ExtResource("14")
 mana_texture = ExtResource("15")
@@ -810,6 +824,9 @@ vertical_alignment = 1
 
 [node name="InspectPopup" parent="." unique_id=454797529 instance=ExtResource("9")]
 unique_name_in_owner = true
+visible = false
+layout_mode = 0
+anchors_preset = 0
 
 [connection signal="pressed" from="BoardLayer/HeaderBar/NewMatchButton" to="." method="_on_new_match_pressed"]
 [connection signal="pressed" from="BoardLayer/HeaderBar/StepAiButton" to="." method="_on_step_ai_pressed"]

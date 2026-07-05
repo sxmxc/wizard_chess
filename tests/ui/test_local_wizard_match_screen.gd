@@ -59,6 +59,7 @@ func test_local_wizard_match_screen_builds_playable_match_ui() -> void:
 	assert_eq(screen.local_status_view.mana_count_label.text, "0")
 	assert_false(screen.local_status_view.mana_count_label.text.contains("/"))
 	assert_gt(screen.board_view.get_piece_nodes().size(), 0)
+	assert_eq(screen.inspect_popup.card_preview_center.custom_minimum_size, Vector2(220, 226))
 
 	screen._on_utilities_button_pressed()
 	assert_true(screen.match_sidebar.visible)
@@ -265,6 +266,7 @@ func test_inspector_component_presents_card_and_square_details() -> void:
 	assert_eq(inspector.card_preview.title_label.text, "Test Card")
 	assert_string_contains(inspector.body_label.text, "Owner: White")
 	assert_string_contains(inspector.body_label.text, "Targeting: square")
+	assert_eq(inspector.card_preview_center.custom_minimum_size, Vector2(220, 226))
 
 	inspector.show_square("e4", null, "white pawn", ["Bound Familiar"], ["e5"], true)
 

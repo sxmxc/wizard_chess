@@ -7,5 +7,5 @@ func test_default_game_config_loads() -> void:
 
 	assert_not_null(config)
 	assert_eq(config.project_name, "Wizard Chess")
-	assert_eq(config.build_label, "Milestone 6 AI prototype")
+	assert_eq(config.build_label, "Milestone 7 gameplay UI")
 	assert_true(config.auto_quit_on_headless)

@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 project_name = "Wizard Chess"
-build_label = "Milestone 6 AI prototype"
+build_label = "Milestone 7 gameplay UI"
 default_log_level = 1
 auto_quit_on_headless = true
 enable_debug_overlay = false

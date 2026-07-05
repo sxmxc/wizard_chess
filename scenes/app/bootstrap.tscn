@@ -1,14 +1,14 @@
 [gd_scene format=3 uid="uid://c3rq2m7v2xk8b"]
 
 [ext_resource type="Script" uid="uid://dldweay8xm1fo" path="res://scripts/app/bootstrap.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/networking/network_match_bridge.gd" id="2"]
+[ext_resource type="Script" uid="uid://eufew87oy15c" path="res://scripts/networking/network_match_bridge.gd" id="2"]
 
 [node name="Bootstrap" type="Node" unique_id=174377491]
 script = ExtResource("1")
 
-[node name="NetworkRoot" type="Node" parent="."]
+[node name="NetworkRoot" type="Node" parent="." unique_id=1089857328]
 
-[node name="MatchBridge" type="Node" parent="NetworkRoot"]
+[node name="MatchBridge" type="Node" parent="NetworkRoot" unique_id=1583236493]
 script = ExtResource("2")
 
-[node name="ContentRoot" type="Node" parent="."]
+[node name="ContentRoot" type="Node" parent="." unique_id=1813213195]

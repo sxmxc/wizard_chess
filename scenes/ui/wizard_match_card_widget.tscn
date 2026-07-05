@@ -1,0 +1,173 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/wizard_match_card_widget.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="1"]
+bg_color = Color(0.0862745, 0.0862745, 0.101961, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.819608, 0.701961, 0.466667, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 3
+
+[sub_resource type="StyleBoxFlat" id="2"]
+bg_color = Color(0.141176, 0.333333, 0.564706, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.858824, 0.756863, 0.458824, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="3"]
+bg_color = Color(0.145098, 0.145098, 0.168627, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.705882, 0.643137, 0.509804, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="WizardMatchCardWidget" type="Button"]
+custom_minimum_size = Vector2(132, 188)
+offset_right = 132.0
+offset_bottom = 188.0
+focus_mode = 0
+mouse_filter = 0
+script = ExtResource("1")
+
+[node name="ShadowRect" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = 10.0
+offset_right = 6.0
+offset_bottom = 10.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.18)
+
+[node name="GlowRect" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0)
+
+[node name="CardBody" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("1")
+
+[node name="CardMargin" type="MarginContainer" parent="CardBody"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="CardLayout" type="VBoxContainer" parent="CardBody/CardMargin"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="TopRow" type="HBoxContainer" parent="CardBody/CardMargin/CardLayout"]
+layout_mode = 2
+
+[node name="ManaBadge" type="PanelContainer" parent="CardBody/CardMargin/CardLayout/TopRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+theme_override_styles/panel = SubResource("2")
+
+[node name="ManaLabel" type="Label" parent="CardBody/CardMargin/CardLayout/TopRow/ManaBadge"]
+unique_name_in_owner = true
+layout_mode = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 16
+text = "1"
+
+[node name="TopSpacer" type="Control" parent="CardBody/CardMargin/CardLayout/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StateBadge" type="Label" parent="CardBody/CardMargin/CardLayout/TopRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.490196, 0.87451, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "PLAY"
+
+[node name="ArtFrame" type="PanelContainer" parent="CardBody/CardMargin/CardLayout"]
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+theme_override_styles/panel = SubResource("3")
+
+[node name="ArtRect" type="TextureRect" parent="CardBody/CardMargin/CardLayout/ArtFrame"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CardBackRect" type="TextureRect" parent="CardBody/CardMargin/CardLayout/ArtFrame"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="TitleLabel" type="Label" parent="CardBody/CardMargin/CardLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Card"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="TypeLabel" type="Label" parent="CardBody/CardMargin/CardLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.909804, 0.843137, 0.67451, 1)
+theme_override_font_sizes/font_size = 10
+text = "Spell Arcane"
+horizontal_alignment = 1
+
+[node name="RulesLabel" type="Label" parent="CardBody/CardMargin/CardLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 10
+text = "Rules"
+autowrap_mode = 3

@@ -129,6 +129,27 @@ Core systems should support automated testing.
 
 Bug fixes should include regression tests whenever practical.
 
+Run the current GUT test suite with:
+
+```powershell
+godot --headless --path . --log-file .godot/gut.log --script res://addons/gut/gut_cmdln.gd -gconfig=res://.gutconfig.json -gdir=res://tests -ginclude_subdirs -gexit -gexit_on_success
+```
+
+The same command is used by the CI workflow.
+
+IMPORTANT!!! For local headless Godot commands in this environment, always pass an explicit `--log-file` path. Without it, Godot may try to write under `user://` and fail before validation completes.
+
+Examples:
+
+```powershell
+godot --headless --path . --log-file .godot/check-only.log --check-only
+godot --headless --path . --log-file .godot/local-scene.log --scene res://scenes/chess/local_chess_screen.tscn --quit-after 2
+godot --headless --path . --log-file .godot/server.log --server --port=7000
+godot --path . --host --port=7000 --profile=host_a
+godot --path . --connect=127.0.0.1 --port=7000 --profile=client_a
+godot --path . --connect=127.0.0.1 --port=7000 --profile=client_b
+```
+
 ---
 
 # Refactoring

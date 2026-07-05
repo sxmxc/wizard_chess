@@ -1,0 +1,14 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/wizard_match_card_play_zone.gd" id="1"]
+
+[node name="WizardMatchCardPlayZone" type="PanelContainer"]
+custom_minimum_size = Vector2(116, 156)
+mouse_filter = 0
+script = ExtResource("1")
+
+[node name="CenterLabel" type="Label" parent="."]
+layout_mode = 2
+text = "Play"
+horizontal_alignment = 1
+vertical_alignment = 1

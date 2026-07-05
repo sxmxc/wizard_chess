@@ -219,6 +219,8 @@ Players can complete full matches against AI opponents.
 
 # Milestone 7 - User Interface
 
+Status: In progress as of July 5, 2026.
+
 ## Goals
 
 Replace prototype interfaces with production-quality gameplay UI.
@@ -245,6 +247,12 @@ Replace prototype interfaces with production-quality gameplay UI.
 ## Exit Criteria
 
 The interface is suitable for extended play.
+
+## In-Progress Notes
+
+- Current work is focused on the local Wizard Match screen.
+- The UI direction is editor-first composition around a central chessboard, compact opponent information, readable local hand interaction, composed wizard status portraits, composed pile/count components, and a single strong turn/action area.
+- Remaining production work and current asset references are tracked in `docs/MILESTONE_7_UI_HANDOFF.md`.
 
 ---
 

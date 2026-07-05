@@ -202,7 +202,11 @@ Environmental visual effects should enhance gameplay without obscuring the board
 
 # Mana Display
 
-The player's current Mana and Maximum Mana should remain visible at all times.
+The player's current Mana should remain visible at all times.
+
+Maximum Mana may be available in detailed inspection or debugging views, but the primary match HUD should not display current/maximum Mana as text.
+
+In the production match HUD, current Mana should be presented as a number inside the player's Mana pip.
 
 Changes to Mana should be clearly animated.
 

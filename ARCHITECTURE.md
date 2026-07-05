@@ -266,6 +266,28 @@ This is intentionally still prototype scope.
 
 The AI does not yet execute bespoke card-text logic beyond the existing framework metadata, but the architectural goal for Milestone 6 is now proven: a deterministic opponent can complete matches without bypassing the simulation.
 
+Milestone 7 UI work now begins by restoring smaller presentation boundaries:
+
+* Hand card fan layout lives in a reusable `HandFanView` presentation component instead of procedural fan math embedded directly in `LocalWizardMatchScreen`.
+* The match screen still coordinates overall HUD state, but card positioning and targeting lift presentation are now derived by the hand view from semantic UI state rather than ad hoc per-card pixel edits spread across the screen script.
+* The board presentation is moving away from draw-only piece placement toward square and piece nodes in the scene tree, which is a better fit for drag, hover, target preview, and future animation work.
+* A dedicated presentation `EffectsLayer` now exists for targeting arcs and future transient UI effects so gameplay overlays do not compete with core board/HUD draw order.
+* `CardInteractionController` owns presentation-only selection, drag, and targeting state; it does not validate or mutate gameplay.
+* `TargetingOverlay` owns target arc and endpoint rendering, while the board exposes target emphasis as presentation derived from legal simulation actions.
+* `WizardMatchInspectorView` owns card and square inspection composition and formatting; the match screen supplies selected simulation data and presentation textures through a small API.
+* `WizardMatchHudSidebar` owns history, active-card, graveyard, match-settings, and AI-diagnostic controls. It emits semantic card IDs and settings changes rather than exposing list-index bookkeeping to the match screen. It is an extracted utility surface, not the intended permanent primary match HUD.
+* `WizardMatchHudLayout` owns the board-relative opponent strip, local dock, utility drawer, and contextual inspector placement. Static piles and public-zone trays remain authored directly in `local_wizard_match_screen.tscn` so their table locations are visible and adjustable in the editor.
+* The target match composition is three editor-visible gameplay regions: a compact opponent strip, an uninterrupted central chessboard, and a local player dock containing the readable hand and dominant phase action.
+* The default local match scene now treats `WizardMatchHudSidebar` as a dismissible utility drawer opened from the header rather than a permanently reserved right column, which keeps developer tools available without taxing the primary match composition.
+* The inspector is contextual by default: hidden when unused and positioned beside the board only while presenting an active square/card selection.
+* Player identity, mana, hand, deck, and graveyard presentation should be spatially grouped by owner. Histories, full pile browsing, settings, and developer diagnostics belong in dismissible secondary surfaces.
+* The gameplay board is a fixed authored 736x736 frame. Hand cards intentionally rest partly outside the viewport and reveal roughly half their height; transformed-bounds tests evaluate visible ratios, board exclusion, and readable hover/target states rather than requiring idle cards to be fully visible.
+* The playmat is compositional rather than flattened. `table_base.png` owns only the table and board field; reusable hand-tray, card-well, portrait-frame, and utility-tray textures are placed by editor-authored scene nodes. Multiplayer views should reuse these components instead of generating a second monolithic playmat.
+* Legal card targets retain their underlying chess-square colors and use compact markers, with stronger color reserved for the hovered target.
+* Zero-target card dragging is semantic: releasing outside the local hand submits the existing legal card action, with no gameplay meaning assigned to pixel coordinates or a dedicated drop-zone node.
+
+This keeps the UI moving back toward editor-first composition without changing the simulation boundary.
+
 ---
 
 # Artificial Intelligence

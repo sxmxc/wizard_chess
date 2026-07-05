@@ -1,0 +1,112 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/wizard_match_inspector_view.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/ui/wizard_match_card_widget.tscn" id="2"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_surface"]
+content_margin_left = 14.0
+content_margin_top = 12.0
+content_margin_right = 14.0
+content_margin_bottom = 14.0
+bg_color = Color(0.015, 0.019, 0.021, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.59, 0.43, 0.19, 0.88)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+shadow_color = Color(0, 0, 0, 0.72)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_square"]
+bg_color = Color(0.025, 0.031, 0.034, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.37, 0.48, 0.5, 0.72)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rule"]
+bg_color = Color(0.58, 0.43, 0.2, 0.72)
+
+[node name="WizardMatchInspectorView" type="PanelContainer"]
+visible = false
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -360.0
+offset_top = -235.0
+offset_right = -24.0
+offset_bottom = 235.0
+grow_horizontal = 0
+grow_vertical = 2
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_surface")
+script = ExtResource("1")
+
+[node name="InspectPopupContent" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="InspectTitleLabel" type="Label" parent="InspectPopupContent"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.82, 0.6, 1)
+theme_override_font_sizes/font_size = 15
+text = "Selection"
+horizontal_alignment = 1
+text_overrun_behavior = 3
+
+[node name="TitleRule" type="Panel" parent="InspectPopupContent"]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_rule")
+
+[node name="CardPreviewCenter" type="CenterContainer" parent="InspectPopupContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 244)
+layout_mode = 2
+
+[node name="CardPreviewMount" type="Control" parent="InspectPopupContent/CardPreviewCenter"]
+custom_minimum_size = Vector2(162, 231)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="CardPreview" parent="InspectPopupContent/CardPreviewCenter/CardPreviewMount" instance=ExtResource("2")]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 108.0
+offset_bottom = 154.0
+scale = Vector2(1.5, 1.5)
+mouse_filter = 2
+
+[node name="SquarePreviewFrame" type="PanelContainer" parent="InspectPopupContent/CardPreviewCenter"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(220, 220)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_square")
+
+[node name="SpotlightArt" type="TextureRect" parent="InspectPopupContent/CardPreviewCenter/SquarePreviewFrame"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="InspectBodyLabel" type="Label" parent="InspectPopupContent"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.82, 0.84, 0.84, 1)
+theme_override_font_sizes/font_size = 13
+text = "Select a square or card to inspect it."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3

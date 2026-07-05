@@ -56,7 +56,7 @@ func _init(match_rules: WizardMatchRules = null) -> void:
 	_reset_players()
 
 
-func start_match(white_deck: DeckDefinition, black_deck: DeckDefinition, seed: int = 1) -> Dictionary:
+func start_match(white_deck: DeckDefinition, black_deck: DeckDefinition, initial_seed: int = 1) -> Dictionary:
 	var white_validation := _validate_deck(white_deck)
 	if not white_validation["ok"]:
 		return white_validation
@@ -71,7 +71,7 @@ func start_match(white_deck: DeckDefinition, black_deck: DeckDefinition, seed: i
 	setup_step = SETUP_STEP_MULLIGAN
 	phase = PHASE_BEGINNING
 	turn_number = 1
-	rng_seed = seed
+	rng_seed = initial_seed
 	_shuffle_nonce = 0
 	pending_hand_limit_discard_color = ""
 	pending_hand_limit_discard_count = 0
@@ -567,10 +567,11 @@ func _create_runtime_deck(color: String, deck: DeckDefinition) -> Array:
 			"card_id": card.card_id,
 			"display_name": card.display_name,
 			"card_type": card.card_type,
-			"school": card.school,
-			"academy": card.academy,
-			"rarity": card.rarity,
-			"mana_cost": card.mana_cost,
+				"school": card.school,
+				"academy": card.academy,
+				"rarity": card.rarity,
+				"art_texture_path": card.art_texture.resource_path if card.art_texture != null else "",
+				"mana_cost": card.mana_cost,
 			"rules_text": card.rules_text,
 			"target_requirements": Array(card.target_requirements),
 			"keywords": Array(card.keywords),
@@ -961,9 +962,9 @@ func _reshuffle_player_deck(color: String) -> void:
 	players[color] = player
 
 
-func _shuffle_cards(cards: Array, seed: int) -> void:
+func _shuffle_cards(cards: Array, shuffle_seed: int) -> void:
 	var rng := RandomNumberGenerator.new()
-	rng.seed = seed
+	rng.seed = shuffle_seed
 	for index in range(cards.size() - 1, 0, -1):
 		var swap_index := rng.randi_range(0, index)
 		var temp = cards[index]

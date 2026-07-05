@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/hand_fan_view.gd" id="1"]
+
+[node name="HandFanView" type="Control"]
+mouse_filter = 1
+script = ExtResource("1")

@@ -1,6 +1,7 @@
 [gd_resource type="Resource" format=3]
 
 [ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/wizard_match/order_card_art.png" id="2"]
 
 [resource]
 script = ExtResource("1")
@@ -9,9 +10,9 @@ display_name = "Flash Barrier"
 card_type = "reaction"
 school = "Order"
 rarity = "common"
+art_texture = ExtResource("2")
 mana_cost = 1
 rules_text = "Play after a piece moves."
 trigger_condition = "after_piece_moves"
 effect_duration = "until_end_of_turn"
 effect_tags = PackedStringArray("ward")
-

@@ -1,16 +1,11 @@
 extends Control
 
-const LIGHT_SQUARE := Color("e7d7b1")
-const DARK_SQUARE := Color("9f7b55")
-const SELECTED_SQUARE := Color("83c47d")
-const LEGAL_SQUARE := Color("f0d879")
-const CARD_TARGET_SQUARE := Color("8eb8ff")
+const LIGHT_SQUARE := Color("f0dfb2")
+const DARK_SQUARE := Color("7d5738")
+const SELECTED_SQUARE := Color("6fd38c")
+const LEGAL_SQUARE := Color("ffe27b")
+const CARD_TARGET_HOVER_TINT := Color("5bc8e8")
 const THREATENED_SQUARE := Color("cb7f7f")
-const PLAYABLE_CARD_COLOR := Color(1.0, 1.0, 1.0)
-const DIMMED_CARD_COLOR := Color(0.72, 0.72, 0.72)
-const SELECTED_CARD_COLOR := Color("ffe39a")
-const SELECTION_CARD_COLOR := Color("9fdd95")
-
 const RULES_RESOURCE_PATH := "res://content/config/default_wizard_match_rules.tres"
 const DECK_RESOURCE_PATH := "res://content/decks/sample_ai_battle_deck.tres"
 const WHITE_AI_PROFILE_PATH := "res://content/ai/beginner_aggressive_ai.tres"
@@ -22,6 +17,7 @@ const ARCANE_CARD_ART := preload("res://assets/ui/wizard_match/arcane_card_art.p
 const ORDER_CARD_ART := preload("res://assets/ui/wizard_match/order_card_art.png")
 const PIECE_ATLAS := preload("res://assets/ui/wizard_match/piece_atlas.png")
 const CARD_BACK_TEXTURE := preload("res://assets/ui/wizard_match/card_back.png")
+const UI_DRAG_LOGGING := false
 
 enum PerspectiveMode {
 	AUTO,
@@ -40,7 +36,7 @@ var ai_enabled_by_color := {
 
 var perspective_mode: PerspectiveMode = PerspectiveMode.AUTO
 var threat_overlay_enabled: bool = false
-var show_coordinates: bool = true
+var show_coordinates: bool = false
 var processed_event_count: int = 0
 var recent_notifications: Array[String] = []
 var rendered_perspective_color: String = ""
@@ -57,19 +53,13 @@ var last_card_centers := {}
 var piece_icon_cache := {}
 var hovered_square: Variant = null
 var hovered_card_widget: WizardMatchCardWidget
-var active_card_entries: Array = []
-var white_graveyard_entries: Array = []
-var black_graveyard_entries: Array = []
 var previous_state_snapshot: Dictionary = {}
 var toast_message_count: int = 0
-var active_drag_kind: String = ""
-var active_drag_source_square: Variant = null
-var active_drag_card_instance_id: String = ""
-var active_drag_cursor_global: Vector2 = Vector2.ZERO
-
+var utility_sidebar_open: bool = false
 @onready var ai_timer: Timer = %AiTimer
-@onready var targeting_line: Line2D = %TargetingLine
+@onready var interaction_controller: CardInteractionController = %CardInteractionController
 @onready var status_label: Label = %StatusLabel
+@onready var utilities_button: Button = %UtilitiesButton
 @onready var notification_toast: PanelContainer = %NotificationToast
 @onready var notification_toast_label: Label = %NotificationToastLabel
 @onready var detail_label: Label = %DetailLabel
@@ -78,39 +68,35 @@ var active_drag_cursor_global: Vector2 = Vector2.ZERO
 @onready var opponent_deck_label: Label = %OpponentDeckLabel
 @onready var opponent_graveyard_label: Label = %OpponentGraveyardLabel
 @onready var opponent_top_graveyard_label: Label = %OpponentTopGraveyardLabel
-@onready var opponent_hero_name_label: Label = %OpponentHeroNameLabel
-@onready var opponent_mana_label: Label = %OpponentManaLabel
+@onready var opponent_status_view: WizardMatchPlayerStatusView = %OpponentStatusView
 @onready var environment_label: Label = %EnvironmentLabel
 @onready var local_summary_label: Label = %LocalSummaryLabel
 @onready var local_deck_label: Label = %LocalDeckLabel
 @onready var local_graveyard_label: Label = %LocalGraveyardLabel
 @onready var local_library_label: Label = %LocalLibraryLabel
-@onready var local_hero_name_label: Label = %LocalHeroNameLabel
-@onready var local_mana_label: Label = %LocalManaLabel
+@onready var local_status_view: WizardMatchPlayerStatusView = %LocalStatusView
 @onready var board_view: WizardMatchBoardView = %BoardView
-@onready var play_drop_zone: WizardMatchCardPlayZone = %PlayDropZone
 @onready var opponent_hand_title_label: Label = %OpponentHandTitleLabel
-@onready var opponent_hand_row: Control = %OpponentHandRow
+@onready var opponent_hand_row: HandFanView = %OpponentHandRow
 @onready var local_hand_title_label: Label = %LocalHandTitleLabel
-@onready var local_hand_row: Control = %LocalHandRow
+@onready var local_hand_row: HandFanView = %LocalHandRow
 @onready var action_bar: HBoxContainer = %ActionBar
-@onready var inspect_popup: PanelContainer = %InspectPopup
-@onready var inspect_title_label: Label = %InspectTitleLabel
-@onready var spotlight_art: TextureRect = %SpotlightArt
-@onready var spotlight_back: TextureRect = %SpotlightBack
-@onready var inspect_body_label: Label = %InspectBodyLabel
-@onready var active_cards_list: ItemList = %ActiveCardsList
-@onready var move_history_list: ItemList = %MoveHistoryList
-@onready var event_history_list: ItemList = %EventHistoryList
-@onready var white_graveyard_list: ItemList = %WhiteGraveyardList
-@onready var black_graveyard_list: ItemList = %BlackGraveyardList
-@onready var threat_toggle: CheckButton = %ThreatToggle
-@onready var coordinates_toggle: CheckButton = %CoordinatesToggle
-@onready var perspective_option: OptionButton = %PerspectiveOption
-@onready var white_ai_button: CheckButton = %WhiteAiButton
-@onready var black_ai_button: CheckButton = %BlackAiButton
-@onready var last_ai_action_label: Label = %LastAiActionLabel
-@onready var ai_timing_label: Label = %AiTimingLabel
+@onready var turn_action_panel: WizardMatchTurnActionPanel = $HudLayer/TurnPanel
+@onready var inspect_popup: WizardMatchInspectorView = %InspectPopup
+@onready var match_sidebar: WizardMatchHudSidebar = %MatchSidebar
+@onready var hud_layout := %HudLayout as WizardMatchHudLayout
+@onready var notification_layer: CanvasLayer = $NotificationLayer
+@onready var targeting_overlay: TargetingOverlay = %TargetingOverlay
+@onready var opponent_hand_panel: Control = $HudLayer/OpponentHandPanel
+@onready var local_hand_panel: Control = $HudLayer/LocalHandPanel
+@onready var opponent_deck_pile: WizardMatchPileView = $HudLayer/OpponentLibraryPanel
+@onready var opponent_graveyard_pile: WizardMatchPileView = $HudLayer/OpponentGraveyardPanel
+@onready var local_deck_pile: WizardMatchPileView = $HudLayer/PlayerLibraryPanel
+@onready var local_graveyard_pile: WizardMatchPileView = $HudLayer/PlayerGraveyardPanel
+@onready var environment_zone_panel: WizardMatchPublicZonePanel = $HudLayer/EnvironmentZonePanel
+@onready var artifacts_zone_panel: WizardMatchPublicZonePanel = $HudLayer/ArtifactsZonePanel
+@onready var traps_zone_panel: WizardMatchPublicZonePanel = $HudLayer/TrapsZonePanel
+@onready var captures_zone_panel: WizardMatchPublicZonePanel = $HudLayer/CapturesZonePanel
 
 
 func _ready() -> void:
@@ -120,14 +106,41 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if active_drag_kind.is_empty():
+	if interaction_controller.is_dragging() and event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+		_cancel_active_interaction()
+		get_viewport().set_input_as_handled()
+		return
+	if interaction_controller.is_dragging() and event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+		_cancel_active_interaction()
+		get_viewport().set_input_as_handled()
+		return
+	if not interaction_controller.is_dragging():
 		return
 	if event is InputEventMouseMotion:
-		active_drag_cursor_global = event.global_position
+		interaction_controller.update_cursor(event.global_position)
+		_update_manual_drag_hover_state()
+		interaction_controller.update_preview_position()
 		_update_targeting_line()
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
-		active_drag_cursor_global = event.global_position
+		interaction_controller.update_cursor(event.global_position)
 		_finalize_active_drag()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT and interaction_controller != null and interaction_controller.is_dragging():
+		_cancel_active_interaction()
+		return
+	if what == NOTIFICATION_DRAG_END:
+		if not interaction_controller.is_dragging():
+			return
+		interaction_controller.update_cursor(get_global_mouse_position())
+		_finalize_active_drag()
+
+
+func _log_drag(message: String, payload: Dictionary = {}) -> void:
+	if not UI_DRAG_LOGGING:
+		return
+	print("[WizardMatchUI] %s %s" % [message, JSON.stringify(payload)])
 
 
 func _load_resources() -> void:
@@ -143,31 +156,24 @@ func _configure_static_ui() -> void:
 	ai_timer.one_shot = true
 	ai_timer.wait_time = AI_STEP_DELAY_SECONDS
 	ai_timer.timeout.connect(_on_ai_timer_timeout)
-	perspective_option.add_item("Auto")
-	perspective_option.add_item("White")
-	perspective_option.add_item("Black")
-	board_view.screen = self
-	play_drop_zone.screen = self
+	resized.connect(_update_overlay_layout)
+	board_view.set_screen(self)
 	board_view.square_pressed.connect(_on_board_square_pressed)
 	board_view.square_hovered.connect(_on_board_square_hovered)
 	board_view.square_unhovered.connect(_on_board_square_unhovered)
 	board_view.square_dropped.connect(handle_square_drop)
-	for rank in range(8):
-		for file in range(8):
-			var square := Vector2i(file, rank)
-			board_buttons[square] = square
-			board_button_by_name[_square_name(square)] = square
+	board_buttons = board_view.get_square_buttons()
+	board_button_by_name.clear()
+	for square in board_buttons.keys():
+		var button: WizardMatchBoardSquareButton = board_buttons[square]
+		board_button_by_name[_square_name(square)] = button
 
-	active_cards_list.item_selected.connect(_on_active_card_selected)
-	white_graveyard_list.item_selected.connect(_on_white_graveyard_selected)
-	black_graveyard_list.item_selected.connect(_on_black_graveyard_selected)
-	threat_toggle.toggled.connect(_on_threat_toggled)
-	coordinates_toggle.toggled.connect(_on_coordinates_toggled)
-	perspective_option.item_selected.connect(_on_perspective_selected)
-	white_ai_button.toggled.connect(_on_ai_toggle.bind(ChessEngine.WHITE))
-	black_ai_button.toggled.connect(_on_ai_toggle.bind(ChessEngine.BLACK))
-	local_hand_row.resized.connect(_layout_local_hand_cards)
-	opponent_hand_row.resized.connect(_layout_opponent_hand_cards)
+	match_sidebar.card_selected.connect(_on_sidebar_card_selected)
+	match_sidebar.threat_toggled.connect(_on_threat_toggled)
+	match_sidebar.coordinates_toggled.connect(_on_coordinates_toggled)
+	match_sidebar.perspective_selected.connect(_on_perspective_selected)
+	match_sidebar.ai_toggled.connect(_on_ai_toggle)
+	call_deferred("_update_overlay_layout")
 
 
 func _start_new_match() -> void:
@@ -178,14 +184,13 @@ func _start_new_match() -> void:
 	selected_hand_card_ids.clear()
 	hovered_square = null
 	hovered_card_widget = null
-	active_drag_kind = ""
-	active_drag_source_square = null
-	active_drag_card_instance_id = ""
+	interaction_controller.reset_drag()
 	processed_event_count = 0
 	recent_notifications.clear()
 	rendered_perspective_color = ""
-	last_ai_action_label.text = "AI: ready"
-	ai_timing_label.text = "AI timings: no samples yet"
+	utility_sidebar_open = false
+	_update_utility_sidebar_visibility()
+	match_sidebar.set_ai_status("AI: ready", "AI timings: no samples yet")
 	wizard_match.start_match(match_deck, match_deck, 17)
 	_refresh_ui()
 	previous_state_snapshot = wizard_match.create_state_snapshot()
@@ -207,6 +212,13 @@ func _refresh_ui() -> void:
 	_refresh_settings_controls()
 	_refresh_ai_timings()
 	_update_targeting_line()
+	_update_overlay_layout()
+
+
+func _update_overlay_layout() -> void:
+	if not is_node_ready() or hud_layout == null:
+		return
+	hud_layout.apply_layout(get_viewport_rect().size)
 
 
 func _refresh_status() -> void:
@@ -217,17 +229,18 @@ func _refresh_status() -> void:
 		status_label.text += "  %s" % _chess_outcome_text(wizard_match.chess_state.outcome)
 
 	if _local_actor_locked_by_ai():
-		detail_label.text = "AI acting."
+		detail_label.text = "Waiting"
 	elif wizard_match.state == WizardMatch.STATE_SETUP:
-		detail_label.text = "Opening hand."
+		detail_label.text = "Opening Hand"
 	elif wizard_match.phase == WizardMatch.PHASE_MOVE:
-		detail_label.text = "Move a piece."
+		detail_label.text = "Move"
 	elif wizard_match.phase == WizardMatch.PHASE_PREPARATION:
-		detail_label.text = "Play cards."
+		detail_label.text = "Preparation"
 	elif wizard_match.phase == WizardMatch.PHASE_REACTION:
-		detail_label.text = "Reaction window."
+		detail_label.text = "Reaction"
 	else:
-		detail_label.text = "Inspect selection."
+		detail_label.text = "Inspect"
+	utilities_button.text = "Tools ▼" if utility_sidebar_open else "Tools"
 
 
 func _refresh_notifications() -> void:
@@ -250,35 +263,139 @@ func _refresh_player_zones() -> void:
 	var display_color := _display_color()
 	var opponent_color := _opponent(display_color)
 
-	opponent_summary_label.text = _player_public_summary_text(opponent_color, display_color)
-	local_summary_label.text = _player_public_summary_text(display_color, display_color)
+	opponent_summary_label.text = ""
+	local_summary_label.text = ""
 
 	var opponent_state := wizard_match.get_player_state(opponent_color)
 	var local_state := wizard_match.get_player_state(display_color)
-	opponent_deck_label.text = "Deck: %d" % opponent_state.get("deck", []).size()
-	opponent_graveyard_label.text = "Graveyard: %d" % opponent_state.get("graveyard", []).size()
-	opponent_top_graveyard_label.text = "Graveyard: %d" % opponent_state.get("graveyard", []).size()
-	local_deck_label.text = "Deck: %d" % local_state.get("deck", []).size()
-	local_graveyard_label.text = "Graveyard: %d" % local_state.get("graveyard", []).size()
-	local_library_label.text = "Deck: %d" % local_state.get("deck", []).size()
-	opponent_hero_name_label.text = "%s Wizard" % opponent_color.capitalize()
-	opponent_mana_label.text = "%d/%d mana" % [int(opponent_state.get("mana", 0)), int(opponent_state.get("maximum_mana", 0))]
-	local_hero_name_label.text = "%s Wizard" % display_color.capitalize()
-	local_mana_label.text = "%d/%d mana" % [int(local_state.get("mana", 0)), int(local_state.get("maximum_mana", 0))]
+	opponent_deck_label.text = str(opponent_state.get("deck", []).size())
+	opponent_graveyard_label.text = str(opponent_state.get("graveyard", []).size())
+	opponent_top_graveyard_label.text = str(opponent_state.get("graveyard", []).size())
+	local_deck_label.text = str(local_state.get("deck", []).size())
+	local_graveyard_label.text = str(local_state.get("graveyard", []).size())
+	local_library_label.text = str(local_state.get("deck", []).size())
+	opponent_deck_pile.set_pile_state(opponent_color, "Deck", opponent_state.get("deck", []).size())
+	opponent_graveyard_pile.set_pile_state(opponent_color, "Graveyard", opponent_state.get("graveyard", []).size(), _top_card_name(opponent_state.get("graveyard", [])), _top_card_art_path(opponent_state.get("graveyard", [])), _top_card_state(opponent_state.get("graveyard", [])))
+	local_deck_pile.set_pile_state(display_color, "Deck", local_state.get("deck", []).size())
+	local_graveyard_pile.set_pile_state(display_color, "Graveyard", local_state.get("graveyard", []).size(), _top_card_name(local_state.get("graveyard", [])), _top_card_art_path(local_state.get("graveyard", [])), _top_card_state(local_state.get("graveyard", [])))
+	opponent_status_view.set_player_state(
+		opponent_color,
+		int(opponent_state.get("mana", 0)),
+		int(opponent_state.get("maximum_mana", 0))
+	)
+	local_status_view.set_player_state(
+		display_color,
+		int(local_state.get("mana", 0)),
+		int(local_state.get("maximum_mana", 0))
+	)
 
 
 func _refresh_environment() -> void:
-	var environment_text := "none"
+	var environment_lines: Array[String] = []
 	for color in [ChessEngine.WHITE, ChessEngine.BLACK]:
 		for card_state_value in wizard_match.get_player_state(color).get("battlefield", []):
 			var card_state: Dictionary = card_state_value
 			if str(card_state.get("card_type", "")) != CardDefinition.TYPE_ENVIRONMENT:
 				continue
-			environment_text = "%s (%s)" % [str(card_state.get("display_name", card_state["card_id"])), color.capitalize()]
-	environment_label.text = "Environment: %s" % environment_text
+			environment_lines.append("%s: %s" % [color.capitalize(), str(card_state.get("display_name", card_state["card_id"]))])
+	environment_label.text = "" if environment_lines.is_empty() else " | ".join(environment_lines)
+	environment_zone_panel.set_visual_entries("Environment", _environment_visual_entries())
+	artifacts_zone_panel.set_visual_entries("Artifacts", _artifact_visual_entries())
+	traps_zone_panel.set_visual_entries("Traps", _active_trap_visual_entries())
+	captures_zone_panel.set_visual_entries("Captured Pieces", _captured_piece_visual_entries())
+
+
+func _top_card_name(cards: Array) -> String:
+	if cards.is_empty():
+		return ""
+	var card_state: Dictionary = cards[cards.size() - 1]
+	return str(card_state.get("display_name", card_state.get("card_id", "")))
+
+
+func _top_card_art_path(cards: Array) -> String:
+	if cards.is_empty():
+		return ""
+	var card_state: Dictionary = cards[cards.size() - 1]
+	return str(card_state.get("art_texture_path", ""))
+
+
+func _top_card_state(cards: Array) -> Dictionary:
+	if cards.is_empty():
+		return {}
+	return cards[cards.size() - 1]
+
+
+func _environment_visual_entries() -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	for color in [ChessEngine.WHITE, ChessEngine.BLACK]:
+		for card_state_value in wizard_match.get_player_state(color).get("battlefield", []):
+			var card_state: Dictionary = card_state_value
+			if str(card_state.get("card_type", "")) != CardDefinition.TYPE_ENVIRONMENT:
+				continue
+			entries.append({
+				"texture": _card_art_texture(card_state),
+				"tooltip": "%s Environment: %s" % [color.capitalize(), str(card_state.get("display_name", card_state["card_id"]))],
+			})
+	return entries
+
+
+func _artifact_visual_entries() -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	for color in [ChessEngine.WHITE, ChessEngine.BLACK]:
+		for card_state_value in wizard_match.get_player_state(color).get("battlefield", []):
+			var card_state: Dictionary = card_state_value
+			if str(card_state.get("card_type", "")) != CardDefinition.TYPE_ARTIFACT:
+				continue
+			entries.append({
+				"texture": _card_art_texture(card_state),
+				"tooltip": "%s Artifact: %s" % [color.capitalize(), str(card_state.get("display_name", card_state["card_id"]))],
+			})
+	return entries
+
+
+func _active_trap_visual_entries() -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	var viewer := _display_color()
+	for color in [ChessEngine.WHITE, ChessEngine.BLACK]:
+		for card_state_value in wizard_match.get_player_state(color).get("battlefield", []):
+			var card_state: Dictionary = card_state_value
+			if str(card_state.get("card_type", "")) != CardDefinition.TYPE_TRAP:
+				continue
+			var square_name := str(card_state.get("placed_on", ""))
+			var is_hidden: bool = bool(card_state.get("face_down", false)) and color != viewer
+			var card_label := "Face-down Trap" if is_hidden else str(card_state.get("display_name", card_state["card_id"]))
+			var location_label := "" if square_name.is_empty() or is_hidden else " on %s" % square_name
+			entries.append({
+				"texture": CARD_BACK_TEXTURE if is_hidden else _card_art_texture(card_state),
+				"tooltip": "%s: %s%s" % [color.capitalize(), card_label, location_label],
+			})
+	return entries
+
+
+func _captured_piece_visual_entries() -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	for entry_value in wizard_match.chess_state.move_history:
+		var entry: Dictionary = entry_value
+		var move: Dictionary = entry.get("move", {})
+		if not bool(move.get("is_capture", false)):
+			continue
+		var captor_color := str(entry.get("color", ""))
+		var piece_type := str(move.get("captured_piece_type", ""))
+		if captor_color.is_empty() or piece_type.is_empty():
+			continue
+		var captured_color := _opponent(captor_color)
+		entries.append({
+			"texture": _piece_icon({
+				"color": captured_color,
+				"type": piece_type,
+			}),
+			"tooltip": "%s captured %s %s" % [captor_color.capitalize(), captured_color.capitalize(), piece_type.capitalize()],
+		})
+	return entries
 
 
 func _refresh_board() -> void:
+	var target_square_names := _selected_card_target_square_names()
 	for square in board_buttons.keys():
 		var piece = wizard_match.chess_engine.get_piece(square)
 		board_view.set_square_visual(
@@ -287,6 +404,12 @@ func _refresh_board() -> void:
 			_square_color(square),
 			_square_tooltip(square),
 			show_coordinates
+		)
+		var is_card_target: bool = target_square_names.has(wizard_match.chess_engine.square_to_algebraic(square))
+		board_view.set_square_target_emphasis(
+			square,
+			is_card_target,
+			is_card_target and hovered_square != null and square == hovered_square
 		)
 
 
@@ -333,55 +456,7 @@ func _refresh_hands() -> void:
 			)
 			local_hand_row.add_child(widget)
 			local_hand_widgets[card_id] = widget
-	call_deferred("_layout_local_hand_cards")
-	call_deferred("_layout_opponent_hand_cards")
-
-
-func _layout_local_hand_cards() -> void:
-	_layout_hand_fan(local_hand_row, local_hand_widgets, false)
-
-
-func _layout_opponent_hand_cards() -> void:
-	_layout_hand_fan(opponent_hand_row, opponent_hand_widgets, true)
-
-
-func _layout_hand_fan(root: Control, widgets_by_id: Dictionary, is_opponent: bool) -> void:
-	if not is_instance_valid(root):
-		return
-	var widgets: Array[Control] = []
-	for child in root.get_children():
-		var widget := child as Control
-		if widget != null:
-			widgets.append(widget)
-	if widgets.is_empty():
-		return
-
-	var count := widgets.size()
-	var card_size := Vector2(84, 120) if is_opponent else Vector2(108, 154)
-	var radius: float = 520.0 if is_opponent else 640.0
-	var spread_degrees: float = min(24.0, 8.0 + (count - 1) * (4.0 if is_opponent else 3.2))
-	var start_angle: float = deg_to_rad(-spread_degrees * 0.5)
-	var end_angle: float = deg_to_rad(spread_degrees * 0.5)
-	var center := Vector2(root.size.x * 0.5, -radius + 148.0) if is_opponent else Vector2(root.size.x * 0.5, root.size.y + radius - 10.0)
-
-	for index in range(count):
-		var card: Control = widgets[index]
-		card.size = card_size
-		card.pivot_offset = Vector2(card_size.x * 0.5, card_size.y * 0.88)
-		var t: float = 0.5 if count <= 1 else float(index) / float(count - 1)
-		var angle: float = lerp(start_angle, end_angle, t)
-		var anchor := center + Vector2(sin(angle) * radius, cos(angle) * radius) if is_opponent else center + Vector2(sin(angle) * radius, -cos(angle) * radius)
-		var x: float = anchor.x - (card_size.x * 0.5)
-		var y: float = anchor.y - (card_size.y * 0.88)
-		var card_id: String = card.get_card_instance_id() if card.has_method("get_card_instance_id") else ""
-		if not is_opponent and active_drag_kind.begins_with("card") and active_drag_card_instance_id == card_id:
-			x = (root.size.x - card_size.x) * 0.5
-			y = -82.0
-			angle = 0.0
-		card.position = Vector2(x, y)
-		card.rotation_degrees = rad_to_deg(angle) * (0.55 if is_opponent else 0.78)
-		card.z_index = 10 + index
-		last_card_centers[card_id] = card.get_card_center_global()
+	_refresh_hand_fan_views()
 
 
 func on_card_widget_hovered(widget: WizardMatchCardWidget) -> void:
@@ -404,64 +479,112 @@ func on_card_widget_unhovered(widget: WizardMatchCardWidget) -> void:
 func _update_targeting_line() -> void:
 	var source := Vector2.ZERO
 	var destination := Vector2.ZERO
-	match active_drag_kind:
+	var target_is_valid := false
+	match interaction_controller.drag_kind():
 		"piece":
-			if active_drag_source_square == null:
-				targeting_line.visible = false
+			if interaction_controller.source_square == null:
+				targeting_overlay.clear()
 				return
-			source = _board_square_center_global(active_drag_source_square)
-			destination = active_drag_cursor_global
+			source = _board_square_center_global(interaction_controller.source_square)
+			destination = interaction_controller.cursor_global
+			var piece_target := board_view.square_at_global_position(destination)
+			target_is_valid = piece_target != WizardMatchBoardView.INVALID_SQUARE and _can_drop_piece_on_square(piece_target, {"from_square": interaction_controller.source_square})
 		"card_target":
-			source = _card_source_global(active_drag_card_instance_id)
-			destination = active_drag_cursor_global
+			source = _card_target_anchor_global(interaction_controller.card_instance_id)
+			destination = _active_card_target_destination_global()
+			target_is_valid = hovered_square != null and _can_play_selected_card_on_square(hovered_square)
 		"card_play":
-			source = _card_source_global(active_drag_card_instance_id)
-			destination = active_drag_cursor_global
+			source = _card_target_anchor_global(interaction_controller.card_instance_id)
+			destination = interaction_controller.cursor_global
+			target_is_valid = not local_hand_row.get_global_rect().has_point(destination)
 		_:
 			if hovered_square == null or selected_card_instance_id.is_empty():
-				targeting_line.visible = false
+				targeting_overlay.clear()
 				return
 			if not _can_play_selected_card_on_square(hovered_square):
-				targeting_line.visible = false
+				targeting_overlay.clear()
 				return
-			source = _card_source_global(selected_card_instance_id)
+			source = _card_target_anchor_global(selected_card_instance_id)
 			destination = _board_square_center_global(hovered_square)
+			target_is_valid = true
 	if source == Vector2.ZERO or destination == Vector2.ZERO:
-		targeting_line.visible = false
+		targeting_overlay.clear()
 		return
-	var midpoint := source.lerp(destination, 0.5) + Vector2(0, -140)
-	targeting_line.points = PackedVector2Array([
-		targeting_line.to_local(source),
-		targeting_line.to_local(midpoint),
-		targeting_line.to_local(destination),
-	])
-	targeting_line.visible = true
+	targeting_overlay.present(source, destination, target_is_valid)
+
+
+func _active_card_target_destination_global() -> Vector2:
+	if hovered_square != null and _can_play_selected_card_on_square(hovered_square):
+		return _board_square_center_global(hovered_square)
+	return interaction_controller.cursor_global
 
 
 func _card_source_global(card_instance_id: String) -> Vector2:
 	if local_hand_widgets.has(card_instance_id):
-		var widget: Control = local_hand_widgets[card_instance_id]
-		return widget.get_card_center_global()
+		return local_hand_row.get_card_center_global(card_instance_id)
 	if opponent_hand_widgets.has(card_instance_id):
-		var opponent_widget: Control = opponent_hand_widgets[card_instance_id]
-		return opponent_widget.get_card_center_global()
+		return opponent_hand_row.get_card_center_global(card_instance_id)
 	return last_card_centers.get(card_instance_id, Vector2.ZERO)
 
 
+func _card_target_anchor_global(card_instance_id: String) -> Vector2:
+	var widget: Control = null
+	if local_hand_widgets.has(card_instance_id):
+		widget = local_hand_widgets[card_instance_id]
+	elif opponent_hand_widgets.has(card_instance_id):
+		widget = opponent_hand_widgets[card_instance_id]
+	if widget == null or not is_instance_valid(widget):
+		return _card_source_global(card_instance_id)
+	return widget.global_position + Vector2(widget.size.x * 0.5, widget.size.y * 0.18)
+
+
+func _refresh_hand_fan_views() -> void:
+	local_hand_row.set_targeted_card_instance_id(interaction_controller.card_instance_id if interaction_controller.state == CardInteractionController.State.CARD_TARGETING else "")
+	opponent_hand_row.set_targeted_card_instance_id("")
+	local_hand_row.refresh_layout()
+	opponent_hand_row.refresh_layout()
+	_cache_hand_card_centers()
+
+
+func _cache_hand_card_centers() -> void:
+	for card_id in local_hand_widgets.keys():
+		last_card_centers[str(card_id)] = local_hand_row.get_card_center_global(str(card_id))
+	for card_id in opponent_hand_widgets.keys():
+		last_card_centers[str(card_id)] = opponent_hand_row.get_card_center_global(str(card_id))
+
+
+func _begin_active_drag_preview(preview: Control) -> void:
+	interaction_controller.set_preview(preview, notification_layer)
+
+
+func _update_active_drag_preview() -> void:
+	interaction_controller.update_preview_position()
+
+
+func _update_manual_drag_hover_state() -> void:
+	var previous_hovered_square = hovered_square
+	if interaction_controller.state == CardInteractionController.State.PIECE_DRAGGING or interaction_controller.state == CardInteractionController.State.CARD_TARGETING:
+		var square := board_view.square_at_global_position(interaction_controller.cursor_global)
+		if square == WizardMatchBoardView.INVALID_SQUARE:
+			hovered_square = null
+		else:
+			hovered_square = square
+	else:
+		hovered_square = null
+	if hovered_square != previous_hovered_square:
+		_refresh_board()
+
+
 func _refresh_action_bar() -> void:
-	for child in action_bar.get_children():
-		child.queue_free()
+	turn_action_panel.clear_actions()
 
 	var actor := _current_actor_color()
 	if actor.is_empty():
-		action_hint_label.text = "No action window is currently open."
+		turn_action_panel.set_phase_summary(detail_label.text, "No action window is currently open.")
 		return
 
 	if ai_enabled_by_color.get(actor, false):
-		var ai_label := Label.new()
-		ai_label.text = "%s is AI-controlled." % actor.capitalize()
-		action_bar.add_child(ai_label)
-		action_hint_label.text = "Autoplay is active for the current actor."
+		turn_action_panel.show_waiting("%s AI" % actor.capitalize(), "Autoplay is active for the current actor.")
 		return
 
 	match wizard_match.state:
@@ -470,107 +593,102 @@ func _refresh_action_bar() -> void:
 		WizardMatch.STATE_ACTIVE:
 			_build_active_actions(actor)
 		_:
-			_add_action_button("New Match", _on_new_match_pressed)
-			action_hint_label.text = "Match complete."
+			_add_action_button("New Match", _on_new_match_pressed, false, true)
+			turn_action_panel.set_phase_summary("Complete", "Match complete.")
 
 
 func _build_setup_actions() -> void:
-	_add_action_button("Keep Hand", _on_keep_hand_pressed)
+	_add_action_button("Keep Hand", _on_keep_hand_pressed, false, true)
 	_add_action_button("Mulligan Selected", _on_mulligan_selected_pressed, selected_hand_card_ids.is_empty())
 	_add_action_button("Mulligan All", _on_mulligan_all_pressed)
-	action_hint_label.text = "Select cards to replace."
+	turn_action_panel.set_phase_summary("Opening Hand", "Select cards to replace.")
 
 
 func _build_active_actions(actor: String) -> void:
 	match wizard_match.phase:
 		WizardMatch.PHASE_BEGINNING:
-			_add_action_button("Resolve Beginning", _on_resolve_beginning_pressed)
-			action_hint_label.text = "Draw and refresh mana."
+			_add_action_button("Resolve Beginning", _on_resolve_beginning_pressed, false, true)
+			turn_action_panel.set_phase_summary("Beginning", "Draw and refresh mana.")
 		WizardMatch.PHASE_PREPARATION:
 			if not selected_card_instance_id.is_empty():
 				_add_action_button("Clear Card", _clear_card_selection)
 			if _selected_card_has_zero_target_action(_selected_card_actions()):
-				_add_action_button("Play Selected Card", _on_play_selected_card_pressed)
-			_add_action_button("Finish Preparation", _on_finish_preparation_pressed)
-			action_hint_label.text = "Play cards, then finish."
+				_add_action_button("Play Selected Card", _on_play_selected_card_pressed, false, true)
+			_add_action_button("Finish Preparation", _on_finish_preparation_pressed, false, selected_card_instance_id.is_empty())
+			turn_action_panel.set_phase_summary("Preparation", "Play cards, then finish.")
 		WizardMatch.PHASE_MOVE:
-			action_hint_label.text = "Move a %s piece." % actor.capitalize()
+			turn_action_panel.set_phase_summary("Move", "Move a %s piece." % actor.capitalize())
 		WizardMatch.PHASE_REACTION:
 			if not selected_card_instance_id.is_empty():
 				_add_action_button("Clear Card", _clear_card_selection)
 			if _selected_card_has_zero_target_action(_selected_card_actions()):
-				_add_action_button("Play Selected Reaction", _on_play_selected_card_pressed)
-			_add_action_button("Pass Priority", _on_pass_reaction_pressed)
-			action_hint_label.text = "React or pass."
+				_add_action_button("Play Selected Reaction", _on_play_selected_card_pressed, false, true)
+			_add_action_button("Pass Priority", _on_pass_reaction_pressed, false, selected_card_instance_id.is_empty())
+			turn_action_panel.set_phase_summary("Reaction", "React or pass.")
 		WizardMatch.PHASE_END:
 			var discard_count := wizard_match.get_pending_hand_limit_discard_count(actor)
 			if discard_count > 0:
-				_add_action_button("Discard Selected", _on_discard_selected_pressed, selected_hand_card_ids.size() != discard_count)
-				action_hint_label.text = "Discard %d card(s)." % discard_count
+				_add_action_button("Discard Selected", _on_discard_selected_pressed, selected_hand_card_ids.size() != discard_count, true)
+				turn_action_panel.set_phase_summary("Cleanup", "Discard %d card(s)." % discard_count)
 			else:
-				_add_action_button("Resolve End", _on_resolve_end_pressed)
-				action_hint_label.text = "Resolve turn end."
+				_add_action_button("Resolve End", _on_resolve_end_pressed, false, true)
+				turn_action_panel.set_phase_summary("End", "Resolve turn end.")
 
 
 func _refresh_histories() -> void:
-	move_history_list.clear()
+	var move_entries: Array[String] = []
 	for entry in wizard_match.chess_state.move_history:
 		var prefix := "%d." % entry["turn_number"] if entry["color"] == ChessEngine.WHITE else "%d..." % entry["turn_number"]
-		move_history_list.add_item("%s %s" % [prefix, entry["notation"]])
+		move_entries.append("%s %s" % [prefix, entry["notation"]])
 
-	event_history_list.clear()
+	var event_entries: Array[String] = []
 	for event_value in wizard_match.get_event_history():
-		event_history_list.add_item(_event_summary_text(event_value))
+		event_entries.append(_event_summary_text(event_value))
+	match_sidebar.set_histories(move_entries, event_entries)
 
 
 func _refresh_graveyards() -> void:
-	white_graveyard_entries = wizard_match.get_player_state(ChessEngine.WHITE).get("graveyard", [])
-	black_graveyard_entries = wizard_match.get_player_state(ChessEngine.BLACK).get("graveyard", [])
-	_refresh_graveyard_list(white_graveyard_list, white_graveyard_entries, ChessEngine.WHITE)
-	_refresh_graveyard_list(black_graveyard_list, black_graveyard_entries, ChessEngine.BLACK)
+	var white_cards: Array = wizard_match.get_player_state(ChessEngine.WHITE).get("graveyard", [])
+	var black_cards: Array = wizard_match.get_player_state(ChessEngine.BLACK).get("graveyard", [])
+	match_sidebar.set_graveyards(
+		_build_sidebar_card_entries(white_cards, ChessEngine.WHITE),
+		_build_sidebar_card_entries(black_cards, ChessEngine.BLACK)
+	)
 
 
-func _refresh_graveyard_list(list: ItemList, cards: Array, owner_color: String) -> void:
-	list.clear()
-	if cards.is_empty():
-		list.add_item("(empty)")
-		return
+func _build_sidebar_card_entries(cards: Array, owner_color: String) -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
 	var viewer := _display_color()
 	for card_state_value in cards:
-		list.add_item(_card_public_list_label(card_state_value, owner_color, viewer))
+		entries.append({
+			"card_instance_id": str(card_state_value.get("instance_id", "")),
+			"label": _card_public_list_label(card_state_value, owner_color, viewer),
+		})
+	return entries
 
 
 func _refresh_active_cards() -> void:
-	active_cards_list.clear()
-	active_card_entries.clear()
+	var entries: Array[Dictionary] = []
 	var viewer := _display_color()
 	for color in [ChessEngine.WHITE, ChessEngine.BLACK]:
 		for card_state_value in wizard_match.get_player_state(color).get("battlefield", []):
-			active_card_entries.append({
-				"owner_color": color,
-				"card_state": card_state_value,
+			entries.append({
+				"card_instance_id": str(card_state_value.get("instance_id", "")),
+				"label": _card_public_list_label(card_state_value, color, viewer),
 			})
-			active_cards_list.add_item(_card_public_list_label(card_state_value, color, viewer))
-	if active_cards_list.item_count == 0:
-		active_cards_list.add_item("(no active cards)")
+	match_sidebar.set_active_cards(entries)
 
 
 func _refresh_inspector() -> void:
 	if not selected_card_instance_id.is_empty():
 		var entry := _find_card_entry(selected_card_instance_id)
 		if not entry.is_empty():
-			inspect_popup.visible = true
 			_set_card_inspector(entry["card_state"], str(entry["zone"]), str(entry["owner_color"]))
 			return
 	if selected_square != null:
-		inspect_popup.visible = true
 		_set_square_inspector(selected_square)
 		return
-	inspect_popup.visible = false
-	inspect_title_label.text = "Selection"
-	inspect_body_label.text = "Select a square or card to inspect it."
-	spotlight_art.texture = null
-	spotlight_back.visible = false
+	inspect_popup.clear_inspection()
 
 
 func _show_notification_toast(message: String) -> void:
@@ -590,17 +708,19 @@ func _show_notification_toast(message: String) -> void:
 
 
 func _refresh_settings_controls() -> void:
-	threat_toggle.button_pressed = threat_overlay_enabled
-	coordinates_toggle.button_pressed = show_coordinates
-	white_ai_button.button_pressed = ai_enabled_by_color[ChessEngine.WHITE]
-	black_ai_button.button_pressed = ai_enabled_by_color[ChessEngine.BLACK]
+	var perspective_index := 0
 	match perspective_mode:
 		PerspectiveMode.WHITE:
-			perspective_option.select(1)
+			perspective_index = 1
 		PerspectiveMode.BLACK:
-			perspective_option.select(2)
-		_:
-			perspective_option.select(0)
+			perspective_index = 2
+	match_sidebar.set_settings(
+		threat_overlay_enabled,
+		show_coordinates,
+		perspective_index,
+		ai_enabled_by_color[ChessEngine.WHITE],
+		ai_enabled_by_color[ChessEngine.BLACK]
+	)
 
 
 func _refresh_ai_timings() -> void:
@@ -608,7 +728,7 @@ func _refresh_ai_timings() -> void:
 	for color in [ChessEngine.WHITE, ChessEngine.BLACK]:
 		var controller: WizardMatchAiController = ai_controllers.get(color)
 		lines.append("%s: %s" % [color.capitalize(), controller.format_last_timing_report()])
-	ai_timing_label.text = "\n".join(lines)
+	match_sidebar.set_ai_timing_text("\n".join(lines))
 
 
 func _on_board_square_pressed(square: Vector2i) -> void:
@@ -630,27 +750,25 @@ func _on_board_square_pressed(square: Vector2i) -> void:
 				continue
 			_commit_move(move)
 			return
-
 		var piece = wizard_match.chess_engine.get_piece(square)
 		if piece != null and str(piece["color"]) == actor:
 			selected_moves = wizard_match.chess_engine.get_legal_moves_from(square)
 			selected_card_instance_id = ""
-			active_drag_kind = "piece"
-			active_drag_source_square = square
-			active_drag_cursor_global = get_global_mouse_position()
 		else:
 			selected_moves.clear()
-	_refresh_ui()
+		_refresh_ui()
 
 
 func _on_board_square_hovered(square: Vector2i) -> void:
 	hovered_square = square
+	_refresh_board()
 	_update_targeting_line()
 
 
 func _on_board_square_unhovered(square: Vector2i) -> void:
 	if hovered_square == square:
 		hovered_square = null
+	_refresh_board()
 	_update_targeting_line()
 
 
@@ -672,7 +790,7 @@ func _on_hand_card_pressed(card_instance_id: String) -> void:
 	_refresh_ui()
 
 
-func on_card_widget_drag_started(widget: WizardMatchCardWidget) -> void:
+func on_card_widget_drag_started(widget: WizardMatchCardWidget, cursor_global: Vector2) -> void:
 	var card_instance_id := str(widget.card_state.get("instance_id", ""))
 	if card_instance_id.is_empty():
 		return
@@ -682,15 +800,54 @@ func on_card_widget_drag_started(widget: WizardMatchCardWidget) -> void:
 	selected_moves.clear()
 	selected_hand_card_ids.clear()
 	selected_card_instance_id = card_instance_id
-	active_drag_card_instance_id = card_instance_id
-	active_drag_cursor_global = get_global_mouse_position()
 	if _card_has_square_targets(card_instance_id):
-		active_drag_kind = "card_target"
+		interaction_controller.begin_card_drag(card_instance_id, cursor_global, true)
 	elif _card_has_zero_target_action(card_instance_id):
-		active_drag_kind = "card_play"
+		interaction_controller.begin_card_drag(card_instance_id, cursor_global, false)
 	else:
-		active_drag_kind = ""
+		interaction_controller.reset_drag()
+	if interaction_controller.state == CardInteractionController.State.CARD_DRAGGING:
+		_begin_active_drag_preview(_build_card_drag_preview(widget.card_state))
+	if interaction_controller.is_dragging():
+		_log_drag("card_drag_started", {
+			"card_instance_id": card_instance_id,
+			"kind": interaction_controller.drag_kind(),
+		})
 	_refresh_ui()
+
+
+func on_board_piece_drag_started(square: Vector2i, cursor_global: Vector2) -> void:
+	if wizard_match.state != WizardMatch.STATE_ACTIVE or wizard_match.phase != WizardMatch.PHASE_MOVE:
+		return
+	var actor := _current_actor_color()
+	if actor.is_empty() or actor != _display_color() or ai_enabled_by_color.get(actor, false):
+		return
+	var piece = wizard_match.chess_engine.get_piece(square)
+	if piece == null or str(piece["color"]) != actor:
+		return
+	selected_square = square
+	selected_moves = wizard_match.chess_engine.get_legal_moves_from(square)
+	selected_card_instance_id = ""
+	interaction_controller.begin_piece_drag(square, cursor_global)
+	_begin_active_drag_preview(_build_piece_drag_preview(piece))
+	_log_drag("piece_drag_started", {"square": _square_name(square)})
+	_refresh_ui()
+
+
+func on_card_widget_drag_updated(cursor_global: Vector2) -> void:
+	if not interaction_controller.is_dragging():
+		return
+	interaction_controller.update_cursor(cursor_global)
+	_update_manual_drag_hover_state()
+	_update_active_drag_preview()
+	_update_targeting_line()
+
+
+func on_card_widget_drag_released(cursor_global: Vector2) -> void:
+	if not interaction_controller.is_dragging():
+		return
+	interaction_controller.update_cursor(cursor_global)
+	_finalize_active_drag()
 
 
 func _on_new_match_pressed() -> void:
@@ -763,27 +920,8 @@ func _on_discard_selected_pressed() -> void:
 	_after_action(wizard_match.discard_cards_for_hand_limit(ids), "Discard selected")
 
 
-func _on_active_card_selected(index: int) -> void:
-	if index < 0 or index >= active_card_entries.size():
-		return
-	selected_card_instance_id = str(active_card_entries[index]["card_state"]["instance_id"])
-	selected_square = null
-	selected_moves.clear()
-	_refresh_ui()
-
-
-func _on_white_graveyard_selected(index: int) -> void:
-	_select_graveyard_card(index, white_graveyard_entries)
-
-
-func _on_black_graveyard_selected(index: int) -> void:
-	_select_graveyard_card(index, black_graveyard_entries)
-
-
-func _select_graveyard_card(index: int, entries: Array) -> void:
-	if index < 0 or index >= entries.size():
-		return
-	selected_card_instance_id = str(entries[index]["instance_id"])
+func _on_sidebar_card_selected(card_instance_id: String) -> void:
+	selected_card_instance_id = card_instance_id
 	selected_square = null
 	selected_moves.clear()
 	_refresh_ui()
@@ -810,15 +948,26 @@ func _on_perspective_selected(index: int) -> void:
 	_refresh_ui()
 
 
+func _on_utilities_button_pressed() -> void:
+	utility_sidebar_open = not utility_sidebar_open
+	_update_utility_sidebar_visibility()
+	_refresh_status()
+
+
+func _update_utility_sidebar_visibility() -> void:
+	if match_sidebar == null:
+		return
+	match_sidebar.visible = utility_sidebar_open
+
+
 func _after_action(result: Dictionary, label: String) -> void:
 	var before_snapshot := previous_state_snapshot.duplicate(true)
 	selected_moves.clear()
 	selected_card_instance_id = ""
 	selected_hand_card_ids.clear()
-	active_drag_kind = ""
-	active_drag_source_square = null
-	active_drag_card_instance_id = ""
-	last_ai_action_label.text = "%s: %s" % [label, "ok" if bool(result.get("ok", false)) else str(result.get("reason", "failed"))]
+	interaction_controller.reset_drag()
+	hovered_square = null
+	match_sidebar.set_ai_action_text("%s: %s" % [label, "ok" if bool(result.get("ok", false)) else str(result.get("reason", "failed"))])
 	_refresh_ui()
 	var after_snapshot := wizard_match.create_state_snapshot()
 	call_deferred("_animate_state_transition", before_snapshot, after_snapshot)
@@ -845,13 +994,12 @@ func _process_ai_step() -> void:
 		return
 	var before_snapshot := previous_state_snapshot.duplicate(true)
 	var result: Dictionary = ai_controllers[actor].apply_next_action(wizard_match, actor)
-	last_ai_action_label.text = "AI %s: %s" % [actor.capitalize(), "acted" if bool(result.get("ok", false)) else str(result.get("reason", "failed"))]
+	match_sidebar.set_ai_action_text("AI %s: %s" % [actor.capitalize(), "acted" if bool(result.get("ok", false)) else str(result.get("reason", "failed"))])
 	selected_moves.clear()
 	selected_card_instance_id = ""
 	selected_hand_card_ids.clear()
-	active_drag_kind = ""
-	active_drag_source_square = null
-	active_drag_card_instance_id = ""
+	interaction_controller.reset_drag()
+	hovered_square = null
 	_refresh_ui()
 	var after_snapshot := wizard_match.create_state_snapshot()
 	call_deferred("_animate_state_transition", before_snapshot, after_snapshot)
@@ -1086,8 +1234,8 @@ func _piece_icon(piece: Variant) -> Texture2D:
 	if piece_icon_cache.has(cache_key):
 		return piece_icon_cache[cache_key]
 
-	var cell_width := int(PIECE_ATLAS.get_width() / 6)
-	var cell_height := int(PIECE_ATLAS.get_height() / 2)
+	var cell_width := int(float(PIECE_ATLAS.get_width()) / 6.0)
+	var cell_height := int(float(PIECE_ATLAS.get_height()) / 2.0)
 	var column := 0
 	match piece_type:
 		ChessEngine.PIECE_PAWN:
@@ -1111,6 +1259,11 @@ func _piece_icon(piece: Variant) -> Texture2D:
 
 
 func _card_art_texture(card_state: Dictionary) -> Texture2D:
+	var art_texture_path := str(card_state.get("art_texture_path", ""))
+	if not art_texture_path.is_empty():
+		var texture := load(art_texture_path) as Texture2D
+		if texture != null:
+			return texture
 	match str(card_state.get("school", "")):
 		"Order":
 			return ORDER_CARD_ART
@@ -1140,12 +1293,15 @@ func _piece_label(piece: Dictionary) -> String:
 func _square_marker_text(square: Vector2i) -> String:
 	var labels: Array[String] = []
 	var square_name := wizard_match.chess_engine.square_to_algebraic(square)
+	var viewer := _display_color()
 	for color in [ChessEngine.WHITE, ChessEngine.BLACK]:
 		for card_state_value in wizard_match.get_player_state(color).get("battlefield", []):
 			var card_state: Dictionary = card_state_value
 			if str(card_state.get("attached_to", "")) == square_name:
 				labels.append("Unit")
 			elif str(card_state.get("placed_on", "")) == square_name:
+				if bool(card_state.get("face_down", false)) and color != viewer:
+					continue
 				labels.append("Trap")
 	if labels.is_empty():
 		return ""
@@ -1168,14 +1324,15 @@ func _square_tooltip(square: Vector2i) -> String:
 func _square_color(square: Vector2i) -> Color:
 	if selected_square != null and square == selected_square:
 		return SELECTED_SQUARE
-	if _selected_card_target_square_names().has(wizard_match.chess_engine.square_to_algebraic(square)):
-		return CARD_TARGET_SQUARE
+	var base_color := LIGHT_SQUARE if (square.x + square.y) % 2 == 0 else DARK_SQUARE
+	if interaction_controller.state == CardInteractionController.State.CARD_TARGETING and hovered_square != null and square == hovered_square and _can_play_selected_card_on_square(square):
+		return base_color.lerp(CARD_TARGET_HOVER_TINT, 0.34)
 	for move_value in selected_moves:
 		if move_value["to"] == square:
 			return LEGAL_SQUARE
 	if threat_overlay_enabled and _is_threatened_square(square):
 		return THREATENED_SQUARE
-	return LIGHT_SQUARE if (square.x + square.y) % 2 == 0 else DARK_SQUARE
+	return base_color
 
 
 func _is_threatened_square(square: Vector2i) -> bool:
@@ -1247,22 +1404,6 @@ func _clear_card_selection() -> void:
 	_refresh_ui()
 
 
-func can_drop_on_play_zone(data) -> bool:
-	if typeof(data) != TYPE_DICTIONARY:
-		return false
-	if str(data.get("type", "")) != "hand_card":
-		return false
-	var card_instance_id := str(data.get("card_instance_id", ""))
-	return not _first_zero_target_action(_selected_card_actions_for_id(card_instance_id)).is_empty()
-
-
-func handle_play_zone_drop(data) -> void:
-	if not can_drop_on_play_zone(data):
-		return
-	selected_card_instance_id = str(data.get("card_instance_id", ""))
-	_on_play_selected_card_pressed()
-
-
 func _is_hand_limit_selection_active() -> bool:
 	var actor := _current_actor_color()
 	return wizard_match.state == WizardMatch.STATE_ACTIVE and wizard_match.phase == WizardMatch.PHASE_END and wizard_match.get_pending_hand_limit_discard_count(actor) > 0 and actor == _display_color()
@@ -1274,19 +1415,7 @@ func _local_actor_locked_by_ai() -> bool:
 
 
 func get_square_drag_data(square: Vector2i):
-	if wizard_match.state != WizardMatch.STATE_ACTIVE or wizard_match.phase != WizardMatch.PHASE_MOVE:
-		return null
-	var actor := _current_actor_color()
-	if actor.is_empty() or actor != _display_color() or ai_enabled_by_color.get(actor, false):
-		return null
-	var piece = wizard_match.chess_engine.get_piece(square)
-	if piece == null or str(piece["color"]) != actor:
-		return null
-	selected_square = square
-	selected_moves = wizard_match.chess_engine.get_legal_moves_from(square)
-	selected_card_instance_id = ""
-	_refresh_ui()
-	set_drag_preview(_build_piece_drag_preview(piece))
+	on_board_piece_drag_started(square, get_global_mouse_position())
 	return {"type": "board_piece", "from_square": square}
 
 
@@ -1305,8 +1434,13 @@ func get_hand_card_drag_data(card_state: Dictionary):
 	selected_moves.clear()
 	selected_hand_card_ids.clear()
 	selected_card_instance_id = instance_id
+	if _card_has_square_targets(instance_id):
+		interaction_controller.begin_card_drag(instance_id, get_global_mouse_position(), true)
+	elif _card_has_zero_target_action(instance_id):
+		interaction_controller.begin_card_drag(instance_id, get_global_mouse_position(), false)
+	else:
+		interaction_controller.reset_drag()
 	_refresh_ui()
-	set_drag_preview(_build_card_drag_preview(card_state))
 	return {"type": "hand_card", "card_instance_id": instance_id}
 
 
@@ -1406,16 +1540,19 @@ func _card_has_zero_target_action(card_instance_id: String) -> bool:
 
 
 func _finalize_active_drag() -> void:
-	var drag_kind := active_drag_kind
-	var drag_square = active_drag_source_square
-	var drag_card_id := active_drag_card_instance_id
-	active_drag_kind = ""
-	active_drag_source_square = null
-	active_drag_card_instance_id = ""
+	var drag_kind := interaction_controller.drag_kind()
+	var drag_square = interaction_controller.source_square
+	var drag_card_id := interaction_controller.card_instance_id
+	var release_position := interaction_controller.cursor_global
+	interaction_controller.clear_preview()
 
 	match drag_kind:
 		"piece":
-			var square := board_view.square_at_global_position(active_drag_cursor_global)
+			var square := board_view.square_at_global_position(release_position)
+			_log_drag("piece_drag_released", {
+				"source": _square_name(drag_square) if drag_square != null else "",
+				"target": "" if square == WizardMatchBoardView.INVALID_SQUARE else _square_name(square),
+			})
 			if square != WizardMatchBoardView.INVALID_SQUARE:
 				for move_value in wizard_match.chess_engine.get_legal_moves_from(drag_square):
 					var move: Dictionary = move_value
@@ -1423,17 +1560,41 @@ func _finalize_active_drag() -> void:
 						_commit_move(move)
 						return
 		"card_target":
-			var target_square := board_view.square_at_global_position(active_drag_cursor_global)
+			var target_square := board_view.square_at_global_position(release_position)
+			_log_drag("card_target_released", {
+				"card_instance_id": drag_card_id,
+				"target": "" if target_square == WizardMatchBoardView.INVALID_SQUARE else _square_name(target_square),
+			})
 			if target_square != WizardMatchBoardView.INVALID_SQUARE:
 				selected_card_instance_id = drag_card_id
 				if _can_play_selected_card_on_square(target_square):
 					_play_selected_card_on_square(target_square)
 					return
 		"card_play":
-			if play_drop_zone.get_global_rect().has_point(active_drag_cursor_global):
+			var released_outside_hand := not local_hand_row.get_global_rect().has_point(release_position)
+			_log_drag("card_play_released", {
+				"card_instance_id": drag_card_id,
+				"released_outside_hand": released_outside_hand,
+			})
+			if released_outside_hand:
 				selected_card_instance_id = drag_card_id
 				_on_play_selected_card_pressed()
 				return
+	_cancel_active_interaction()
+
+
+func _cancel_active_interaction() -> void:
+	var card_instance_id := interaction_controller.card_instance_id
+	interaction_controller.reset_drag()
+	if not card_instance_id.is_empty() and local_hand_widgets.has(card_instance_id):
+		var widget: WizardMatchCardWidget = local_hand_widgets[card_instance_id]
+		if is_instance_valid(widget):
+			widget.cancel_pointer_interaction()
+	selected_card_instance_id = ""
+	selected_square = null
+	selected_moves.clear()
+	hovered_square = null
+	targeting_overlay.clear()
 	_refresh_ui()
 
 
@@ -1496,45 +1657,24 @@ func _find_card_entry(card_instance_id: String) -> Dictionary:
 
 
 func _set_card_inspector(card_state: Dictionary, zone: String, owner_color: String) -> void:
-	inspect_title_label.text = str(card_state.get("display_name", card_state["card_id"]))
-	spotlight_art.texture = _card_art_texture(card_state)
-	spotlight_back.visible = bool(card_state.get("face_down", false)) and zone != "graveyard"
-	var lines: Array[String] = []
-	lines.append("Owner: %s" % owner_color.capitalize())
-	lines.append("Zone: %s" % zone.capitalize())
-	lines.append("Type: %s" % str(card_state.get("card_type", "")).capitalize())
-	lines.append("Mana Cost: %d" % int(card_state.get("mana_cost", 0)))
-	var target_requirements: Array = card_state.get("target_requirements", [])
-	if not target_requirements.is_empty():
-		lines.append("Targeting: %s" % ", ".join(target_requirements))
-	var attached_to := str(card_state.get("attached_to", ""))
-	if not attached_to.is_empty():
-		lines.append("Attached To: %s" % attached_to)
-	var placed_on := str(card_state.get("placed_on", ""))
-	if not placed_on.is_empty():
-		lines.append("Placed On: %s" % placed_on)
-	var rules_text := str(card_state.get("rules_text", ""))
-	if not rules_text.is_empty():
-		lines.append("")
-		lines.append(rules_text)
-	inspect_body_label.text = "\n".join(lines)
+	inspect_popup.show_card(card_state, zone, owner_color, _card_art_texture(card_state))
 
 
 func _set_square_inspector(square: Vector2i) -> void:
 	var piece = wizard_match.chess_engine.get_piece(square)
-	inspect_title_label.text = "Square %s" % wizard_match.chess_engine.square_to_algebraic(square)
-	spotlight_art.texture = _piece_icon(piece)
-	spotlight_back.visible = false
-	var lines: Array[String] = []
-	lines.append("Piece: empty" if piece == null else "Piece: %s %s" % [str(piece["color"]).capitalize(), str(piece["type"]).capitalize()])
 	var attached_cards := _attached_cards_for_square(square)
-	lines.append("Attached Units: %s" % ("none" if attached_cards.is_empty() else ", ".join(attached_cards)))
 	var move_labels: Array[String] = []
 	for move_value in wizard_match.chess_engine.get_legal_moves_from(square):
 		move_labels.append(wizard_match.chess_engine.square_to_algebraic(move_value["to"]))
-	lines.append("Legal Moves: %s" % ("none" if move_labels.is_empty() else ", ".join(move_labels)))
-	lines.append("Threatened: %s" % ("yes" if _is_threatened_square(square) else "no"))
-	inspect_body_label.text = "\n".join(lines)
+	var piece_description := "empty" if piece == null else "%s %s" % [str(piece["color"]).capitalize(), str(piece["type"]).capitalize()]
+	inspect_popup.show_square(
+		wizard_match.chess_engine.square_to_algebraic(square),
+		_piece_icon(piece),
+		piece_description,
+		attached_cards,
+		move_labels,
+		_is_threatened_square(square)
+	)
 
 
 func _attached_cards_for_square(square: Vector2i) -> Array[String]:
@@ -1601,9 +1741,5 @@ func _chess_outcome_text(outcome: Dictionary) -> String:
 			return "active"
 
 
-func _add_action_button(label: String, callback: Callable, disabled: bool = false) -> void:
-	var button := Button.new()
-	button.text = label
-	button.disabled = disabled
-	button.pressed.connect(callback)
-	action_bar.add_child(button)
+func _add_action_button(label: String, callback: Callable, disabled: bool = false, primary: bool = false) -> void:
+	turn_action_panel.add_action(label, callback, disabled, primary)

@@ -295,8 +295,22 @@ func test_card_catalog_loads_sample_resources() -> void:
 
 	assert_not_null(card)
 	assert_eq(card.card_id, "sample_arcane_burst")
+	assert_not_null(card.art_texture)
+	assert_eq(card.art_texture.resource_path, "res://assets/ui/wizard_match/arcane_card_art.png")
 	assert_not_null(deck)
 	assert_eq(deck.card_count(), 6)
+
+
+func test_runtime_cards_preserve_authored_art_texture_path() -> void:
+	var card := _make_card(CardDefinition.TYPE_SPELL, 1, "spell_with_art")
+	card.art_texture = load("res://assets/ui/wizard_match/order_card_art.png") as Texture2D
+	var deck := _make_uniform_deck(card)
+	var wizard_match := WizardMatch.new(_make_rules())
+
+	assert_true(wizard_match.start_match(deck, deck, 18)["ok"])
+
+	var white_state := wizard_match.get_player_state(ChessMatch.WHITE)
+	assert_eq(white_state["hand"][0]["art_texture_path"], "res://assets/ui/wizard_match/order_card_art.png")
 
 
 func test_deck_validation_rejects_oversized_legendary_copies() -> void:

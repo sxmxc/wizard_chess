@@ -3,7 +3,6 @@
 [ext_resource type="Script" path="res://scripts/ui/wizard_match_board_view.gd" id="1"]
 
 [node name="WizardMatchBoardView" type="Control"]
-custom_minimum_size = Vector2(608, 608)
-clip_contents = true
+custom_minimum_size = Vector2(512, 512)
 mouse_filter = 0
 script = ExtResource("1")

@@ -1,6 +1,7 @@
 [gd_resource type="Resource" format=3]
 
 [ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/wizard_match/arcane_card_art.png" id="2"]
 
 [resource]
 script = ExtResource("1")
@@ -9,5 +10,6 @@ display_name = "Arcane Burst"
 card_type = "spell"
 school = "Arcane"
 rarity = "common"
+art_texture = ExtResource("2")
 mana_cost = 1
 rules_text = "Prototype spell used to validate resource loading."

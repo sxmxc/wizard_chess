@@ -19,6 +19,7 @@ const RARITY_LEGENDARY := "legendary"
 @export var school: String = ""
 @export var academy: String = ""
 @export var rarity: String = RARITY_COMMON
+@export var art_texture: Texture2D
 @export var mana_cost: int = 0
 @export_multiline var rules_text: String = ""
 @export var target_requirements: PackedStringArray = PackedStringArray()

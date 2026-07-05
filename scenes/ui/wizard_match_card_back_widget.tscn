@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scripts/ui/wizard_match_card_back_widget.gd" id="1"]
 
 [node name="WizardMatchCardBackWidget" type="Control"]
-custom_minimum_size = Vector2(84, 120)
+custom_minimum_size = Vector2(34, 48)
 script = ExtResource("1")
 
 [node name="CardBackRect" type="TextureRect" parent="."]

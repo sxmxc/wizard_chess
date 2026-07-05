@@ -144,7 +144,7 @@ func _choose_setup_action(match: WizardMatch, color: String) -> Dictionary:
 		WizardMatchAiProfile.DIFFICULTY_INTERMEDIATE:
 			should_mulligan = high_cost_ids.size() >= max(1, hand.size() - 1)
 		_:
-			should_mulligan = high_cost_ids.size() > hand.size() / 2
+			should_mulligan = float(high_cost_ids.size()) > float(hand.size()) * 0.5
 
 	if should_mulligan and not high_cost_ids.is_empty():
 		return {
@@ -366,25 +366,25 @@ func _score_move(chess_engine: ChessEngine, move: Dictionary, color: String) -> 
 	return score
 
 
-func _search_chess(position: ChessMatch, depth: int, perspective: String, alpha: float, beta: float) -> float:
+func _search_chess(chess_position: ChessMatch, depth: int, perspective: String, alpha: float, beta: float) -> float:
 	_increment_timing("search_nodes")
-	if depth <= 0 or position.outcome["status"] != ChessMatch.STATUS_ACTIVE:
+	if depth <= 0 or chess_position.outcome["status"] != ChessMatch.STATUS_ACTIVE:
 		_increment_timing("search_leaf_nodes")
-		return _evaluate_chess_position(position, perspective)
+		return _evaluate_chess_position(chess_position, perspective)
 
-	var legal_moves := position.get_legal_moves_for_color(position.active_color)
+	var legal_moves := chess_position.get_legal_moves_for_color(chess_position.active_color)
 	if legal_moves.is_empty():
-		return _evaluate_chess_position(position, perspective)
+		return _evaluate_chess_position(chess_position, perspective)
 	legal_moves.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return _move_order_score(a) > _move_order_score(b)
 	)
 	legal_moves = _trim_moves(legal_moves, profile.max_search_branching)
 
-	var maximizing := position.active_color == perspective
+	var maximizing := chess_position.active_color == perspective
 	var best_score := -INF if maximizing else INF
 	for move_value in legal_moves:
 		var move: Dictionary = move_value
-		var simulated := position.clone()
+		var simulated := chess_position.clone()
 		simulated.apply_move(move)
 		var score := _search_chess(simulated, depth - 1, perspective, alpha, beta)
 		if maximizing:
@@ -424,8 +424,8 @@ func format_last_timing_report() -> String:
 	]
 
 
-func _evaluate_chess_position(position: ChessMatch, perspective: String) -> float:
-	var outcome := position.outcome
+func _evaluate_chess_position(chess_position: ChessMatch, perspective: String) -> float:
+	var outcome := chess_position.outcome
 	if outcome["status"] == ChessMatch.STATUS_CHECKMATE:
 		return MATE_SCORE if str(outcome["winner"]) == perspective else -MATE_SCORE
 	if outcome["status"] in [ChessMatch.STATUS_DRAW, ChessMatch.STATUS_STALEMATE]:
@@ -437,22 +437,22 @@ func _evaluate_chess_position(position: ChessMatch, perspective: String) -> floa
 	for rank in range(8):
 		for file in range(8):
 			var square := Vector2i(file, rank)
-			var piece = position.get_piece(square)
+			var piece = chess_position.get_piece(square)
 			if piece == null:
 				continue
-			var sign := 1.0 if str(piece["color"]) == perspective else -1.0
-			material += sign * _piece_value(str(piece["type"]))
+			var perspective_sign := 1.0 if str(piece["color"]) == perspective else -1.0
+			material += perspective_sign * _piece_value(str(piece["type"]))
 			if square in [Vector2i(3, 3), Vector2i(4, 3), Vector2i(3, 4), Vector2i(4, 4)]:
-				center_control += sign * 0.25
+				center_control += perspective_sign * 0.25
 			if str(piece["type"]) == ChessMatch.PIECE_KING:
-				var attackers := 1.0 if position.is_square_attacked(square, _opponent(str(piece["color"]))) else 0.0
-				king_safety += (-attackers if sign > 0.0 else attackers) * 0.75
+				var attackers := 1.0 if chess_position.is_square_attacked(square, _opponent(str(piece["color"]))) else 0.0
+				king_safety += (-attackers if perspective_sign > 0.0 else attackers) * 0.75
 
-	var mobility := float(position.get_legal_moves_for_color(perspective).size() - position.get_legal_moves_for_color(_opponent(perspective)).size()) * 0.05
+	var mobility := float(chess_position.get_legal_moves_for_color(perspective).size() - chess_position.get_legal_moves_for_color(_opponent(perspective)).size()) * 0.05
 	var check_pressure := 0.0
-	if position.is_in_check(_opponent(perspective)):
+	if chess_position.is_in_check(_opponent(perspective)):
 		check_pressure += 0.45 * profile.aggression_weight
-	if position.is_in_check(perspective):
+	if chess_position.is_in_check(perspective):
 		check_pressure -= 0.55 * profile.defense_weight
 
 	return (

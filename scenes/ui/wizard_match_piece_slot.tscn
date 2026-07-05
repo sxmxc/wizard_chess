@@ -1,0 +1,26 @@
+[gd_scene load_steps=2 format=3]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_piece_well"]
+bg_color = Color(0.012, 0.017, 0.019, 0.76)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.46, 0.35, 0.19, 0.68)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0, 0, 0, 0.6)
+shadow_size = 2
+
+[node name="WizardMatchPieceSlot" type="PanelContainer"]
+custom_minimum_size = Vector2(38, 38)
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_piece_well")
+
+[node name="SlotVisual" type="TextureRect" parent="."]
+layout_mode = 2
+mouse_filter = 1
+expand_mode = 1
+stretch_mode = 5

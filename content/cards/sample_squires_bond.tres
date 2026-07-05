@@ -1,6 +1,7 @@
 [gd_resource type="Resource" format=3]
 
 [ext_resource type="Script" path="res://scripts/cards/card_definition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/wizard_match/order_card_art.png" id="2"]
 
 [resource]
 script = ExtResource("1")
@@ -9,8 +10,8 @@ display_name = "Squire's Bond"
 card_type = "unit"
 school = "Order"
 rarity = "common"
+art_texture = ExtResource("2")
 mana_cost = 1
 rules_text = "Attach to a friendly piece."
 target_requirements = PackedStringArray("Target friendly piece.")
 effect_tags = PackedStringArray("guard")
-

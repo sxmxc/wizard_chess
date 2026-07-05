@@ -146,6 +146,12 @@ Presentation should never determine gameplay outcomes.
 
 It exists only to visualize the authoritative game state.
 
+For the current Wizard Match UI direction, this also means:
+
+- authored HUD zones belong in scenes, not simulation code
+- hidden/public information rules are enforced by presentation derived from simulation state
+- runtime layout scripts may help with overlay placement, but they should not replace editor-authored table composition
+
 ---
 
 # Shared Gameplay Systems
@@ -326,6 +332,16 @@ Avoid:
 - Hardcoded card implementations
     
 - Special-case systems where generalized rules are appropriate
+
+In the current local Wizard Match UI, composition specifically means reusable scene-authored surfaces such as:
+
+- hand trays
+- card wells
+- portrait frames
+- public-zone trays
+- composed card widgets
+
+The active playmat should stay modular rather than reverting to a single baked background for every match surface.
     
 
 ---
@@ -350,6 +366,8 @@ The networking architecture should support:
 Peer-to-peer networking is not a project goal.
 
 Local multiplayer is not a project goal.
+
+The local match UI should therefore be built as a presentation proving ground for future online reuse, not as a separate gameplay path. Local, AI, client, host, spectator, and replay views should all consume the same simulation-derived public state with only owner-visibility differences.
 
 ---
 
@@ -443,6 +461,13 @@ The architecture of Wizard Chess should prioritize:
 - Ease of testing
     
 - Ease of expansion
+
+Current UI architecture notes:
+
+- the local Wizard Match scene is editor-first and scene-authored around a fixed 736x736 chessboard
+- `HudLayer` should remain a `Control` so authored anchors resolve correctly at runtime
+- `WizardMatchHudLayout` should stay narrow in scope: inspector placement, sidebar clamping, and z-order are appropriate; hard-coded ownership of all hand/pile/tray geometry is not
+- `LocalWizardMatchScreen` still owns too much refresh orchestration, but UI extraction should continue only where it creates real presentation boundaries
     
 
 The server is the authoritative source of truth.

@@ -85,9 +85,13 @@ Cards should remain readable while allowing the chessboard to occupy the majorit
 
 Hovering a card with a mouse or selecting it with touch controls should enlarge the card for inspection.
 
+In the current intended desktop layout, cards may rest partially off-screen so the table can preserve a fixed-size board while still presenting readable card scale. Resting cards should remain identifiable, and hover/target states should raise the active card into a clearly readable foreground state.
+
 Cards should clearly indicate when they are playable.
 
 Cards that cannot currently be played should remain visible but visually distinguished from playable cards.
+
+The opponent hand should not reveal card faces. It should read as a compact hidden-information strip rather than a mirrored full-information fan.
 
 ---
 
@@ -149,6 +153,8 @@ Players should be able to view:
 
 Graveyard inspection should not interrupt gameplay.
 
+In the primary match HUD, the graveyard should read as a public full-card pile, not as an abstract count-only zone and not as cropped art detached from the card frame.
+
 ---
 
 # Move History
@@ -198,6 +204,8 @@ The interface should clearly indicate which Environment is currently affecting t
 
 Environmental visual effects should enhance gameplay without obscuring the board.
 
+Artifacts, active Environment cards, face-down Traps in play, and captured pieces should be shown in authored tray/well regions around the board. These should read like table surfaces and placed components rather than loose labels floating over background art.
+
 ---
 
 # Mana Display
@@ -228,6 +236,8 @@ The interface should always display:
     
 
 Players should never be uncertain whose turn it is or which phase is currently active.
+
+The production direction is a single strong local action surface rather than a scattered set of debug controls. Supplemental lists, diagnostics, and configuration belong in a secondary drawer or utility surface.
 
 ---
 
@@ -282,6 +292,8 @@ Accessibility features should not alter gameplay.
 The digital interface should present information that is available in a physical game without introducing gameplay advantages.
 
 The digital version may automate rule enforcement, calculations, and event resolution, but should not reveal hidden information or provide strategic insight beyond what is available through the game rules.
+
+Face-down Traps are a key example: the UI must not reveal hidden trap identity or exact protected square to the opponent through hover copy, markers, or other presentation leaks.
 
 ---
 

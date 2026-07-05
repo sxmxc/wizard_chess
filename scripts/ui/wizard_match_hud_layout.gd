@@ -40,73 +40,87 @@ extends Node
 func apply_layout(viewport_size: Vector2) -> void:
 	if not is_node_ready():
 		return
-	if board_safe_area == null or board_frame == null or board_view == null:
+	if board_view == null:
 		return
 	if opponent_hand_panel == null or local_hand_panel == null:
 		return
-	if opponent_library_panel == null or opponent_graveyard_panel == null:
-		return
-	if player_library_panel == null or player_graveyard_panel == null:
-		return
-	if turn_panel == null or local_zone_panel == null or opponent_zone_panel == null:
-		return
-	if match_sidebar == null or inspect_popup == null:
-		return
 	if local_hand_row == null or opponent_hand_row == null:
 		return
-	var outer_margin := 18.0
-	var top_strip_height := 182.0
-	var bottom_dock_height := 238.0
-	var utility_drawer_width := clampf(viewport_size.x * 0.22, 280.0, 360.0)
-	var resolved_board_edge := board_frame.custom_minimum_size.x
-	var board_view_edge := board_view.custom_minimum_size.x
-	var board_frame_origin := (viewport_size - Vector2.ONE * resolved_board_edge) * 0.5
-	var board_rect := Rect2(board_frame_origin + Vector2(10.0, 10.0), Vector2(board_view_edge, board_view_edge))
-	var top_panel_width := minf(220.0, maxf(180.0, board_rect.position.x - outer_margin - 20.0))
-	var turn_panel_width := minf(240.0, maxf(196.0, board_rect.position.x - outer_margin - 20.0))
 
-	opponent_hand_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	opponent_hand_panel.position = Vector2(board_rect.position.x - 50.0, opponent_hand_top_offset)
-	opponent_hand_panel.size = Vector2(board_rect.size.x + 100.0, top_strip_height)
+	# Scene-authored HUD geometry owns the major table layout. Runtime only
+	# clamps floating surfaces and refreshes card fans after viewport changes.
 	opponent_hand_panel.z_index = 80
-
-	local_hand_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	local_hand_panel.position = Vector2(board_rect.position.x - 50.0, viewport_size.y - bottom_dock_height)
-	local_hand_panel.size = Vector2(board_rect.size.x + 100.0, bottom_dock_height)
 	local_hand_panel.z_index = 90
+	if opponent_library_panel != null:
+		opponent_library_panel.z_index = 20
+	if opponent_graveyard_panel != null:
+		opponent_graveyard_panel.z_index = 20
+	if player_graveyard_panel != null:
+		player_graveyard_panel.z_index = 20
+	if player_library_panel != null:
+		player_library_panel.z_index = 20
+	if turn_panel != null:
+		turn_panel.z_index = 35
+	if inspect_popup != null:
+		inspect_popup.z_index = 30
 
-	opponent_library_panel.z_index = 20
-	opponent_graveyard_panel.z_index = 20
-	player_graveyard_panel.z_index = 20
-	player_library_panel.z_index = 20
-
-	match_sidebar.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	match_sidebar.position = Vector2(viewport_size.x - outer_margin - utility_drawer_width, outer_margin + 54.0)
-	match_sidebar.size = Vector2(utility_drawer_width, viewport_size.y - match_sidebar.position.y - outer_margin)
-
-	turn_panel.custom_minimum_size.x = turn_panel_width
-	turn_panel.z_index = 35
-
-	local_zone_panel.visible = false
-	local_zone_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	local_zone_panel.position = Vector2(local_hand_panel.position.x - top_panel_width - 18.0, local_hand_panel.position.y + bottom_dock_height - 144.0)
-	local_zone_panel.size = Vector2(top_panel_width, 126.0)
-
-	opponent_zone_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	opponent_zone_panel.position = Vector2(opponent_hand_panel.position.x - top_panel_width - 18.0, opponent_hand_panel.position.y + 4.0)
-	opponent_zone_panel.size = Vector2(top_panel_width, 124.0)
-
-	inspect_popup.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	var inspector_width := 280.0
-	var inspector_x := board_rect.end.x + 16.0
-	if inspector_x + inspector_width > viewport_size.x - outer_margin:
-		inspector_x = maxf(outer_margin, board_rect.position.x - inspector_width - 16.0)
-	var inspector_y := board_rect.position.y + 18.0
-	var inspector_bottom_limit := minf(local_hand_panel.position.y - 12.0, turn_panel.position.y - 12.0)
-	var inspector_height := clampf(inspector_bottom_limit - inspector_y, 360.0, 470.0)
-	inspect_popup.position = Vector2(inspector_x, inspector_y)
-	inspect_popup.size = Vector2(inspector_width, inspector_height)
-	inspect_popup.z_index = 30
+	_clamp_sidebar_to_viewport(viewport_size)
+	_position_inspector(viewport_size)
 
 	local_hand_row.refresh_layout()
 	opponent_hand_row.refresh_layout()
+
+
+func _clamp_sidebar_to_viewport(viewport_size: Vector2) -> void:
+	if match_sidebar == null:
+		return
+	var sidebar_size := match_sidebar.size
+	if sidebar_size.x <= 0.0 or sidebar_size.y <= 0.0:
+		sidebar_size = match_sidebar.get_combined_minimum_size()
+		match_sidebar.size = sidebar_size
+	var margin := 16.0
+	match_sidebar.position.x = clampf(
+		match_sidebar.position.x,
+		margin,
+		maxf(margin, viewport_size.x - sidebar_size.x - margin)
+	)
+	match_sidebar.position.y = clampf(
+		match_sidebar.position.y,
+		margin,
+		maxf(margin, viewport_size.y - sidebar_size.y - margin)
+	)
+
+
+func _position_inspector(viewport_size: Vector2) -> void:
+	if inspect_popup == null:
+		return
+	var board_rect := board_view.get_global_rect()
+	var inspector_size := inspect_popup.size
+	if inspector_size.x <= 0.0 or inspector_size.y <= 0.0:
+		inspector_size = inspect_popup.get_combined_minimum_size()
+	var margin := 16.0
+	var inspector_x := board_rect.end.x + 16.0
+	if inspector_x + inspector_size.x > viewport_size.x - margin:
+		inspector_x = maxf(margin, board_rect.position.x - inspector_size.x - 16.0)
+	var inspector_y := inspect_popup.position.y
+	if inspector_y <= 0.0:
+		inspector_y = board_rect.position.y + 18.0
+	var inspector_position := Vector2(
+		clampf(inspector_x, margin, maxf(margin, viewport_size.x - inspector_size.x - margin)),
+		clampf(inspector_y, margin, maxf(margin, viewport_size.y - inspector_size.y - margin))
+	)
+	if turn_panel != null:
+		var turn_rect := turn_panel.get_global_rect()
+		var inspector_rect := Rect2(inspector_position, inspector_size)
+		if inspector_rect.intersects(turn_rect):
+			var above_turn_y := turn_rect.position.y - inspector_size.y - 12.0
+			if above_turn_y >= margin:
+				inspector_position.y = above_turn_y
+			else:
+				inspector_position.x = maxf(margin, board_rect.position.x - inspector_size.x - 16.0)
+				inspector_position.y = clampf(
+					board_rect.position.y + 18.0,
+					margin,
+					maxf(margin, viewport_size.y - inspector_size.y - margin)
+				)
+	inspect_popup.position = inspector_position

@@ -41,7 +41,7 @@ func test_local_wizard_match_screen_builds_playable_match_ui() -> void:
 	var local_zone_panel := screen.get_node("HudLayer/LocalZonePanel") as PanelContainer
 	var hud_layer := screen.get_node("HudLayer")
 
-	assert_false(hud_layer is Control)
+	assert_true(hud_layer is Control)
 	assert_true(screen.hud_layout is WizardMatchHudLayout)
 	assert_false(screen.match_sidebar.visible)
 	assert_not_null(local_zone_panel)
@@ -74,6 +74,10 @@ func test_local_wizard_match_screen_builds_playable_match_ui() -> void:
 	assert_false(local_hand_rect.intersects(board_rect), "Local hand must stay below the board")
 	assert_gte(opponent_hand_rect.position.y, viewport_rect.position.y)
 	assert_lte(local_hand_rect.end.y, viewport_rect.end.y)
+	assert_almost_eq(opponent_hand_rect.get_center().x, viewport_rect.get_center().x, 2.0)
+	assert_almost_eq(local_hand_rect.get_center().x, viewport_rect.get_center().x, 2.0)
+	assert_true(opponent_hand_rect.has_point(screen.opponent_status_view.get_global_rect().get_center()))
+	assert_true(local_hand_rect.has_point(screen.local_status_view.get_global_rect().get_center()))
 
 	for widget in screen.local_hand_row.get_card_widgets():
 		assert_gte(widget.position.x, 0.0)
@@ -431,11 +435,17 @@ func _instantiate_screen_at_viewport_size(viewport_size: Vector2i) -> Variant:
 	await get_tree().process_frame
 	screen.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 	screen.position = Vector2.ZERO
-	screen.size = Vector2(viewport_size)
+	screen.offset_left = 0.0
+	screen.offset_top = 0.0
+	screen.offset_right = viewport_size.x
+	screen.offset_bottom = viewport_size.y
 	var board_layer := screen.get_node("BoardLayer") as Control
 	board_layer.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 	board_layer.position = Vector2.ZERO
-	board_layer.size = Vector2(viewport_size)
+	board_layer.offset_left = 0.0
+	board_layer.offset_top = 0.0
+	board_layer.offset_right = viewport_size.x
+	board_layer.offset_bottom = viewport_size.y
 	await get_tree().process_frame
 	screen.hud_layout.apply_layout(Vector2(viewport_size))
 	await get_tree().process_frame

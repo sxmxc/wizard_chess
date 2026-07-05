@@ -2,7 +2,9 @@
 
 ## Current Truth
 
-The local Milestone 7 match UI is functional and now uses a modular, editor-authored table composition. Interactive visual review in the Godot editor remains the final acceptance step; headless geometry and state tests do not replace that review.
+The local Milestone 7 match UI is functional and now uses a modular, editor-authored table composition. It is no longer the old debug-screen layout, but it is also not visually complete enough to call final production UI yet.
+
+Interactive visual review in the Godot editor remains the final acceptance step; headless geometry and state tests do not replace that review.
 
 The screen has moved away from the original monolithic debug layout and now presents the match through editor-authored surfaces:
 
@@ -13,6 +15,13 @@ The screen has moved away from the original monolithic debug layout and now pres
 - card-game readability over debug-screen convenience
 
 `LocalWizardMatchScreen` still coordinates too much state refresh, but the major visible regions now have composition boundaries and regression coverage. The screenshot review on the local/AI screen showed that passing tests is not enough: authored zones must be visually placed, must not overlap the board, and must not leak hidden information through hover text or board markers.
+
+Current practical status:
+
+- the chessboard remains fixed at 736x736 and is no longer shrunk to create HUD space
+- hand trays, pile wells, public-card trays, portrait frames, and the inspector are modular authored surfaces
+- hands and portraits are now scene-authored and should be tuned in the editor first, not by adding more hard-coded runtime offsets
+- the local scene is the active Milestone 7 proving ground; multiplayer UI reuse is the next step after local visual acceptance
 
 ## Valid Current Architecture
 
@@ -55,6 +64,8 @@ The intended three-region structure remains valid:
 - opponent strip: compact wizard status, compact hidden hand count/silhouettes, deck/graveyard counts
 - central playfield: uninterrupted chessboard, targeting feedback, contextual inspection only when useful
 - local dock: local wizard status, readable hand, deck/graveyard counts, one dominant phase/action control
+
+As of the current local scene pass, moving the wizard portraits off the board centerline improved readability substantially. That direction is correct: player identity should read as part of the owner’s tray/territory, not as chrome sitting over the board.
 
 The opponent hand should not show card faces. It uses enlarged card backs at 86x122 and leaves roughly half of each resting card visible. The local hand uses 124x177 cards with the same half-revealed resting behavior. Hovered and targeted local cards lift into a readable foreground state.
 
@@ -115,7 +126,7 @@ These card assets are intentionally composable. `wizard_match_card_widget.tscn` 
 
 Card artwork is now content-authored on `CardDefinition.art_texture`. Runtime card state stores the serializable `art_texture_path`, and UI card/inspector rendering should prefer that path before falling back to school-level placeholder art.
 
-## Completed In This Pass
+## Current Completed State
 
 The current local match screen now has:
 
@@ -135,6 +146,13 @@ The current local match screen now has:
 - board readability pass for square colors and larger pieces
 - UI tests for card data binding, authored-art rendering, public graveyard display, environment/trap/capture visual zones, static HUD placement, hand bounds, and inspector avoidance
 
+Additional current truth after later tuning:
+
+- `HudLayer` is now a `Control`, so authored HUD anchors resolve against a proper full-screen control root at runtime
+- hand-panel and portrait placement are no longer being recomputed by broad runtime layout math
+- `WizardMatchHudLayout` now only handles narrow responsive behavior such as inspector placement, sidebar clamping, and z-order, rather than trying to own the entire HUD geometry
+- the local portrait positions have been moved in the editor to improve match readability and territory clarity
+
 ## Remaining Risks
 
 - `LocalWizardMatchScreen` still owns too much orchestration and refresh logic.
@@ -145,6 +163,13 @@ The current local match screen now has:
 - visual QA is still insufficient; headless tests do not prove the screen feels good at runtime.
 - AI/dev controls and diagnostics still need a cleaner developer-only path.
 - multiplayer has not been visually proven. Keep player identity/status/pile/hand/public-zone views simulation-derived and owner-oriented so local, host, client, spectator, and replay views can reuse the same composed components.
+
+Known visual gaps still visible in the current local scene:
+
+- the opponent hand remains smaller than desired relative to the available tray space
+- the action area still reads more like HUD text than a deliberate tabletop tray
+- side-zone labels still dominate more than the slot visuals themselves
+- the board presentation is serviceable, but it still feels less integrated with the table than the card and pile surfaces do
 
 ## Obsolete Or Misleading Notes
 
@@ -192,10 +217,12 @@ Do not “fix” this in UI unless the rules change.
 ## Next Implementation Plan
 
 1. Complete interactive visual acceptance at the authored 1920x1080 viewport and tune only scene offsets or modular assets found to be visually incorrect.
-2. Reuse the local match UI components for the hosted/client multiplayer screen instead of duplicating UI logic.
-3. Prove the same public/hidden information rules through multiplayer snapshots: hand/deck hidden, graveyard/captures/environment/artifacts public, face-down Trap identity and square hidden until reveal.
-4. Move more HUD refresh mapping out of `LocalWizardMatchScreen` only where it reduces real complexity.
-5. Keep headless tests for geometry, scene wiring, data binding, and public/hidden information regressions.
+2. Enlarge the opponent hand presentation and continue pushing both hand systems toward deliberate tabletop card presence.
+3. Replace HUD-feeling action/readout presentation with a more authored card/tray surface.
+4. Reuse the local match UI components for the hosted/client multiplayer screen instead of duplicating UI logic.
+5. Prove the same public/hidden information rules through multiplayer snapshots: hand/deck hidden, graveyard/captures/environment/artifacts public, face-down Trap identity and square hidden until reveal.
+6. Move more HUD refresh mapping out of `LocalWizardMatchScreen` only where it reduces real complexity.
+7. Keep headless tests for geometry, scene wiring, data binding, and public/hidden information regressions.
 
 ## Validation Commands
 

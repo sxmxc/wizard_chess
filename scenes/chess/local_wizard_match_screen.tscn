@@ -26,6 +26,9 @@
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_cuksk"]
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_0hp81"]
+atlas = ExtResource("23_utility_tray")
+
 [node name="LocalWizardMatchScreen" type="Control" unique_id=1955273596]
 layout_mode = 3
 anchors_preset = 15
@@ -140,13 +143,21 @@ theme_override_constants/margin_bottom = 10
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="HudLayer" type="Node" parent="." unique_id=277136285]
+[node name="HudLayer" type="Control" parent="." unique_id=277136285]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
 [node name="HudLayout" parent="HudLayer" unique_id=812790820 instance=ExtResource("11")]
 unique_name_in_owner = true
 
 [node name="OpponentZonePanel" type="PanelContainer" parent="HudLayer" unique_id=610416080]
 visible = false
+layout_mode = 0
 offset_left = 16.0
 offset_top = 84.0
 offset_right = 236.0
@@ -175,7 +186,7 @@ text = "Graveyard"
 horizontal_alignment = 1
 
 [node name="OpponentLibraryPanel" type="PanelContainer" parent="HudLayer" unique_id=1277421707]
-anchors_preset = 1
+layout_mode = 0
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -260.0
@@ -213,7 +224,7 @@ text = "Deck"
 horizontal_alignment = 1
 
 [node name="OpponentGraveyardPanel" type="PanelContainer" parent="HudLayer" unique_id=1601757018]
-anchors_preset = 1
+layout_mode = 0
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -130.0
@@ -257,7 +268,7 @@ text = "Graveyard"
 horizontal_alignment = 1
 
 [node name="TurnPanel" type="PanelContainer" parent="HudLayer" unique_id=817494957]
-anchors_preset = 3
+layout_mode = 0
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
@@ -293,14 +304,15 @@ layout_mode = 2
 theme_override_constants/separation = 6
 
 [node name="EnvironmentZonePanel" type="PanelContainer" parent="HudLayer" unique_id=129260926]
+layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -560.0
+offset_left = -776.0
 offset_top = -318.0
-offset_right = -370.0
+offset_right = -586.0
 offset_bottom = -176.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -343,14 +355,15 @@ layout_mode = 2
 layout_mode = 2
 
 [node name="ArtifactsZonePanel" type="PanelContainer" parent="HudLayer" unique_id=977977301]
+layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -560.0
+offset_left = -778.0
 offset_top = -150.0
-offset_right = -370.0
+offset_right = -588.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("18_public_zone")
@@ -392,26 +405,27 @@ layout_mode = 2
 layout_mode = 2
 
 [node name="TrapsZonePanel" type="PanelContainer" parent="HudLayer" unique_id=1483784527]
+layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -286.0
-offset_top = 300.0
-offset_right = -18.0
-offset_bottom = 548.0
+offset_left = -359.0
+offset_top = 380.0
+offset_right = -63.0
+offset_bottom = 660.0
 grow_horizontal = 0
 script = ExtResource("18_public_zone")
 
 [node name="TrayBackground" type="TextureRect" parent="HudLayer/TrapsZonePanel" unique_id=419518655]
 layout_mode = 2
 mouse_filter = 2
-texture = ExtResource("23_utility_tray")
+texture = SubResource("AtlasTexture_0hp81")
 expand_mode = 1
-stretch_mode = 5
 
 [node name="TrapsZoneContent" type="VBoxContainer" parent="HudLayer/TrapsZonePanel" unique_id=1849810278]
 layout_mode = 2
 theme_override_constants/separation = 4
+alignment = 1
 
 [node name="TrapsZoneTitleLabel" type="Label" parent="HudLayer/TrapsZonePanel/TrapsZoneContent" unique_id=2002923583]
 layout_mode = 2
@@ -457,14 +471,15 @@ custom_minimum_size = Vector2(62, 84)
 layout_mode = 2
 
 [node name="CapturesZonePanel" type="PanelContainer" parent="HudLayer" unique_id=452538519]
+layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -560.0
+offset_left = -782.0
 offset_top = 28.0
-offset_right = -370.0
+offset_right = -592.0
 offset_bottom = 170.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -526,7 +541,7 @@ layout_mode = 2
 
 [node name="LocalZonePanel" type="PanelContainer" parent="HudLayer" unique_id=422700128]
 visible = false
-anchors_preset = -1
+layout_mode = 0
 anchor_left = 1.0
 anchor_top = 0.5
 anchor_right = 1.0
@@ -555,7 +570,7 @@ text = "Deck"
 horizontal_alignment = 1
 
 [node name="PlayerGraveyardPanel" type="PanelContainer" parent="HudLayer" unique_id=993407852]
-anchors_preset = 2
+layout_mode = 0
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 70.0
@@ -599,7 +614,7 @@ text = "Graveyard"
 horizontal_alignment = 1
 
 [node name="PlayerLibraryPanel" type="PanelContainer" parent="HudLayer" unique_id=458114705]
-anchors_preset = 2
+layout_mode = 0
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 265.0
@@ -637,7 +652,7 @@ text = "Deck"
 horizontal_alignment = 1
 
 [node name="OpponentHandPanel" type="Control" parent="HudLayer" unique_id=1255563106]
-layout_mode = 3
+layout_mode = 1
 anchor_left = 0.29
 anchor_right = 0.71
 offset_left = 0.2000122
@@ -677,10 +692,9 @@ custom_minimum_size = Vector2(164, 42)
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_left = 166.0
-offset_top = 51.0
-offset_right = -166.0
-offset_bottom = 93.0
+offset_left = 465.0
+offset_right = 133.0
+offset_bottom = 42.0
 grow_horizontal = 2
 portrait_texture = ExtResource("14")
 mana_texture = ExtResource("15")
@@ -697,9 +711,11 @@ offset_bottom = -67.0
 grow_horizontal = 2
 grow_vertical = 2
 is_opponent_hand = true
+opponent_card_size = Vector2(136, 194)
+opponent_top_margin = -72.0
 
 [node name="LocalHandPanel" type="Control" parent="HudLayer" unique_id=1634407404]
-layout_mode = 3
+layout_mode = 1
 anchor_left = 0.27
 anchor_top = 1.0
 anchor_right = 0.73
@@ -744,10 +760,10 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 178.0
-offset_top = -253.0
-offset_right = -178.0
-offset_bottom = -111.0
+offset_left = -141.0
+offset_top = -152.0
+offset_right = -497.0
+offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 0
 portrait_texture = ExtResource("13")
@@ -766,11 +782,13 @@ offset_right = -2.0
 offset_bottom = 97.0
 grow_horizontal = 2
 grow_vertical = 2
+local_card_size = Vector2(136, 194)
+local_bottom_margin = -34.0
+targeted_preview_y = -74.0
 
 [node name="MatchSidebar" parent="HudLayer" unique_id=1854497799 instance=ExtResource("10")]
 unique_name_in_owner = true
 visible = false
-layout_mode = 3
 
 [node name="NotificationLayer" type="CanvasLayer" parent="." unique_id=1404785658]
 

@@ -253,6 +253,9 @@ The interface is suitable for extended play.
 - Current work is focused on the local Wizard Match screen.
 - The UI direction is editor-first composition around a central chessboard, compact opponent information, readable local hand interaction, composed wizard status portraits, composed pile/count components, and a single strong turn/action area.
 - Remaining production work and current asset references are tracked in `docs/MILESTONE_7_UI_HANDOFF.md`.
+- The local screen now uses modular playmat assets and scene-authored HUD geometry rather than a monolithic debug surface.
+- The board is fixed at 736x736 in the authored gameplay viewport; the UI should adapt around that board rather than shrinking it.
+- Hands, portraits, piles, and public-card trays are now expected to be tuned in the editor first. Runtime layout code should only handle narrow responsive behavior such as overlay placement and z-order.
 
 ---
 

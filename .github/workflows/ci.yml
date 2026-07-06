@@ -114,6 +114,10 @@ jobs:
           Expand-Archive -LiteralPath $zip -DestinationPath .
           $env:GODOT_EXE = Join-Path $PWD "Godot_v4.7-stable_win64.exe"
 
+      - name: Show export presets
+        shell: pwsh
+        run: Get-Content export_presets.cfg
+
       - name: Install export templates
         shell: pwsh
         run: |
@@ -143,10 +147,11 @@ jobs:
       - name: Export project
         shell: pwsh
         run: |
-          .\Godot_v4.7-stable_win64.exe --headless --path . --export-release "Windows Desktop" "builds/windows/Wizard Chess.exe"
+          .\Godot_v4.7-stable_win64.exe --headless --verbose --path . --export-release "Windows Desktop" "builds/windows/Wizard Chess.exe" 2>&1 | Tee-Object godot-export.log
+          Get-Content godot-export.log
           Get-ChildItem -Recurse builds
           if (!(Test-Path "builds/windows/Wizard Chess.exe")) {
-          throw "Windows export did not produce Wizard Chess.exe"
+            throw "Windows export did not produce Wizard Chess.exe"
           }
       
       - name: Show build output

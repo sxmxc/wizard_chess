@@ -205,7 +205,7 @@ func test_modular_playmat_parts_are_authored_and_clear_of_the_board() -> void:
 		"HudLayer/EnvironmentZonePanel",
 		"HudLayer/ArtifactsZonePanel",
 		"HudLayer/TrapsZonePanel",
-		"HudLayer/CapturesZonePanel",
+		"HudLayer/LocalCapturesZonePanel",
 	]:
 		assert_false(screen.get_node(zone_path).get_global_rect().intersects(board_rect), "%s overlaps board" % zone_path)
 

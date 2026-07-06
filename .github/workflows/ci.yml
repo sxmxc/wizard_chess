@@ -125,7 +125,12 @@ jobs:
           Remove-Item -Recurse -Force $tmpDir -ErrorAction SilentlyContinue
           New-Item -ItemType Directory -Force -Path $tmpDir | Out-Null
           Expand-Archive -LiteralPath $templateZip -DestinationPath $tmpDir -Force
-          Copy-Item -Path (Join-Path $tmpDir "templates\*") -Destination $templatesDir -Recurse -Force
+          Copy-Item -Path "$tmpDir\templates\*" -Destination $templatesDir -Recurse -Force
+
+      - name: Verify Windows templates
+        shell: pwsh
+        run: |
+          Get-ChildItem "$env:APPDATA\Godot\export_templates\4.7.stable"
 
       - name: Prepare build directories
         shell: pwsh
@@ -137,7 +142,17 @@ jobs:
 
       - name: Export project
         shell: pwsh
-        run: .\Godot_v4.7-stable_win64.exe --headless --path . --export-release "Windows Desktop" "builds/windows/Wizard Chess.exe"
+        run: |
+          .\Godot_v4.7-stable_win64.exe --headless --path . --export-release "Windows Desktop" "builds/windows/Wizard Chess.exe"
+          Get-ChildItem -Recurse builds
+          if (!(Test-Path "builds/windows/Wizard Chess.exe")) {
+          throw "Windows export did not produce Wizard Chess.exe"
+          }
+      
+      - name: Show build output
+        shell: pwsh
+        run: |
+          Get-ChildItem -Recurse builds
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7

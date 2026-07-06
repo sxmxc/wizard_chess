@@ -14,7 +14,7 @@ The screen has moved away from the original monolithic debug layout and now pres
 - maintainability over cleverness
 - card-game readability over debug-screen convenience
 
-`LocalWizardMatchScreen` still coordinates too much state refresh, but the major visible regions now have composition boundaries and regression coverage. The screenshot review on the local/AI screen showed that passing tests is not enough: authored zones must be visually placed, must not overlap the board, and must not leak hidden information through hover text or board markers.
+ The screenshot review on the local/AI screen showed that passing tests is not enough: authored zones must be visually placed, must not overlap the board, and must not leak hidden information through hover text or board markers.
 
 Current practical status:
 
@@ -149,14 +149,12 @@ The current local match screen now has:
 
 Additional current truth after later tuning:
 
-- `HudLayer` is now a `Control`, so authored HUD anchors resolve against a proper full-screen control root at runtime
 - hand-panel and portrait placement are no longer being recomputed by broad runtime layout math
 - `WizardMatchHudLayout` now only handles narrow responsive behavior such as inspector placement, sidebar clamping, and z-order, rather than trying to own the entire HUD geometry
 - the local portrait positions have been moved in the editor to improve match readability and territory clarity
 
 ## Remaining Risks
 
-- `LocalWizardMatchScreen` still owns too much orchestration and refresh logic.
 - `WizardMatchHudLayout` still exists, but static pile, public-zone, and turn-panel placement should remain scene-authored. Do not move those back into hard-coded layout math.
 - the modular assets need final in-editor visual acceptance at the 1920x1080 project viewport; automated capture through Godot's headless dummy renderer is not reliable in 4.7.
 - lower display sizes cannot preserve a fixed 736 board plus two full readable hand states without overlap; the project currently treats 1920x1080 as the authored gameplay viewport and uses canvas-item stretching for smaller windows.
@@ -167,9 +165,7 @@ Additional current truth after later tuning:
 
 Known visual gaps still visible in the current local scene:
 
-- the opponent hand remains smaller than desired relative to the available tray space
 - the action area still reads more like HUD text than a deliberate tabletop tray
-- side-zone labels still dominate more than the slot visuals themselves
 - the board presentation is serviceable, but it still feels less integrated with the table than the card and pile surfaces do
 
 ## Obsolete Or Misleading Notes

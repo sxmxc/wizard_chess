@@ -96,4 +96,3 @@ func reset_drag() -> void:
 	source_square = null
 	cursor_global = Vector2.ZERO
 	state = State.IDLE
-

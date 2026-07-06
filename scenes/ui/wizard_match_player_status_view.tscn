@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://dsdy7tb78n4vs"]
 
 [ext_resource type="Script" uid="uid://cxfhhqun6w180" path="res://scripts/ui/wizard_match_player_status_view.gd" id="1"]
-[ext_resource type="Texture2D" uid="uid://c7g8rdg5487j4" path="res://assets/ui/wizard_match/generated/white_wizard_portrait.png" id="2_hmfle"]
-[ext_resource type="Texture2D" uid="uid://dkeb4wtu6g7jw" path="res://assets/ui/wizard_match/generated/mana_crystal.png" id="3_v621h"]
-[ext_resource type="Texture2D" path="res://assets/ui/wizard_match/playmat_parts/wizard_portrait_frame.png" id="4_frame"]
+[ext_resource type="Texture2D" uid="uid://c7g8rdg5487j4" path="res://assets/ui/wizard_match/white_wizard_portrait.png" id="2_hmfle"]
+[ext_resource type="Texture2D" uid="uid://dkeb4wtu6g7jw" path="res://assets/ui/wizard_match/mana_crystal.png" id="3_v621h"]
+[ext_resource type="Texture2D" uid="uid://g60gyk18iv6n" path="res://assets/ui/wizard_match/playmat_parts/wizard_portrait_frame.png" id="4_frame"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_soc7w"]
 

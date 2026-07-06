@@ -352,6 +352,8 @@ Networking should synchronize gameplay actions and authoritative state between t
 
 Clients may perform local prediction or visual previews to improve responsiveness, but all gameplay decisions remain subject to server validation.
 
+The authoritative networking path should target `WizardMatch` directly. `ChessEngine` remains the reusable chess subsystem inside that simulation, and transport/session code such as `NetworkMatchBridge` should not depend on a separate `ChessMatch` wrapper.
+
 The networking architecture should support:
 
 - Dedicated servers

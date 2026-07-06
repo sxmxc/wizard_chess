@@ -19,10 +19,12 @@ var screen: Control
 var hovered_square: Vector2i = INVALID_SQUARE
 var square_visuals := {}
 var square_buttons := {}
+var visual_buttons := {}
 var piece_nodes := {}
 var board_container: Control
 var board_grid: GridContainer
 var piece_layer: Control
+var viewer_color: String = ChessEngine.WHITE
 
 
 func _ready() -> void:
@@ -71,8 +73,9 @@ func square_at_global_position(next_global_position: Vector2) -> Vector2i:
 func get_square_rect(square: Vector2i) -> Rect2:
 	var board_rect := _board_rect()
 	var cell_size := _cell_size(board_rect)
+	var visual_square := _logical_to_visual(square)
 	return Rect2(
-		board_rect.position + Vector2(square.x * (cell_size + square_gap), square.y * (cell_size + square_gap)),
+		board_rect.position + Vector2(visual_square.x * (cell_size + square_gap), visual_square.y * (cell_size + square_gap)),
 		Vector2(cell_size, cell_size)
 	)
 
@@ -133,10 +136,11 @@ func _square_at_position(local_position: Vector2) -> Vector2i:
 	var cell_size := _cell_size(board_rect)
 	var local := local_position - board_rect.position
 	var step := cell_size + square_gap
-	return Vector2i(
+	var visual_square := Vector2i(
 		clampi(int(local.x / step), 0, BOARD_EDGE - 1),
 		clampi(int(local.y / step), 0, BOARD_EDGE - 1)
 	)
+	return _visual_to_logical(visual_square)
 
 
 func _board_rect() -> Rect2:
@@ -171,32 +175,43 @@ func _build_board_nodes() -> void:
 
 	for rank in range(BOARD_EDGE):
 		for file in range(BOARD_EDGE):
-			var square := Vector2i(file, rank)
+			var visual_square := Vector2i(file, rank)
 			var button := WizardMatchBoardSquareButton.new()
-			button.square = square
+			button.square = _visual_to_logical(visual_square)
 			button.screen = screen
-			button.pressed.connect(func(next_square := square) -> void:
-				square_pressed.emit(next_square)
+			button.pressed.connect(func(next_button := button) -> void:
+				square_pressed.emit(next_button.square)
 			)
-			button.mouse_entered.connect(func(next_square := square) -> void:
-				_update_hover_square(next_square)
+			button.mouse_entered.connect(func(next_button := button) -> void:
+				_update_hover_square(next_button.square)
 			)
-			button.mouse_exited.connect(func(next_square := square) -> void:
-				if hovered_square == next_square:
+			button.mouse_exited.connect(func(next_button := button) -> void:
+				if hovered_square == next_button.square:
 					_update_hover_square(INVALID_SQUARE)
 			)
 			board_grid.add_child(button)
-			square_buttons[square] = button
+			visual_buttons[visual_square] = button
+	_rebuild_square_button_map()
 
 
 func set_screen(next_screen: Control) -> void:
 	screen = next_screen
-	for button_value in square_buttons.values():
+	for button_value in visual_buttons.values():
 		var button: WizardMatchBoardSquareButton = button_value
 		button.screen = next_screen
 	for piece_value in piece_nodes.values():
 		var piece: WizardMatchBoardPiece = piece_value
 		piece.screen = next_screen
+
+
+func set_viewer_color(color: String) -> void:
+	var next_color := color if color == ChessEngine.BLACK else ChessEngine.WHITE
+	if viewer_color == next_color and not square_buttons.is_empty():
+		return
+	viewer_color = next_color
+	_rebuild_square_button_map()
+	if is_node_ready():
+		_layout_board()
 
 
 func _layout_board() -> void:
@@ -208,21 +223,23 @@ func _layout_board() -> void:
 	board_container.size = board_rect.size
 	board_grid.position = Vector2.ZERO
 	board_grid.size = board_rect.size
-	for square in square_buttons.keys():
-		var button: WizardMatchBoardSquareButton = square_buttons[square]
+	for visual_square in visual_buttons.keys():
+		var button: WizardMatchBoardSquareButton = visual_buttons[visual_square]
+		var logical_square := _visual_to_logical(visual_square)
+		button.square = logical_square
 		button.custom_minimum_size = Vector2(cell_size, cell_size)
 		button.size = Vector2(cell_size, cell_size)
-		if square_visuals.has(square):
-			var visual: Dictionary = square_visuals[square]
+		if square_visuals.has(logical_square):
+			var visual: Dictionary = square_visuals[logical_square]
 			button.set_square_visuals(
 				visual["icon"],
 				visual["tooltip"],
 				visual["fill_color"],
-				_square_name(square) if visual["show_coordinates"] else ""
+				_square_name(logical_square) if visual["show_coordinates"] else ""
 			)
-		var piece_node := piece_nodes.get(square) as WizardMatchBoardPiece
+		var piece_node := piece_nodes.get(logical_square) as WizardMatchBoardPiece
 		if piece_node != null:
-			piece_node.position = get_square_rect(square).position
+			piece_node.position = get_square_rect(logical_square).position
 			piece_node.size = Vector2(cell_size, cell_size)
 
 
@@ -252,6 +269,26 @@ func _ensure_piece_node(square: Vector2i) -> WizardMatchBoardPiece:
 	piece_layer.add_child(piece)
 	piece_nodes[square] = piece
 	return piece
+
+
+func _rebuild_square_button_map() -> void:
+	square_buttons.clear()
+	for rank in range(BOARD_EDGE):
+		for file in range(BOARD_EDGE):
+			var logical_square := Vector2i(file, rank)
+			square_buttons[logical_square] = visual_buttons.get(_logical_to_visual(logical_square))
+
+
+func _logical_to_visual(square: Vector2i) -> Vector2i:
+	if viewer_color != ChessEngine.BLACK:
+		return square
+	return Vector2i(BOARD_EDGE - 1 - square.x, BOARD_EDGE - 1 - square.y)
+
+
+func _visual_to_logical(square: Vector2i) -> Vector2i:
+	if viewer_color != ChessEngine.BLACK:
+		return square
+	return Vector2i(BOARD_EDGE - 1 - square.x, BOARD_EDGE - 1 - square.y)
 
 
 func _square_name(square: Vector2i) -> String:

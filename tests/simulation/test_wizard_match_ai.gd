@@ -13,8 +13,8 @@ func test_ai_setup_choice_is_deterministic() -> void:
 	assert_true(match_a.start_match(_load_deck(), _load_deck(), 21)["ok"])
 	assert_true(match_b.start_match(_load_deck(), _load_deck(), 21)["ok"])
 
-	var action_a := white_ai.choose_next_action(match_a, ChessMatch.WHITE)
-	var action_b := white_ai.choose_next_action(match_b, ChessMatch.WHITE)
+	var action_a := white_ai.choose_next_action(match_a, ChessEngine.WHITE)
+	var action_b := white_ai.choose_next_action(match_b, ChessEngine.WHITE)
 
 	assert_eq(action_a, action_b)
 	assert_true(action_a.has("type"))
@@ -26,17 +26,17 @@ func test_ai_executes_legal_turn_actions_through_move_phase() -> void:
 	var black_ai := _load_ai(INTERMEDIATE_AI_PATH)
 
 	assert_true(wizard_match.start_match(_load_deck(), _load_deck(), 22)["ok"])
-	assert_true(white_ai.apply_next_action(wizard_match, ChessMatch.WHITE)["ok"])
-	assert_true(black_ai.apply_next_action(wizard_match, ChessMatch.BLACK)["ok"])
+	assert_true(white_ai.apply_next_action(wizard_match, ChessEngine.WHITE)["ok"])
+	assert_true(black_ai.apply_next_action(wizard_match, ChessEngine.BLACK)["ok"])
 
 	var safety_limit := 8
 	while safety_limit > 0 and wizard_match.phase != WizardMatch.PHASE_REACTION:
 		safety_limit -= 1
-		assert_true(white_ai.apply_next_action(wizard_match, ChessMatch.WHITE)["ok"])
+		assert_true(white_ai.apply_next_action(wizard_match, ChessEngine.WHITE)["ok"])
 
 	assert_eq(wizard_match.phase, WizardMatch.PHASE_REACTION)
 	assert_eq(wizard_match.chess_state.move_history.size(), 1)
-	assert_eq(wizard_match.reaction_priority_color, ChessMatch.WHITE)
+	assert_eq(wizard_match.reaction_priority_color, ChessEngine.WHITE)
 
 
 func test_ai_self_play_can_finish_forced_match() -> void:
@@ -45,8 +45,8 @@ func test_ai_self_play_can_finish_forced_match() -> void:
 	var black_ai := _load_ai(INTERMEDIATE_AI_PATH)
 
 	assert_true(wizard_match.start_match(_load_deck(), _load_deck(), 23)["ok"])
-	assert_true(white_ai.apply_next_action(wizard_match, ChessMatch.WHITE)["ok"])
-	assert_true(black_ai.apply_next_action(wizard_match, ChessMatch.BLACK)["ok"])
+	assert_true(white_ai.apply_next_action(wizard_match, ChessEngine.WHITE)["ok"])
+	assert_true(black_ai.apply_next_action(wizard_match, ChessEngine.BLACK)["ok"])
 
 	wizard_match.chess_engine.load_fen("7k/6Q1/6K1/8/8/8/8/8 w - - 0 1")
 
@@ -54,12 +54,12 @@ func test_ai_self_play_can_finish_forced_match() -> void:
 	while safety_limit > 0 and wizard_match.state != WizardMatch.STATE_COMPLETE:
 		safety_limit -= 1
 		var actor := _current_actor_color(wizard_match)
-		var controller := white_ai if actor == ChessMatch.WHITE else black_ai
+		var controller := white_ai if actor == ChessEngine.WHITE else black_ai
 		assert_true(controller.apply_next_action(wizard_match, actor)["ok"])
 
 	assert_eq(wizard_match.state, WizardMatch.STATE_COMPLETE)
-	assert_eq(wizard_match.chess_state.outcome["status"], ChessMatch.STATUS_CHECKMATE)
-	assert_eq(wizard_match.chess_state.outcome["winner"], ChessMatch.WHITE)
+	assert_eq(wizard_match.chess_state.outcome["status"], ChessEngine.STATUS_CHECKMATE)
+	assert_eq(wizard_match.chess_state.outcome["winner"], ChessEngine.WHITE)
 
 
 func _make_match() -> WizardMatch:
@@ -77,7 +77,7 @@ func _load_deck() -> DeckDefinition:
 
 func _current_actor_color(wizard_match: WizardMatch) -> String:
 	if wizard_match.state == WizardMatch.STATE_SETUP:
-		for color in [ChessMatch.WHITE, ChessMatch.BLACK]:
+		for color in [ChessEngine.WHITE, ChessEngine.BLACK]:
 			if bool(wizard_match.get_player_state(color).get("mulligan_available", false)):
 				return color
 		return ""
@@ -85,7 +85,7 @@ func _current_actor_color(wizard_match: WizardMatch) -> String:
 		return wizard_match.chess_state.active_color
 	if wizard_match.phase == WizardMatch.PHASE_REACTION:
 		return wizard_match.reaction_priority_color
-	for color in [ChessMatch.WHITE, ChessMatch.BLACK]:
+	for color in [ChessEngine.WHITE, ChessEngine.BLACK]:
 		if wizard_match.get_pending_hand_limit_discard_count(color) > 0:
 			return color
-	return ChessMatch.BLACK if wizard_match.chess_state.active_color == ChessMatch.WHITE else ChessMatch.WHITE
+	return ChessEngine.BLACK if wizard_match.chess_state.active_color == ChessEngine.WHITE else ChessEngine.WHITE

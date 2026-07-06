@@ -23,9 +23,23 @@ const ZONE_EXILE := "exile"
 const TARGET_TYPE_PIECE := "piece"
 const TARGET_TYPE_SQUARE := "square"
 
+const ACTION_TYPE_KEEP_OPENING_HAND := "keep_opening_hand"
+const ACTION_TYPE_PERFORM_MULLIGAN := "perform_mulligan"
 const ACTION_TYPE_ADVANCE_PHASE := "advance_phase"
 const ACTION_TYPE_PLAY_CARD := "play_card"
 const ACTION_TYPE_MOVE := "move"
+const ACTION_TYPE_PASS_REACTION := "pass_reaction_phase"
+const ACTION_TYPE_DISCARD_FOR_HAND_LIMIT := "discard_cards_for_hand_limit"
+const ACTION_TYPE_CLAIM_DRAW := ChessEngine.ACTION_TYPE_CLAIM_DRAW
+
+const WHITE := ChessEngine.WHITE
+const BLACK := ChessEngine.BLACK
+const STATUS_ACTIVE := ChessEngine.STATUS_ACTIVE
+const PIECE_PAWN := ChessEngine.PIECE_PAWN
+const PIECE_BISHOP := ChessEngine.PIECE_BISHOP
+const PIECE_ROOK := ChessEngine.PIECE_ROOK
+const PIECE_KING := ChessEngine.PIECE_KING
+
 const EFFECT_DURATION_UNTIL_END_OF_TURN := "until_end_of_turn"
 const EFFECT_DURATION_WHILE_ATTACHED := "while_attached"
 const EFFECT_DURATION_WHILE_ON_BATTLEFIELD := "while_on_battlefield"
@@ -81,8 +95,8 @@ func start_match(white_deck: DeckDefinition, black_deck: DeckDefinition, initial
 	active_effects = []
 	_next_card_instance_id = 1
 	_reset_players()
-	_initialize_player(ChessMatch.WHITE, white_deck)
-	_initialize_player(ChessMatch.BLACK, black_deck)
+	_initialize_player(WHITE, white_deck)
+	_initialize_player(BLACK, black_deck)
 	event_queue.enqueue({
 		"type": "match_started",
 		"payload": {
@@ -338,6 +352,31 @@ func discard_cards_for_hand_limit(card_instance_ids: Array[String]) -> Dictionar
 	return _result(true)
 
 
+func apply_action(action: Dictionary, acting_color: String = "") -> Dictionary:
+	match str(action.get("type", "")):
+		ACTION_TYPE_KEEP_OPENING_HAND:
+			return keep_opening_hand(_action_color_or_default(action, acting_color))
+		ACTION_TYPE_PERFORM_MULLIGAN:
+			return perform_mulligan(
+				_action_color_or_default(action, acting_color),
+				_extract_string_array(action.get("card_instance_ids", []))
+			)
+		ACTION_TYPE_ADVANCE_PHASE:
+			return _apply_advance_phase_action(acting_color)
+		ACTION_TYPE_PLAY_CARD:
+			return play_card_from_hand(str(action.get("card_instance_id", "")), action.get("targets", []))
+		ACTION_TYPE_MOVE:
+			return apply_move_action(action.get("action", action))
+		ACTION_TYPE_PASS_REACTION:
+			return _result(pass_reaction_phase())
+		ACTION_TYPE_DISCARD_FOR_HAND_LIMIT:
+			return discard_cards_for_hand_limit(_extract_string_array(action.get("card_instance_ids", [])))
+		ACTION_TYPE_CLAIM_DRAW:
+			return _apply_claim_draw_action(_action_color_or_default(action, acting_color))
+		_:
+			return _result(false, "unknown_action")
+
+
 func play_card_from_hand(card_instance_id: String, targets: Array = []) -> Dictionary:
 	if state != STATE_ACTIVE:
 		return _result(false, "match_not_active")
@@ -439,6 +478,49 @@ func clone() -> WizardMatch:
 	return copy
 
 
+func expected_actor_color() -> String:
+	if state == STATE_SETUP:
+		for color in [WHITE, BLACK]:
+			if bool(players.get(color, {}).get("mulligan_available", false)):
+				return color
+		return ""
+	if state != STATE_ACTIVE:
+		return ""
+	match phase:
+		PHASE_BEGINNING, PHASE_PREPARATION, PHASE_MOVE:
+			return chess_state.active_color
+		PHASE_REACTION:
+			return reaction_priority_color
+		PHASE_END:
+			for color in [WHITE, BLACK]:
+				if get_pending_hand_limit_discard_count(color) > 0:
+					return color
+			return _inactive_color()
+		_:
+			return ""
+
+
+func can_color_submit_action(color: String, action: Dictionary = {}) -> bool:
+	if color.is_empty():
+		return false
+	if state == STATE_SETUP:
+		var action_type := str(action.get("type", ""))
+		if action_type != ACTION_TYPE_KEEP_OPENING_HAND and action_type != ACTION_TYPE_PERFORM_MULLIGAN:
+			return false
+		return bool(players.get(color, {}).get("mulligan_available", false))
+	if state != STATE_ACTIVE:
+		return false
+	if phase in [PHASE_BEGINNING, PHASE_PREPARATION, PHASE_MOVE]:
+		return chess_state.active_color == color
+	if phase == PHASE_REACTION:
+		return reaction_priority_color == color
+	if phase == PHASE_END:
+		if get_pending_hand_limit_discard_count(color) > 0:
+			return true
+		return _inactive_color() == color
+	return false
+
+
 func get_legal_card_actions(color: String) -> Array:
 	if not players.has(color):
 		return []
@@ -499,6 +581,13 @@ func create_state_snapshot() -> Dictionary:
 	}
 
 
+func create_network_snapshot(viewer_color: String = "") -> Dictionary:
+	var snapshot := create_state_snapshot()
+	snapshot["players"] = _create_visible_players_snapshot(viewer_color)
+	snapshot["event_history"] = []
+	return snapshot
+
+
 func load_state_snapshot(snapshot: Dictionary) -> void:
 	var restored_rules := WizardMatchRules.new()
 	var rules_snapshot: Dictionary = snapshot.get("rules", {})
@@ -525,8 +614,58 @@ func load_state_snapshot(snapshot: Dictionary) -> void:
 	active_effects = snapshot.get("active_effects", []).duplicate(true)
 	_next_card_instance_id = int(snapshot.get("next_card_instance_id", 1))
 	players = snapshot.get("players", {}).duplicate(true)
-	chess_engine.load_state_snapshot(snapshot.get("chess_state", snapshot.get("chess_match", {})))
+	chess_engine.load_state_snapshot(snapshot.get("chess_state", {}))
 	event_queue.load_history(snapshot.get("event_history", []))
+
+
+func _create_visible_players_snapshot(viewer_color: String) -> Dictionary:
+	var visible_players := {}
+	for color in [WHITE, BLACK]:
+		visible_players[color] = _create_visible_player_state(players.get(color, {}), viewer_color)
+	return visible_players
+
+
+func _create_visible_player_state(player_state: Dictionary, viewer_color: String) -> Dictionary:
+	var visible_state := player_state.duplicate(true)
+	var is_owner := str(player_state.get("color", "")) == viewer_color
+	var deck: Array = player_state.get("deck", [])
+	var hand: Array = player_state.get("hand", [])
+	visible_state["deck_count"] = deck.size()
+	visible_state["hand_count"] = hand.size()
+	visible_state["deck"] = _create_hidden_zone_entries(deck.size(), ZONE_DECK)
+	visible_state["hand"] = hand.duplicate(true) if is_owner else _create_hidden_zone_entries(hand.size(), ZONE_HAND)
+	visible_state["battlefield"] = _create_visible_battlefield(player_state.get("battlefield", []), viewer_color)
+	return visible_state
+
+
+func _create_visible_battlefield(cards: Array, viewer_color: String) -> Array:
+	var visible_cards: Array = []
+	for card_value in cards:
+		var card_state: Dictionary = card_value
+		if str(card_state.get("card_type", "")) == CardDefinition.TYPE_TRAP \
+		and bool(card_state.get("face_down", false)) \
+		and str(card_state.get("controller", "")) != viewer_color:
+			visible_cards.append({
+				"instance_id": str(card_state.get("instance_id", "")),
+				"card_type": CardDefinition.TYPE_TRAP,
+				"controller": str(card_state.get("controller", "")),
+				"placed_on": str(card_state.get("placed_on", "")),
+				"face_down": true,
+			})
+			continue
+		visible_cards.append(card_state.duplicate(true))
+	return visible_cards
+
+
+func _create_hidden_zone_entries(count: int, zone_name: String) -> Array:
+	var hidden_entries: Array = []
+	for index in range(count):
+		hidden_entries.append({
+			"instance_id": "%s_hidden_%d" % [zone_name, index],
+			"hidden": true,
+			"zone": zone_name,
+		})
+	return hidden_entries
 
 
 func _initialize_player(color: String, deck: DeckDefinition) -> void:
@@ -744,11 +883,11 @@ func _requirement_matches_target(acting_color: String, requirement_text: String,
 	if normalized == "pawn" or normalized == "knight" or normalized == "bishop" or normalized == "rook" or normalized == "queen" or normalized == "king":
 		return piece["type"] == normalized
 	if normalized == "threatened rook":
-		return piece["type"] == ChessMatch.PIECE_ROOK and chess_engine.is_square_attacked(target_square, _opponent(piece["color"]))
+		return piece["type"] == PIECE_ROOK and chess_engine.is_square_attacked(target_square, _opponent(piece["color"]))
 	if normalized == "bishop adjacent to your king":
-		return piece["type"] == ChessMatch.PIECE_BISHOP and piece["color"] == acting_color and _is_adjacent_to_own_king(target_square, piece["color"])
+		return piece["type"] == PIECE_BISHOP and piece["color"] == acting_color and _is_adjacent_to_own_king(target_square, piece["color"])
 	if normalized == "pawn beyond rank 5":
-		return piece["type"] == ChessMatch.PIECE_PAWN and _is_pawn_beyond_rank_five(target_square, piece["color"])
+		return piece["type"] == PIECE_PAWN and _is_pawn_beyond_rank_five(target_square, piece["color"])
 
 	return false
 
@@ -815,10 +954,10 @@ func _sync_attached_units_after_move(move: Dictionary) -> void:
 	_move_attached_unit(move["from"], move["to"])
 
 	if move["is_castle_kingside"]:
-		var home_rank := 7 if str(move["color"]) == ChessMatch.WHITE else 0
+		var home_rank := 7 if str(move["color"]) == WHITE else 0
 		_move_attached_unit(Vector2i(7, home_rank), Vector2i(5, home_rank))
 	elif move["is_castle_queenside"]:
-		var queen_home_rank := 7 if str(move["color"]) == ChessMatch.WHITE else 0
+		var queen_home_rank := 7 if str(move["color"]) == WHITE else 0
 		_move_attached_unit(Vector2i(0, queen_home_rank), Vector2i(3, queen_home_rank))
 
 
@@ -826,7 +965,7 @@ func _capture_attached_units_at_square(square: Vector2i) -> void:
 	if square.x < 0:
 		return
 	var square_name := chess_engine.square_to_algebraic(square)
-	for color in [ChessMatch.WHITE, ChessMatch.BLACK]:
+	for color in [WHITE, BLACK]:
 		var player: Dictionary = players[color]
 		var battlefield: Array = player["battlefield"]
 		for index in range(battlefield.size() - 1, -1, -1):
@@ -854,7 +993,7 @@ func _capture_attached_units_at_square(square: Vector2i) -> void:
 func _move_attached_unit(from_square: Vector2i, to_square: Vector2i) -> void:
 	var from_name := chess_engine.square_to_algebraic(from_square)
 	var to_name := chess_engine.square_to_algebraic(to_square)
-	for color in [ChessMatch.WHITE, ChessMatch.BLACK]:
+	for color in [WHITE, BLACK]:
 		var player: Dictionary = players[color]
 		var battlefield: Array = player["battlefield"]
 		for index in range(battlefield.size()):
@@ -870,7 +1009,7 @@ func _move_attached_unit(from_square: Vector2i, to_square: Vector2i) -> void:
 
 
 func _resolve_action_to_legal_move(action: Dictionary):
-	if str(action.get("type", "")) != ChessMatch.ACTION_TYPE_MOVE:
+	if str(action.get("type", "")) != ACTION_TYPE_MOVE:
 		return null
 	if not action.has("from") or not action.has("to"):
 		return null
@@ -884,9 +1023,9 @@ func _resolve_action_to_legal_move(action: Dictionary):
 
 
 func _complete_setup_if_ready() -> void:
-	if not bool(players[ChessMatch.WHITE].get("setup_ready", false)):
+	if not bool(players[WHITE].get("setup_ready", false)):
 		return
-	if not bool(players[ChessMatch.BLACK].get("setup_ready", false)):
+	if not bool(players[BLACK].get("setup_ready", false)):
 		return
 
 	setup_step = SETUP_STEP_READY
@@ -923,6 +1062,51 @@ func _hand_overflow_count(color: String) -> int:
 	return max(player["hand"].size() - rules.maximum_hand_size, 0)
 
 
+func _apply_advance_phase_action(_acting_color: String) -> Dictionary:
+	match phase:
+		PHASE_BEGINNING:
+			return _result(resolve_beginning_phase())
+		PHASE_PREPARATION:
+			return _result(finish_preparation_phase())
+		PHASE_REACTION:
+			return _result(pass_reaction_phase())
+		PHASE_END:
+			return _result(resolve_end_phase())
+		_:
+			return _result(false, "phase_cannot_advance")
+
+
+func _apply_claim_draw_action(acting_color: String) -> Dictionary:
+	if not chess_engine.claim_draw():
+		return _result(false, "draw_unavailable")
+	event_queue.enqueue({
+		"type": "draw_claimed",
+		"payload": {
+			"color": acting_color,
+			"reason": chess_state.claimable_draw_reason,
+		},
+	})
+	event_queue.resolve_all()
+	_refresh_state_from_chess()
+	return _result(true)
+
+
+func _action_color_or_default(action: Dictionary, fallback_color: String) -> String:
+	var explicit_color := str(action.get("color", ""))
+	if not explicit_color.is_empty():
+		return explicit_color
+	if not fallback_color.is_empty():
+		return fallback_color
+	return expected_actor_color()
+
+
+func _extract_string_array(values: Array) -> Array[String]:
+	var strings: Array[String] = []
+	for value in values:
+		strings.append(str(value))
+	return strings
+
+
 func _target_square(target: Dictionary):
 	var square_text := str(target.get("square", ""))
 	if square_text.is_empty():
@@ -935,7 +1119,7 @@ func _is_adjacent_to_own_king(square: Vector2i, color: String) -> bool:
 		for file in range(8):
 			var candidate := Vector2i(file, rank)
 			var piece = chess_engine.get_piece(candidate)
-			if piece == null or piece["color"] != color or piece["type"] != ChessMatch.PIECE_KING:
+			if piece == null or piece["color"] != color or piece["type"] != PIECE_KING:
 				continue
 			return abs(candidate.x - square.x) <= 1 and abs(candidate.y - square.y) <= 1
 	return false
@@ -943,7 +1127,7 @@ func _is_adjacent_to_own_king(square: Vector2i, color: String) -> bool:
 
 func _is_pawn_beyond_rank_five(square: Vector2i, color: String) -> bool:
 	var rank_from_white_perspective := 8 - square.y
-	if color == ChessMatch.WHITE:
+	if color == WHITE:
 		return rank_from_white_perspective > 5
 	return rank_from_white_perspective < 4
 
@@ -1010,16 +1194,16 @@ func _validate_deck(deck: DeckDefinition) -> Dictionary:
 
 
 func _refresh_state_from_chess() -> void:
-	if chess_state.outcome["status"] != ChessMatch.STATUS_ACTIVE:
+	if chess_state.outcome["status"] != STATUS_ACTIVE:
 		state = STATE_COMPLETE
 
 
 func _inactive_color() -> String:
-	return ChessMatch.BLACK if chess_state.active_color == ChessMatch.WHITE else ChessMatch.WHITE
+	return BLACK if chess_state.active_color == WHITE else WHITE
 
 
 func _opponent(color: String) -> String:
-	return ChessMatch.BLACK if color == ChessMatch.WHITE else ChessMatch.WHITE
+	return BLACK if color == WHITE else WHITE
 
 
 func _turn_player_color() -> String:
@@ -1040,7 +1224,7 @@ func _find_card_index(cards: Array, card_instance_id: String) -> int:
 
 
 func _find_hand_owner(card_instance_id: String) -> String:
-	for color in [ChessMatch.WHITE, ChessMatch.BLACK]:
+	for color in [WHITE, BLACK]:
 		if _find_card_index(players[color]["hand"], card_instance_id) >= 0:
 			return color
 	return ""
@@ -1111,7 +1295,7 @@ func _record_reaction_window_for_play(acting_color: String, card_state: Dictiona
 func _replace_environment_if_needed(card_state: Dictionary) -> void:
 	if str(card_state.get("card_type", "")) != CardDefinition.TYPE_ENVIRONMENT:
 		return
-	for color in [ChessMatch.WHITE, ChessMatch.BLACK]:
+	for color in [WHITE, BLACK]:
 		var player: Dictionary = players[color]
 		var battlefield: Array = player["battlefield"]
 		for index in range(battlefield.size() - 1, -1, -1):
@@ -1191,7 +1375,7 @@ func _update_effect_square(card_instance_id: String, square_name: String) -> voi
 
 func _resolve_traps_for_move(moving_color: String, move: Dictionary) -> void:
 	var destination_name := chess_engine.square_to_algebraic(move["to"])
-	for color in [ChessMatch.WHITE, ChessMatch.BLACK]:
+	for color in [WHITE, BLACK]:
 		var player: Dictionary = players[color]
 		var battlefield: Array = player["battlefield"]
 		for index in range(battlefield.size() - 1, -1, -1):
@@ -1251,8 +1435,8 @@ func _expire_temporary_effects(expiry_point: String) -> void:
 
 func _reset_players() -> void:
 	players = {
-		ChessMatch.WHITE: {
-			"color": ChessMatch.WHITE,
+		WHITE: {
+			"color": WHITE,
 			"deck": [],
 			"hand": [],
 			"battlefield": [],
@@ -1263,8 +1447,8 @@ func _reset_players() -> void:
 			"mulligan_available": true,
 			"setup_ready": false,
 		},
-		ChessMatch.BLACK: {
-			"color": ChessMatch.BLACK,
+		BLACK: {
+			"color": BLACK,
 			"deck": [],
 			"hand": [],
 			"battlefield": [],

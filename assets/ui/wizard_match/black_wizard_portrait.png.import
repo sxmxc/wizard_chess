@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://2yjfn1056fpv"
-path="res://.godot/imported/black_wizard_portrait.png-67cc62167fd31c1b53e98c76ae7a3bb5.ctex"
+path="res://.godot/imported/black_wizard_portrait.png-f685ce70e6b4321d25e96c2f5d4ec16b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/wizard_match/generated/black_wizard_portrait.png"
-dest_files=["res://.godot/imported/black_wizard_portrait.png-67cc62167fd31c1b53e98c76ae7a3bb5.ctex"]
+source_file="res://assets/ui/wizard_match/black_wizard_portrait.png"
+dest_files=["res://.godot/imported/black_wizard_portrait.png-f685ce70e6b4321d25e96c2f5d4ec16b.ctex"]
 
 [params]
 

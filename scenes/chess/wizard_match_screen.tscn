@@ -1,0 +1,793 @@
+[gd_scene format=3 uid="uid://30juobo7btfs"]
+
+[ext_resource type="Script" uid="uid://ysnspnsbb7nj" path="res://scripts/ui/wizard_match_screen.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://bnn641vumdbpo" path="res://assets/ui/wizard_match/playmat_parts/table_base.png" id="2_cuksk"]
+[ext_resource type="Texture2D" uid="uid://bjj14tojpdlwe" path="res://assets/ui/wizard_match/card_back.png" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/wizard_match_board_view.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hand_fan_view.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/ui/targeting_overlay.tscn" id="7"]
+[ext_resource type="Script" uid="uid://bt72n28k1avh2" path="res://scripts/ui/card_interaction_controller.gd" id="8"]
+[ext_resource type="PackedScene" uid="uid://bq74g7qu1d60y" path="res://scenes/ui/wizard_match_inspector_view.tscn" id="9"]
+[ext_resource type="PackedScene" path="res://scenes/ui/wizard_match_hud_sidebar.tscn" id="10"]
+[ext_resource type="PackedScene" uid="uid://b7q6jcjfjs8fp" path="res://scenes/ui/wizard_match_hud_layout.tscn" id="11"]
+[ext_resource type="PackedScene" uid="uid://dsdy7tb78n4vs" path="res://scenes/ui/wizard_match_player_status_view.tscn" id="12"]
+[ext_resource type="StyleBox" uid="uid://ds36jbrdrwedy" path="res://assets/ui/tray_panel.tres" id="12_r1vlw"]
+[ext_resource type="Texture2D" uid="uid://c7g8rdg5487j4" path="res://assets/ui/wizard_match/white_wizard_portrait.png" id="13"]
+[ext_resource type="Texture2D" uid="uid://2yjfn1056fpv" path="res://assets/ui/wizard_match/black_wizard_portrait.png" id="14"]
+[ext_resource type="Texture2D" uid="uid://dkeb4wtu6g7jw" path="res://assets/ui/wizard_match/mana_crystal.png" id="15"]
+[ext_resource type="StyleBox" uid="uid://ch60ukde3qbxf" path="res://assets/ui/card_well.tres" id="15_r1vlw"]
+[ext_resource type="Script" uid="uid://3ljctlr866ao" path="res://scripts/ui/wizard_match_pile_view.gd" id="16_pile"]
+[ext_resource type="Script" uid="uid://c04ix2lr0jlcj" path="res://scripts/ui/wizard_match_turn_action_panel.gd" id="17_turn"]
+[ext_resource type="Script" uid="uid://co12iex27gh7y" path="res://scripts/ui/wizard_match_public_zone_panel.gd" id="18_public_zone"]
+[ext_resource type="PackedScene" uid="uid://ur0yl8cgyawa" path="res://scenes/ui/wizard_match_card_widget.tscn" id="19_card_widget"]
+[ext_resource type="PackedScene" uid="uid://c8wahv64dx8p5" path="res://scenes/ui/wizard_match_visual_slot.tscn" id="20_visual_slot"]
+[ext_resource type="PackedScene" path="res://scenes/ui/wizard_match_piece_slot.tscn" id="21_piece_slot"]
+[ext_resource type="Texture2D" uid="uid://xnwsljwudctg" path="res://assets/ui/wizard_match/playmat_parts/hand_tray.png" id="22_hand_tray"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0hp81"]
+bg_color = Color(0.58, 0.43, 0.2, 0.72)
+
+[node name="WizardMatchScreen" type="Control" unique_id=1955273596]
+texture_filter = 5
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="PlaymatBackground" type="TextureRect" parent="." unique_id=592360174]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_cuksk")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AiTimer" type="Timer" parent="." unique_id=1793279340]
+unique_name_in_owner = true
+
+[node name="CardInteractionController" type="Node" parent="." unique_id=559935726]
+unique_name_in_owner = true
+script = ExtResource("8")
+
+[node name="BoardLayer" type="CanvasLayer" parent="." unique_id=1076606442]
+
+[node name="BoardSafeArea" type="MarginContainer" parent="BoardLayer" unique_id=1373859629]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 240.0
+offset_right = -240.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BoardCenter" type="CenterContainer" parent="BoardLayer/BoardSafeArea" unique_id=2017182707]
+layout_mode = 2
+
+[node name="BoardFrame" type="PanelContainer" parent="BoardLayer/BoardSafeArea/BoardCenter" unique_id=2001745129]
+custom_minimum_size = Vector2(736, 736)
+layout_mode = 2
+
+[node name="BoardMargin" type="MarginContainer" parent="BoardLayer/BoardSafeArea/BoardCenter/BoardFrame" unique_id=1172186089]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="BoardView" parent="BoardLayer/BoardSafeArea/BoardCenter/BoardFrame/BoardMargin" unique_id=2031982211 instance=ExtResource("4")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="HudLayer" type="CanvasLayer" parent="." unique_id=2041133868]
+layer = 5
+
+[node name="HudLayout" parent="HudLayer" unique_id=812790820 instance=ExtResource("11")]
+unique_name_in_owner = true
+
+[node name="HeaderBar" type="HBoxContainer" parent="HudLayer" unique_id=571465023]
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 52.0
+grow_horizontal = 2
+theme_override_constants/separation = 8
+
+[node name="TitleLabel" type="Label" parent="HudLayer/HeaderBar" unique_id=1575526300]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "Wizard Chess Match"
+
+[node name="StatusLabel" type="Label" parent="HudLayer/HeaderBar" unique_id=736597612]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+text = "State"
+horizontal_alignment = 1
+
+[node name="NewMatchButton" type="Button" parent="HudLayer/HeaderBar" unique_id=777252554]
+layout_mode = 2
+text = "New Match"
+
+[node name="StepAiButton" type="Button" parent="HudLayer/HeaderBar" unique_id=64568684]
+visible = false
+layout_mode = 2
+text = "Step AI"
+
+[node name="UseAiSuggestionButton" type="Button" parent="HudLayer/HeaderBar" unique_id=591616551]
+visible = false
+layout_mode = 2
+text = "Use AI Suggestion"
+
+[node name="UtilitiesButton" type="Button" parent="HudLayer/HeaderBar" unique_id=1462751188]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Tools"
+
+[node name="OpponentLibraryPanel" type="PanelContainer" parent="HudLayer" unique_id=1277421707]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -565.0
+offset_top = 21.0
+offset_right = -399.0
+offset_bottom = 245.0
+grow_horizontal = 0
+theme_override_styles/panel = ExtResource("15_r1vlw")
+script = ExtResource("16_pile")
+
+[node name="OpponentLibraryCenter" type="CenterContainer" parent="HudLayer/OpponentLibraryPanel" unique_id=639341415]
+layout_mode = 2
+
+[node name="OpponentDeckStack" type="VBoxContainer" parent="HudLayer/OpponentLibraryPanel/OpponentLibraryCenter" unique_id=145539981]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="OpponentDeckVisual" type="TextureRect" parent="HudLayer/OpponentLibraryPanel/OpponentLibraryCenter/OpponentDeckStack" unique_id=437300953]
+custom_minimum_size = Vector2(100, 134)
+layout_mode = 2
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="OpponentDeckLabel" type="Label" parent="HudLayer/OpponentLibraryPanel/OpponentLibraryCenter/OpponentDeckStack" unique_id=862224733]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Deck"
+horizontal_alignment = 1
+
+[node name="OpponentGraveyardPanel" type="PanelContainer" parent="HudLayer" unique_id=1601757018]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -400.0
+offset_top = 21.0
+offset_right = -234.0
+offset_bottom = 245.0
+grow_horizontal = 0
+theme_override_styles/panel = ExtResource("15_r1vlw")
+script = ExtResource("16_pile")
+zone_name = "Graveyard"
+
+[node name="OpponentGraveyardCenter" type="CenterContainer" parent="HudLayer/OpponentGraveyardPanel" unique_id=518309428]
+layout_mode = 2
+
+[node name="OpponentGraveyardStack" type="VBoxContainer" parent="HudLayer/OpponentGraveyardPanel/OpponentGraveyardCenter" unique_id=589208752]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="OpponentGraveyardVisual" type="TextureRect" parent="HudLayer/OpponentGraveyardPanel/OpponentGraveyardCenter/OpponentGraveyardStack" unique_id=1640333604]
+modulate = Color(0.682353, 0.682353, 0.74902, 0.82)
+custom_minimum_size = Vector2(100, 134)
+layout_mode = 2
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="OpponentGraveyardTopCard" parent="HudLayer/OpponentGraveyardPanel/OpponentGraveyardCenter/OpponentGraveyardStack" unique_id=365330292 instance=ExtResource("19_card_widget")]
+visible = false
+layout_mode = 2
+
+[node name="OpponentGraveyardLabel" type="Label" parent="HudLayer/OpponentGraveyardPanel/OpponentGraveyardCenter/OpponentGraveyardStack" unique_id=1867133553]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Graveyard"
+horizontal_alignment = 1
+
+[node name="TurnPanel" type="PanelContainer" parent="HudLayer" unique_id=817494957]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -517.0
+offset_top = -647.0
+offset_right = -204.0
+offset_bottom = -466.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_styles/panel = ExtResource("12_r1vlw")
+script = ExtResource("17_turn")
+
+[node name="TurnContent" type="VBoxContainer" parent="HudLayer/TurnPanel" unique_id=349967618]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DetailLabel" type="Label" parent="HudLayer/TurnPanel/TurnContent" unique_id=1447302110]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.84, 0.62, 1)
+theme_override_font_sizes/font_size = 18
+text = "Detail"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ActionHintLabel" type="Label" parent="HudLayer/TurnPanel/TurnContent" unique_id=398528343]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.84, 0.84, 1)
+theme_override_font_sizes/font_size = 15
+text = "Action Hint"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="TitleRule" type="Panel" parent="HudLayer/TurnPanel/TurnContent" unique_id=755564184]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_0hp81")
+
+[node name="ActionBar" type="HBoxContainer" parent="HudLayer/TurnPanel/TurnContent" unique_id=2036340336]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="EnvironmentZonePanel" type="PanelContainer" parent="HudLayer" unique_id=129260926]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -885.0
+offset_top = -450.0
+offset_right = -463.0
+offset_bottom = -243.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = ExtResource("12_r1vlw")
+script = ExtResource("18_public_zone")
+
+[node name="EnvironmentZoneContent" type="VBoxContainer" parent="HudLayer/EnvironmentZonePanel" unique_id=1491684353]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="EnvironmentZoneTitleLabel" type="Label" parent="HudLayer/EnvironmentZonePanel/EnvironmentZoneContent" unique_id=1100848254]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Environment"
+horizontal_alignment = 1
+
+[node name="EnvironmentZoneBodyLabel" type="Label" parent="HudLayer/EnvironmentZonePanel/EnvironmentZoneContent" unique_id=82653248]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "(none)"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="TitleRule" type="Panel" parent="HudLayer/EnvironmentZonePanel/EnvironmentZoneContent" unique_id=435623108]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_0hp81")
+
+[node name="EnvironmentSlots" type="GridContainer" parent="HudLayer/EnvironmentZonePanel/EnvironmentZoneContent" unique_id=1827255536]
+layout_mode = 2
+size_flags_horizontal = 4
+columns = 2
+
+[node name="EnvironmentSlot1" parent="HudLayer/EnvironmentZonePanel/EnvironmentZoneContent/EnvironmentSlots" unique_id=1883165925 instance=ExtResource("20_visual_slot")]
+layout_mode = 2
+
+[node name="EnvironmentSlot2" parent="HudLayer/EnvironmentZonePanel/EnvironmentZoneContent/EnvironmentSlots" unique_id=1514585879 instance=ExtResource("20_visual_slot")]
+visible = false
+layout_mode = 2
+
+[node name="ArtifactsZonePanel" type="PanelContainer" parent="HudLayer" unique_id=977977301]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -885.0
+offset_top = -196.0
+offset_right = -463.0
+offset_bottom = 23.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = ExtResource("12_r1vlw")
+script = ExtResource("18_public_zone")
+
+[node name="ArtifactsZoneContent" type="VBoxContainer" parent="HudLayer/ArtifactsZonePanel" unique_id=2065622329]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ArtifactsZoneTitleLabel" type="Label" parent="HudLayer/ArtifactsZonePanel/ArtifactsZoneContent" unique_id=1715140662]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Artifacts"
+horizontal_alignment = 1
+
+[node name="ArtifactsZoneBodyLabel" type="Label" parent="HudLayer/ArtifactsZonePanel/ArtifactsZoneContent" unique_id=857852800]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "(none)"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="TitleRule" type="Panel" parent="HudLayer/ArtifactsZonePanel/ArtifactsZoneContent" unique_id=1917368339]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_0hp81")
+
+[node name="ArtifactSlots" type="GridContainer" parent="HudLayer/ArtifactsZonePanel/ArtifactsZoneContent" unique_id=233754504]
+layout_mode = 2
+size_flags_horizontal = 4
+columns = 2
+
+[node name="ArtifactSlot1" parent="HudLayer/ArtifactsZonePanel/ArtifactsZoneContent/ArtifactSlots" unique_id=1152260824 instance=ExtResource("20_visual_slot")]
+layout_mode = 2
+
+[node name="ArtifactSlot2" parent="HudLayer/ArtifactsZonePanel/ArtifactsZoneContent/ArtifactSlots" unique_id=1715728594 instance=ExtResource("20_visual_slot")]
+layout_mode = 2
+
+[node name="TrapsZonePanel" type="PanelContainer" parent="HudLayer" unique_id=1483784527]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -1845.0
+offset_top = 604.0
+offset_right = -1423.0
+offset_bottom = 932.0
+grow_horizontal = 0
+theme_override_styles/panel = ExtResource("12_r1vlw")
+script = ExtResource("18_public_zone")
+
+[node name="TrapsZoneContent" type="VBoxContainer" parent="HudLayer/TrapsZonePanel" unique_id=1849810278]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="TrapsZoneTitleLabel" type="Label" parent="HudLayer/TrapsZonePanel/TrapsZoneContent" unique_id=2002923583]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Traps"
+horizontal_alignment = 1
+
+[node name="TrapsZoneBodyLabel" type="Label" parent="HudLayer/TrapsZonePanel/TrapsZoneContent" unique_id=1912821051]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "(none)"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="TitleRule" type="Panel" parent="HudLayer/TrapsZonePanel/TrapsZoneContent" unique_id=1262634601]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_0hp81")
+
+[node name="TrapSlots" type="GridContainer" parent="HudLayer/TrapsZonePanel/TrapsZoneContent" unique_id=700198409]
+layout_mode = 2
+size_flags_horizontal = 4
+columns = 3
+
+[node name="TrapSlot1" parent="HudLayer/TrapsZonePanel/TrapsZoneContent/TrapSlots" unique_id=1756726414 instance=ExtResource("20_visual_slot")]
+layout_mode = 2
+
+[node name="TrapSlot2" parent="HudLayer/TrapsZonePanel/TrapsZoneContent/TrapSlots" unique_id=1916512976 instance=ExtResource("20_visual_slot")]
+layout_mode = 2
+
+[node name="TrapSlot3" parent="HudLayer/TrapsZonePanel/TrapsZoneContent/TrapSlots" unique_id=1026812925 instance=ExtResource("20_visual_slot")]
+layout_mode = 2
+
+[node name="TrapSlot4" parent="HudLayer/TrapsZonePanel/TrapsZoneContent/TrapSlots" unique_id=206104708 instance=ExtResource("20_visual_slot")]
+layout_mode = 2
+
+[node name="TrapSlot5" parent="HudLayer/TrapsZonePanel/TrapsZoneContent/TrapSlots" unique_id=872604374 instance=ExtResource("20_visual_slot")]
+layout_mode = 2
+
+[node name="TrapSlot6" parent="HudLayer/TrapsZonePanel/TrapsZoneContent/TrapSlots" unique_id=634584705 instance=ExtResource("20_visual_slot")]
+layout_mode = 2
+
+[node name="LocalCapturesZonePanel" type="PanelContainer" parent="HudLayer" unique_id=452538519]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 460.0
+offset_top = 372.0
+offset_right = 750.0
+offset_bottom = 524.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = ExtResource("12_r1vlw")
+script = ExtResource("18_public_zone")
+
+[node name="CapturesZoneContent" type="VBoxContainer" parent="HudLayer/LocalCapturesZonePanel" unique_id=385747692]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="CapturesZoneTitleLabel" type="Label" parent="HudLayer/LocalCapturesZonePanel/CapturesZoneContent" unique_id=1029020989]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Captured Pieces"
+horizontal_alignment = 1
+
+[node name="CapturesZoneBodyLabel" type="Label" parent="HudLayer/LocalCapturesZonePanel/CapturesZoneContent" unique_id=668069934]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "(none)"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="TitleRule" type="Panel" parent="HudLayer/LocalCapturesZonePanel/CapturesZoneContent" unique_id=1565038175]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_0hp81")
+
+[node name="CaptureSlots" type="GridContainer" parent="HudLayer/LocalCapturesZonePanel/CapturesZoneContent" unique_id=579381555]
+layout_mode = 2
+size_flags_horizontal = 4
+columns = 4
+
+[node name="CaptureSlot1" parent="HudLayer/LocalCapturesZonePanel/CapturesZoneContent/CaptureSlots" unique_id=171413282 instance=ExtResource("21_piece_slot")]
+layout_mode = 2
+
+[node name="CaptureSlot2" parent="HudLayer/LocalCapturesZonePanel/CapturesZoneContent/CaptureSlots" unique_id=1363331130 instance=ExtResource("21_piece_slot")]
+layout_mode = 2
+
+[node name="CaptureSlot3" parent="HudLayer/LocalCapturesZonePanel/CapturesZoneContent/CaptureSlots" unique_id=661002062 instance=ExtResource("21_piece_slot")]
+layout_mode = 2
+
+[node name="CaptureSlot4" parent="HudLayer/LocalCapturesZonePanel/CapturesZoneContent/CaptureSlots" unique_id=1353895620 instance=ExtResource("21_piece_slot")]
+layout_mode = 2
+
+[node name="CaptureSlot5" parent="HudLayer/LocalCapturesZonePanel/CapturesZoneContent/CaptureSlots" unique_id=963759918 instance=ExtResource("21_piece_slot")]
+layout_mode = 2
+
+[node name="CaptureSlot6" parent="HudLayer/LocalCapturesZonePanel/CapturesZoneContent/CaptureSlots" unique_id=2120853862 instance=ExtResource("21_piece_slot")]
+layout_mode = 2
+
+[node name="CaptureSlot7" parent="HudLayer/LocalCapturesZonePanel/CapturesZoneContent/CaptureSlots" unique_id=1418110702 instance=ExtResource("21_piece_slot")]
+layout_mode = 2
+
+[node name="CaptureSlot8" parent="HudLayer/LocalCapturesZonePanel/CapturesZoneContent/CaptureSlots" unique_id=1544241921 instance=ExtResource("21_piece_slot")]
+layout_mode = 2
+
+[node name="OpponentCapturesZonePanel" type="PanelContainer" parent="HudLayer" unique_id=463861641]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 416.0
+offset_top = -314.0
+offset_right = 706.0
+offset_bottom = -162.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = ExtResource("12_r1vlw")
+script = ExtResource("18_public_zone")
+
+[node name="CapturesZoneContent" type="VBoxContainer" parent="HudLayer/OpponentCapturesZonePanel" unique_id=2033280839]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="CapturesZoneTitleLabel" type="Label" parent="HudLayer/OpponentCapturesZonePanel/CapturesZoneContent" unique_id=701048271]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Captured Pieces"
+horizontal_alignment = 1
+
+[node name="CapturesZoneBodyLabel" type="Label" parent="HudLayer/OpponentCapturesZonePanel/CapturesZoneContent" unique_id=478945550]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "(none)"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="TitleRule" type="Panel" parent="HudLayer/OpponentCapturesZonePanel/CapturesZoneContent" unique_id=345757756]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_0hp81")
+
+[node name="CaptureSlots" type="GridContainer" parent="HudLayer/OpponentCapturesZonePanel/CapturesZoneContent" unique_id=1034623256]
+layout_mode = 2
+size_flags_horizontal = 4
+columns = 4
+
+[node name="CaptureSlot1" parent="HudLayer/OpponentCapturesZonePanel/CapturesZoneContent/CaptureSlots" unique_id=980352440 instance=ExtResource("21_piece_slot")]
+layout_mode = 2
+
+[node name="CaptureSlot2" parent="HudLayer/OpponentCapturesZonePanel/CapturesZoneContent/CaptureSlots" unique_id=1170258635 instance=ExtResource("21_piece_slot")]
+layout_mode = 2
+
+[node name="CaptureSlot3" parent="HudLayer/OpponentCapturesZonePanel/CapturesZoneContent/CaptureSlots" unique_id=190072542 instance=ExtResource("21_piece_slot")]
+layout_mode = 2
+
+[node name="CaptureSlot4" parent="HudLayer/OpponentCapturesZonePanel/CapturesZoneContent/CaptureSlots" unique_id=1981638661 instance=ExtResource("21_piece_slot")]
+layout_mode = 2
+
+[node name="CaptureSlot5" parent="HudLayer/OpponentCapturesZonePanel/CapturesZoneContent/CaptureSlots" unique_id=1150460174 instance=ExtResource("21_piece_slot")]
+layout_mode = 2
+
+[node name="CaptureSlot6" parent="HudLayer/OpponentCapturesZonePanel/CapturesZoneContent/CaptureSlots" unique_id=2080891317 instance=ExtResource("21_piece_slot")]
+layout_mode = 2
+
+[node name="CaptureSlot7" parent="HudLayer/OpponentCapturesZonePanel/CapturesZoneContent/CaptureSlots" unique_id=2049645863 instance=ExtResource("21_piece_slot")]
+layout_mode = 2
+
+[node name="CaptureSlot8" parent="HudLayer/OpponentCapturesZonePanel/CapturesZoneContent/CaptureSlots" unique_id=1403494101 instance=ExtResource("21_piece_slot")]
+layout_mode = 2
+
+[node name="PlayerGraveyardPanel" type="PanelContainer" parent="HudLayer" unique_id=993407852]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 1354.0
+offset_top = -451.0
+offset_right = 1565.0
+offset_bottom = -150.0
+grow_vertical = 0
+theme_override_styles/panel = ExtResource("15_r1vlw")
+script = ExtResource("16_pile")
+zone_name = "Graveyard"
+
+[node name="PlayerGraveyardCenter" type="CenterContainer" parent="HudLayer/PlayerGraveyardPanel" unique_id=519411248]
+layout_mode = 2
+
+[node name="LocalGraveyardStack" type="VBoxContainer" parent="HudLayer/PlayerGraveyardPanel/PlayerGraveyardCenter" unique_id=1551091865]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="LocalGraveyardVisual" type="TextureRect" parent="HudLayer/PlayerGraveyardPanel/PlayerGraveyardCenter/LocalGraveyardStack" unique_id=1059626816]
+modulate = Color(0.682353, 0.682353, 0.74902, 0.82)
+custom_minimum_size = Vector2(128, 200)
+layout_mode = 2
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LocalGraveyardTopCard" parent="HudLayer/PlayerGraveyardPanel/PlayerGraveyardCenter/LocalGraveyardStack" unique_id=441031049 instance=ExtResource("19_card_widget")]
+visible = false
+layout_mode = 2
+
+[node name="LocalGraveyardLabel" type="Label" parent="HudLayer/PlayerGraveyardPanel/PlayerGraveyardCenter/LocalGraveyardStack" unique_id=135437803]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Graveyard"
+horizontal_alignment = 1
+
+[node name="PlayerLibraryPanel" type="PanelContainer" parent="HudLayer" unique_id=458114705]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 1565.0
+offset_top = -451.0
+offset_right = 1775.0
+offset_bottom = -150.0
+grow_vertical = 0
+theme_override_styles/panel = ExtResource("15_r1vlw")
+script = ExtResource("16_pile")
+
+[node name="PlayerLibraryCenter" type="CenterContainer" parent="HudLayer/PlayerLibraryPanel" unique_id=205736148]
+layout_mode = 2
+
+[node name="LocalDeckStack" type="VBoxContainer" parent="HudLayer/PlayerLibraryPanel/PlayerLibraryCenter" unique_id=641411292]
+layout_mode = 2
+
+[node name="LocalDeckVisual" type="TextureRect" parent="HudLayer/PlayerLibraryPanel/PlayerLibraryCenter/LocalDeckStack" unique_id=495692374]
+custom_minimum_size = Vector2(128, 200)
+layout_mode = 2
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LocalDeckLabel" type="Label" parent="HudLayer/PlayerLibraryPanel/PlayerLibraryCenter/LocalDeckStack" unique_id=1833803234]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Deck"
+horizontal_alignment = 1
+
+[node name="OpponentHandPanel" type="Control" parent="HudLayer" unique_id=1255563106]
+layout_mode = 3
+anchor_left = 0.29
+anchor_right = 0.71
+offset_left = 0.2000122
+offset_top = 18.0
+offset_right = 0.19995117
+offset_bottom = 166.0
+grow_horizontal = 2
+
+[node name="HandTrayTexture" type="TextureRect" parent="HudLayer/OpponentHandPanel" unique_id=1203932032]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("22_hand_tray")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="OpponentHandTitleLabel" type="Label" parent="HudLayer/OpponentHandPanel" unique_id=1913211807]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 16.0
+offset_top = 34.0
+offset_bottom = 54.0
+grow_horizontal = 2
+text = "Opponent Hand"
+
+[node name="OpponentStatusView" parent="HudLayer/OpponentHandPanel" unique_id=129747837 instance=ExtResource("12")]
+unique_name_in_owner = true
+z_index = 180
+custom_minimum_size = Vector2(164, 42)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 465.0
+offset_right = 133.0
+offset_bottom = 142.0
+grow_horizontal = 2
+portrait_texture = ExtResource("14")
+mana_texture = ExtResource("15")
+
+[node name="OpponentHandRow" parent="HudLayer/OpponentHandPanel" unique_id=1062053985 instance=ExtResource("6")]
+unique_name_in_owner = true
+z_index = 40
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -13.0
+offset_bottom = -13.0
+grow_horizontal = 2
+grow_vertical = 2
+is_opponent_hand = true
+local_card_size = Vector2(136, 194)
+opponent_card_size = Vector2(136, 194)
+opponent_top_margin = -72.0
+
+[node name="LocalHandPanel" type="Control" parent="HudLayer" unique_id=1634407404]
+layout_mode = 3
+anchor_left = 0.27
+anchor_top = 1.0
+anchor_right = 0.73
+anchor_bottom = 1.0
+offset_left = -0.4000244
+offset_top = -214.0
+offset_right = -0.4000244
+offset_bottom = -6.0
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="HandTrayTexture" type="TextureRect" parent="HudLayer/LocalHandPanel" unique_id=1264914215]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 54.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("22_hand_tray")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LocalHandTitleLabel" type="Label" parent="HudLayer/LocalHandPanel" unique_id=728608469]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+offset_left = 16.0
+offset_top = 70.0
+offset_bottom = 90.0
+grow_horizontal = 2
+text = "Local Hand"
+
+[node name="LocalStatusView" parent="HudLayer/LocalHandPanel" unique_id=1876279467 instance=ExtResource("12")]
+unique_name_in_owner = true
+z_index = 180
+custom_minimum_size = Vector2(164, 42)
+layout_mode = 0
+offset_left = -105.0
+offset_top = 55.0
+offset_right = 369.0
+offset_bottom = 200.0
+portrait_texture = ExtResource("13")
+mana_texture = ExtResource("15")
+
+[node name="LocalHandRow" parent="HudLayer/LocalHandPanel" unique_id=1136233870 instance=ExtResource("6")]
+unique_name_in_owner = true
+z_index = 40
+anchors_preset = 0
+offset_top = 100.0
+offset_right = 883.2001
+offset_bottom = 308.0
+local_card_size = Vector2(136, 194)
+opponent_card_size = Vector2(136, 194)
+local_bottom_margin = -34.0
+targeted_preview_y = -74.0
+
+[node name="MatchSidebar" parent="HudLayer" unique_id=1854497799 instance=ExtResource("10")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 3
+offset_left = -1906.0
+offset_top = 64.0
+offset_right = -1549.0
+offset_bottom = 522.0
+
+[node name="EffectsLayer" type="CanvasLayer" parent="." unique_id=2012801178]
+layer = 10
+
+[node name="TargetingOverlay" parent="EffectsLayer" unique_id=958065490 instance=ExtResource("7")]
+unique_name_in_owner = true
+
+[node name="NotificationLayer" type="CanvasLayer" parent="." unique_id=1404785658]
+layer = 15
+
+[node name="NotificationToast" type="PanelContainer" parent="NotificationLayer" unique_id=1090601222]
+unique_name_in_owner = true
+visible = false
+modulate = Color(1, 1, 1, 0)
+offset_left = 600.0
+offset_top = 18.0
+offset_right = 1320.0
+offset_bottom = 66.0
+
+[node name="NotificationToastLabel" type="Label" parent="NotificationLayer/NotificationToast" unique_id=2045356927]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Notification"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InspectPopup" parent="NotificationLayer" unique_id=454797529 instance=ExtResource("9")]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 0
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 248.0
+offset_bottom = 398.0
+grow_horizontal = 1
+grow_vertical = 1
+
+[connection signal="pressed" from="HudLayer/HeaderBar/NewMatchButton" to="." method="_on_new_match_pressed"]
+[connection signal="pressed" from="HudLayer/HeaderBar/StepAiButton" to="." method="_on_step_ai_pressed"]
+[connection signal="pressed" from="HudLayer/HeaderBar/UseAiSuggestionButton" to="." method="_on_use_ai_suggestion_pressed"]
+[connection signal="pressed" from="HudLayer/HeaderBar/UtilitiesButton" to="." method="_on_utilities_button_pressed"]

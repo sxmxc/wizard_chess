@@ -9,16 +9,15 @@ Chess is always the foundation. Cards create exceptions to chess, but do not rep
 
 ## Current Status
 
-- Milestone 3 is complete enough to treat as finished
-- Milestone 4 is complete enough to treat as finished
-- Standard chess simulation implemented and playable through the default local hotseat scene
-- GUT coverage added for legal moves, castling, en passant, promotion, checkmate, stalemate, and draw handling
+- Milestones 3 through 6 are complete enough to treat as finished
+- Milestone 7 is in progress, with the shared Wizard Match UI now running in local, host, and client flows
+- `ChessEngine` and `ChessState` own deterministic chess rules and board state
+- `WizardMatch` owns setup, phases, mana, mulligans, card zones, target validation, reactions, traps, environments, artifacts, and hand-limit discard flow
+- `NetworkMatchBridge` now synchronizes server-authoritative `WizardMatch` state with reconnect-oriented session handling
+- The match UI is built around a shared `wizard_match_screen` with `local_wizard_match_screen` and `network_wizard_match_screen` wrappers
+- Public multiplayer information rules are implemented for deck/hand hiding, graveyards, captures, environments, artifacts, and face-down traps
+- Non-headless development runs open the launcher screen for local, host, and connect flows
 - CI workflow still runs tests and exports for Linux and Windows
-- Dedicated multiplayer bridge validates server-authoritative chess with reconnect-oriented session handling
-- `WizardMatch` now owns match state, mulligan flow, turn phases, mana, deck/hand/graveyard state, basic target validation, and explicit hand-limit discard flow
-- `ChessEngine` and `ChessState` now separate chess rules from chess-owned data, while `ChessMatch` remains as a compatibility wrapper
-- Non-headless development runs now open a launcher screen for local, host, or connect flows
-- Next major focus is Milestone 5: core card system
 
 ## Project Structure
 
@@ -47,7 +46,8 @@ Examples:
 
 ```powershell
 godot --headless --path . --log-file .godot/check-only.log --check-only
-godot --headless --path . --log-file .godot/local-scene.log --scene res://scenes/chess/local_chess_screen.tscn --quit-after 2
+godot --headless --path . --log-file .godot/local-scene.log --scene res://scenes/chess/local_wizard_match_screen.tscn --quit-after 2
+godot --headless --path . --log-file .godot/network-scene.log --scene res://scenes/chess/network_wizard_match_screen.tscn --quit-after 2
 godot --headless --path . --log-file .godot/server.log --server --port=7000
 godot --path . --host --port=7000 --profile=host_a
 godot --path . --connect=127.0.0.1 --port=7000 --profile=client_a
@@ -127,11 +127,10 @@ Validated framework areas:
 
 Current prototype shape:
 
-- `ChessEngine` now owns deterministic standard chess rules, while `WizardMatch` owns the embedded chess-state slice used during full Wizard Chess matches.
-- `ChessMatch` remains as a compatibility wrapper for the existing chess-only scenes, tests, and multiplayer bridge.
-- `WizardMatch` owns setup, phases, mana refresh, card zones, mulligans, target validation, and hand-limit discard flow.
+- `ChessEngine` owns deterministic standard chess rules, while `WizardMatch` owns the embedded chess-state slice used during full Wizard Chess matches.
+- `WizardMatch` owns setup, phases, mana refresh, card zones, mulligans, target validation, reaction windows, trap handling, and hand-limit discard flow.
 - Card and deck definitions are now represented as Resources under `content/`.
-- `NetworkMatchBridge` still synchronizes chess-only play; networking integration with `WizardMatch` has not started yet.
+- `NetworkMatchBridge` synchronizes `WizardMatch` directly and drives the hosted/client multiplayer flow.
 
 ## Milestone 3 Validation
 

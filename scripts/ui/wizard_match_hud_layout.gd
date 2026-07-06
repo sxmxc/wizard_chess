@@ -19,27 +19,92 @@ extends Node
 @export var opponent_hand_row_path: NodePath
 @export var opponent_hand_top_offset: float = 36.0
 
-@onready var board_safe_area := get_node_or_null(board_safe_area_path) as MarginContainer
-@onready var board_frame := get_node_or_null(board_frame_path) as PanelContainer
-@onready var board_view := get_node_or_null(board_view_path) as WizardMatchBoardView
-@onready var opponent_hand_panel := get_node_or_null(opponent_hand_panel_path) as Control
-@onready var local_hand_panel := get_node_or_null(local_hand_panel_path) as Control
-@onready var opponent_library_panel := get_node_or_null(opponent_library_panel_path) as PanelContainer
-@onready var opponent_graveyard_panel := get_node_or_null(opponent_graveyard_panel_path) as PanelContainer
-@onready var player_library_panel := get_node_or_null(player_library_panel_path) as PanelContainer
-@onready var player_graveyard_panel := get_node_or_null(player_graveyard_panel_path) as PanelContainer
-@onready var turn_panel := get_node_or_null(turn_panel_path) as PanelContainer
-@onready var local_zone_panel := get_node_or_null(local_zone_panel_path) as PanelContainer
-@onready var opponent_zone_panel := get_node_or_null(opponent_zone_panel_path) as PanelContainer
-@onready var match_sidebar := get_node_or_null(match_sidebar_path) as WizardMatchHudSidebar
-@onready var inspect_popup := get_node_or_null(inspect_popup_path) as WizardMatchInspectorView
-@onready var local_hand_row := get_node_or_null(local_hand_row_path) as HandFanView
-@onready var opponent_hand_row := get_node_or_null(opponent_hand_row_path) as HandFanView
+var board_safe_area: MarginContainer
+var board_frame: PanelContainer
+var board_view: WizardMatchBoardView
+var opponent_hand_panel: Control
+var local_hand_panel: Control
+var opponent_library_panel: PanelContainer
+var opponent_graveyard_panel: PanelContainer
+var player_library_panel: PanelContainer
+var player_graveyard_panel: PanelContainer
+var turn_panel: PanelContainer
+var local_zone_panel: PanelContainer
+var opponent_zone_panel: PanelContainer
+var match_sidebar: WizardMatchHudSidebar
+var inspect_popup: WizardMatchInspectorView
+var local_hand_row: HandFanView
+var opponent_hand_row: HandFanView
+var inspect_avoid_panels: Array[Control] = []
+
+
+func _ready() -> void:
+	_resolve_exported_nodes()
+
+
+func configure_nodes(nodes: Dictionary) -> void:
+	board_safe_area = nodes.get("board_safe_area", board_safe_area)
+	board_frame = nodes.get("board_frame", board_frame)
+	board_view = nodes.get("board_view", board_view)
+	opponent_hand_panel = nodes.get("opponent_hand_panel", opponent_hand_panel)
+	local_hand_panel = nodes.get("local_hand_panel", local_hand_panel)
+	opponent_library_panel = nodes.get("opponent_library_panel", opponent_library_panel)
+	opponent_graveyard_panel = nodes.get("opponent_graveyard_panel", opponent_graveyard_panel)
+	player_library_panel = nodes.get("player_library_panel", player_library_panel)
+	player_graveyard_panel = nodes.get("player_graveyard_panel", player_graveyard_panel)
+	turn_panel = nodes.get("turn_panel", turn_panel)
+	local_zone_panel = nodes.get("local_zone_panel", local_zone_panel)
+	opponent_zone_panel = nodes.get("opponent_zone_panel", opponent_zone_panel)
+	match_sidebar = nodes.get("match_sidebar", match_sidebar)
+	inspect_popup = nodes.get("inspect_popup", inspect_popup)
+	local_hand_row = nodes.get("local_hand_row", local_hand_row)
+	opponent_hand_row = nodes.get("opponent_hand_row", opponent_hand_row)
+	var next_avoid_panels: Array = nodes.get("inspect_avoid_panels", inspect_avoid_panels)
+	inspect_avoid_panels.clear()
+	for panel in next_avoid_panels:
+		if panel is Control:
+			inspect_avoid_panels.append(panel)
+
+
+func _resolve_exported_nodes() -> void:
+	if board_safe_area == null:
+		board_safe_area = get_node_or_null(board_safe_area_path) as MarginContainer
+	if board_frame == null:
+		board_frame = get_node_or_null(board_frame_path) as PanelContainer
+	if board_view == null:
+		board_view = get_node_or_null(board_view_path) as WizardMatchBoardView
+	if opponent_hand_panel == null:
+		opponent_hand_panel = get_node_or_null(opponent_hand_panel_path) as Control
+	if local_hand_panel == null:
+		local_hand_panel = get_node_or_null(local_hand_panel_path) as Control
+	if opponent_library_panel == null:
+		opponent_library_panel = get_node_or_null(opponent_library_panel_path) as PanelContainer
+	if opponent_graveyard_panel == null:
+		opponent_graveyard_panel = get_node_or_null(opponent_graveyard_panel_path) as PanelContainer
+	if player_library_panel == null:
+		player_library_panel = get_node_or_null(player_library_panel_path) as PanelContainer
+	if player_graveyard_panel == null:
+		player_graveyard_panel = get_node_or_null(player_graveyard_panel_path) as PanelContainer
+	if turn_panel == null:
+		turn_panel = get_node_or_null(turn_panel_path) as PanelContainer
+	if local_zone_panel == null:
+		local_zone_panel = get_node_or_null(local_zone_panel_path) as PanelContainer
+	if opponent_zone_panel == null:
+		opponent_zone_panel = get_node_or_null(opponent_zone_panel_path) as PanelContainer
+	if match_sidebar == null:
+		match_sidebar = get_node_or_null(match_sidebar_path) as WizardMatchHudSidebar
+	if inspect_popup == null:
+		inspect_popup = get_node_or_null(inspect_popup_path) as WizardMatchInspectorView
+	if local_hand_row == null:
+		local_hand_row = get_node_or_null(local_hand_row_path) as HandFanView
+	if opponent_hand_row == null:
+		opponent_hand_row = get_node_or_null(opponent_hand_row_path) as HandFanView
 
 
 func apply_layout(viewport_size: Vector2) -> void:
 	if not is_node_ready():
 		return
+	_resolve_exported_nodes()
 	if board_view == null:
 		return
 	if opponent_hand_panel == null or local_hand_panel == null:
@@ -64,8 +129,16 @@ func apply_layout(viewport_size: Vector2) -> void:
 	if inspect_popup != null:
 		inspect_popup.z_index = 30
 
-	_clamp_sidebar_to_viewport(viewport_size)
-	_position_inspector(viewport_size)
+	_finalize_layout(viewport_size)
+
+
+func _finalize_layout(viewport_size: Vector2) -> void:
+	if not is_instance_valid(self):
+		return
+	if inspect_popup != null:
+		inspect_popup.custom_minimum_size = Vector2(320, 420)
+		inspect_popup.size = Vector2(320, 420)
+		_position_inspector(viewport_size)
 
 	local_hand_row.refresh_layout()
 	opponent_hand_row.refresh_layout()
@@ -99,28 +172,31 @@ func _position_inspector(viewport_size: Vector2) -> void:
 	if inspector_size.x <= 0.0 or inspector_size.y <= 0.0:
 		inspector_size = inspect_popup.get_combined_minimum_size()
 	var margin := 16.0
-	var inspector_x := board_rect.end.x + 16.0
-	if inspector_x + inspector_size.x > viewport_size.x - margin:
-		inspector_x = maxf(margin, board_rect.position.x - inspector_size.x - 16.0)
-	var inspector_y := inspect_popup.position.y
-	if inspector_y <= 0.0:
-		inspector_y = board_rect.position.y + 18.0
-	var inspector_position := Vector2(
-		clampf(inspector_x, margin, maxf(margin, viewport_size.x - inspector_size.x - margin)),
-		clampf(inspector_y, margin, maxf(margin, viewport_size.y - inspector_size.y - margin))
+	var candidate_positions := [
+		Vector2(board_rect.end.x + 16.0, board_rect.position.y + 18.0),
+		Vector2(board_rect.position.x - inspector_size.x - 16.0, board_rect.position.y + 18.0),
+	]
+	for candidate in candidate_positions:
+		var clamped_candidate := Vector2(
+			clampf(candidate.x, margin, maxf(margin, viewport_size.x - inspector_size.x - margin)),
+			clampf(candidate.y, margin, maxf(margin, viewport_size.y - inspector_size.y - margin))
+		)
+		var candidate_rect := Rect2(clamped_candidate, inspector_size)
+		if not _inspector_intersects_avoid_panels(candidate_rect):
+			inspect_popup.position = clamped_candidate
+			return
+
+	var fallback_position := Vector2(
+		clampf(board_rect.end.x - inspector_size.x - 12.0, margin, maxf(margin, viewport_size.x - inspector_size.x - margin)),
+		clampf(board_rect.position.y + 18.0, margin, maxf(margin, viewport_size.y - inspector_size.y - margin))
 	)
-	if turn_panel != null:
-		var turn_rect := turn_panel.get_global_rect()
-		var inspector_rect := Rect2(inspector_position, inspector_size)
-		if inspector_rect.intersects(turn_rect):
-			var above_turn_y := turn_rect.position.y - inspector_size.y - 12.0
-			if above_turn_y >= margin:
-				inspector_position.y = above_turn_y
-			else:
-				inspector_position.x = maxf(margin, board_rect.position.x - inspector_size.x - 16.0)
-				inspector_position.y = clampf(
-					board_rect.position.y + 18.0,
-					margin,
-					maxf(margin, viewport_size.y - inspector_size.y - margin)
-				)
-	inspect_popup.position = inspector_position
+	inspect_popup.position = fallback_position
+
+
+func _inspector_intersects_avoid_panels(inspector_rect: Rect2) -> bool:
+	for panel in inspect_avoid_panels:
+		if panel == null or not is_instance_valid(panel) or not panel.visible:
+			continue
+		if inspector_rect.intersects(panel.get_global_rect()):
+			return true
+	return false

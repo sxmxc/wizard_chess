@@ -36,6 +36,66 @@ const STARTING_FEN := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 var state: ChessState
 
+var board: Array:
+	get:
+		return state.board
+	set(value):
+		state.board = value
+
+var active_color: String:
+	get:
+		return state.active_color
+	set(value):
+		state.active_color = value
+
+var castling_rights: Dictionary:
+	get:
+		return state.castling_rights
+	set(value):
+		state.castling_rights = value
+
+var en_passant_target:
+	get:
+		return state.en_passant_target
+	set(value):
+		state.en_passant_target = value
+
+var halfmove_clock: int:
+	get:
+		return state.halfmove_clock
+	set(value):
+		state.halfmove_clock = value
+
+var fullmove_number: int:
+	get:
+		return state.fullmove_number
+	set(value):
+		state.fullmove_number = value
+
+var move_history: Array:
+	get:
+		return state.move_history
+	set(value):
+		state.move_history = value
+
+var position_history: Dictionary:
+	get:
+		return state.position_history
+	set(value):
+		state.position_history = value
+
+var claimable_draw_reason: String:
+	get:
+		return state.claimable_draw_reason
+	set(value):
+		state.claimable_draw_reason = value
+
+var outcome: Dictionary:
+	get:
+		return state.outcome
+	set(value):
+		state.outcome = value
+
 
 func _init(existing_state: ChessState = null, skip_reset: bool = false) -> void:
 	state = existing_state if existing_state != null else ChessState.new()

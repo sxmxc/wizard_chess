@@ -1,8 +1,9 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://3yiqk4uxxlbq"]
 
-[ext_resource type="Script" path="res://scripts/ui/dev_launcher_screen.gd" id="1"]
+[ext_resource type="Script" uid="uid://w8oh1j26fh6n" path="res://scripts/ui/dev_launcher_screen.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://dq2sj0o15g8r3" path="res://assets/ui/main_menu_bg_v1.png" id="2_fxgsj"]
 
-[node name="DevLauncherScreen" type="Control"]
+[node name="DevLauncherScreen" type="Control" unique_id=171870024]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -10,3 +11,12 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1")
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=1464352856]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_fxgsj")

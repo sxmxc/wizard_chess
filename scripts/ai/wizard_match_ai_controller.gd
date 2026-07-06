@@ -355,9 +355,7 @@ func _score_trap_target(match: WizardMatch, color: String, target: Dictionary) -
 
 func _score_move(chess_engine: ChessEngine, move: Dictionary, color: String) -> float:
 	var clone_started_usec := Time.get_ticks_usec()
-	var simulated := ChessMatch.new()
-	simulated.state = chess_engine.clone_state()
-	simulated.engine = ChessEngine.new(simulated.state, true)
+	var simulated := chess_engine.clone()
 	simulated.apply_move(move)
 	_add_timing("move_simulation_clone_usec", Time.get_ticks_usec() - clone_started_usec)
 	var search_started_usec := Time.get_ticks_usec()
@@ -366,9 +364,9 @@ func _score_move(chess_engine: ChessEngine, move: Dictionary, color: String) -> 
 	return score
 
 
-func _search_chess(chess_position: ChessMatch, depth: int, perspective: String, alpha: float, beta: float) -> float:
+func _search_chess(chess_position: ChessEngine, depth: int, perspective: String, alpha: float, beta: float) -> float:
 	_increment_timing("search_nodes")
-	if depth <= 0 or chess_position.outcome["status"] != ChessMatch.STATUS_ACTIVE:
+	if depth <= 0 or chess_position.outcome["status"] != ChessEngine.STATUS_ACTIVE:
 		_increment_timing("search_leaf_nodes")
 		return _evaluate_chess_position(chess_position, perspective)
 
@@ -424,11 +422,11 @@ func format_last_timing_report() -> String:
 	]
 
 
-func _evaluate_chess_position(chess_position: ChessMatch, perspective: String) -> float:
+func _evaluate_chess_position(chess_position: ChessEngine, perspective: String) -> float:
 	var outcome := chess_position.outcome
-	if outcome["status"] == ChessMatch.STATUS_CHECKMATE:
+	if outcome["status"] == ChessEngine.STATUS_CHECKMATE:
 		return MATE_SCORE if str(outcome["winner"]) == perspective else -MATE_SCORE
-	if outcome["status"] in [ChessMatch.STATUS_DRAW, ChessMatch.STATUS_STALEMATE]:
+	if outcome["status"] in [ChessEngine.STATUS_DRAW, ChessEngine.STATUS_STALEMATE]:
 		return 0.0
 
 	var material := 0.0
@@ -444,7 +442,7 @@ func _evaluate_chess_position(chess_position: ChessMatch, perspective: String) -
 			material += perspective_sign * _piece_value(str(piece["type"]))
 			if square in [Vector2i(3, 3), Vector2i(4, 3), Vector2i(3, 4), Vector2i(4, 4)]:
 				center_control += perspective_sign * 0.25
-			if str(piece["type"]) == ChessMatch.PIECE_KING:
+			if str(piece["type"]) == ChessEngine.PIECE_KING:
 				var attackers := 1.0 if chess_position.is_square_attacked(square, _opponent(str(piece["color"]))) else 0.0
 				king_safety += (-attackers if perspective_sign > 0.0 else attackers) * 0.75
 
@@ -514,10 +512,10 @@ func _estimate_preparation_cards_played(_match: WizardMatch, _color: String) -> 
 
 
 func _actor_for_setup(match: WizardMatch) -> String:
-	for color in [ChessMatch.WHITE, ChessMatch.BLACK]:
+	for color in [ChessEngine.WHITE, ChessEngine.BLACK]:
 		if bool(match.get_player_state(color).get("mulligan_available", false)):
 			return color
-	return ChessMatch.WHITE
+	return ChessEngine.WHITE
 
 
 func _has_battlefield_card_type(cards: Array, card_type: String) -> bool:
@@ -530,17 +528,17 @@ func _has_battlefield_card_type(cards: Array, card_type: String) -> bool:
 
 func _piece_value(piece_type: String) -> float:
 	match piece_type:
-		ChessMatch.PIECE_PAWN:
+		ChessEngine.PIECE_PAWN:
 			return 1.0
-		ChessMatch.PIECE_KNIGHT:
+		ChessEngine.PIECE_KNIGHT:
 			return 3.1
-		ChessMatch.PIECE_BISHOP:
+		ChessEngine.PIECE_BISHOP:
 			return 3.25
-		ChessMatch.PIECE_ROOK:
+		ChessEngine.PIECE_ROOK:
 			return 5.0
-		ChessMatch.PIECE_QUEEN:
+		ChessEngine.PIECE_QUEEN:
 			return 9.0
-		ChessMatch.PIECE_KING:
+		ChessEngine.PIECE_KING:
 			return 0.0
 		_:
 			return 0.0
@@ -589,11 +587,11 @@ func _trim_moves(moves: Array, limit: int) -> Array:
 
 
 func _square_to_algebraic(square: Vector2i) -> String:
-	return "%s%d" % [ChessMatch.FILE_LETTERS[square.x], 8 - square.y]
+	return "%s%d" % [ChessEngine.FILE_LETTERS[square.x], 8 - square.y]
 
 
 func _opponent(color: String) -> String:
-	return ChessMatch.BLACK if color == ChessMatch.WHITE else ChessMatch.WHITE
+	return ChessEngine.BLACK if color == ChessEngine.WHITE else ChessEngine.WHITE
 
 
 func _make_default_profile() -> WizardMatchAiProfile:

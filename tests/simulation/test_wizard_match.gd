@@ -7,8 +7,8 @@ func test_start_match_initializes_setup_state_and_opening_hands() -> void:
 
 	var result := wizard_match.start_match(deck, deck, 7)
 
-	var white_state := wizard_match.get_player_state(ChessMatch.WHITE)
-	var black_state := wizard_match.get_player_state(ChessMatch.BLACK)
+	var white_state := wizard_match.get_player_state(ChessEngine.WHITE)
+	var black_state := wizard_match.get_player_state(ChessEngine.BLACK)
 	assert_true(result["ok"])
 	assert_eq(wizard_match.state, WizardMatch.STATE_SETUP)
 	assert_eq(wizard_match.setup_step, WizardMatch.SETUP_STEP_MULLIGAN)
@@ -24,8 +24,8 @@ func test_keep_opening_hands_completes_setup() -> void:
 	var deck := _make_mixed_deck()
 
 	assert_true(wizard_match.start_match(deck, deck, 3)["ok"])
-	assert_true(wizard_match.keep_opening_hand(ChessMatch.WHITE)["ok"])
-	assert_true(wizard_match.keep_opening_hand(ChessMatch.BLACK)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessEngine.WHITE)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessEngine.BLACK)["ok"])
 
 	assert_eq(wizard_match.state, WizardMatch.STATE_ACTIVE)
 	assert_eq(wizard_match.setup_step, WizardMatch.SETUP_STEP_READY)
@@ -36,13 +36,13 @@ func test_mulligan_returns_selected_cards_and_draws_replacements() -> void:
 	var deck := _make_mixed_deck()
 
 	assert_true(wizard_match.start_match(deck, deck, 9)["ok"])
-	var white_state := wizard_match.get_player_state(ChessMatch.WHITE)
+	var white_state := wizard_match.get_player_state(ChessEngine.WHITE)
 	var replaced_id := str(white_state["hand"][0]["instance_id"])
 
-	assert_true(wizard_match.perform_mulligan(ChessMatch.WHITE, [replaced_id])["ok"])
-	assert_true(wizard_match.keep_opening_hand(ChessMatch.BLACK)["ok"])
+	assert_true(wizard_match.perform_mulligan(ChessEngine.WHITE, [replaced_id])["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessEngine.BLACK)["ok"])
 
-	white_state = wizard_match.get_player_state(ChessMatch.WHITE)
+	white_state = wizard_match.get_player_state(ChessEngine.WHITE)
 	assert_false(white_state["mulligan_available"])
 	assert_eq(white_state["hand"].size(), 2)
 	assert_eq(white_state["deck"].size(), 1)
@@ -53,7 +53,7 @@ func test_beginning_phase_refreshes_mana_and_draws_card() -> void:
 	var wizard_match := _start_active_match()
 
 	assert_true(wizard_match.resolve_beginning_phase())
-	var white_state := wizard_match.get_player_state(ChessMatch.WHITE)
+	var white_state := wizard_match.get_player_state(ChessEngine.WHITE)
 	assert_eq(wizard_match.phase, WizardMatch.PHASE_PREPARATION)
 	assert_eq(white_state["maximum_mana"], 1)
 	assert_eq(white_state["mana"], 1)
@@ -69,16 +69,16 @@ func test_play_card_spends_mana_and_moves_spell_to_graveyard() -> void:
 	var black_deck := _make_uniform_deck(_make_card(CardDefinition.TYPE_SPELL, 1, "spell_b"))
 
 	assert_true(wizard_match.start_match(white_deck, black_deck, 2)["ok"])
-	assert_true(wizard_match.keep_opening_hand(ChessMatch.WHITE)["ok"])
-	assert_true(wizard_match.keep_opening_hand(ChessMatch.BLACK)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessEngine.WHITE)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessEngine.BLACK)["ok"])
 	assert_true(wizard_match.resolve_beginning_phase())
 
-	var white_state := wizard_match.get_player_state(ChessMatch.WHITE)
+	var white_state := wizard_match.get_player_state(ChessEngine.WHITE)
 	var spell_instance_id := str(white_state["hand"][0]["instance_id"])
 	var result := wizard_match.play_card_from_hand(spell_instance_id)
 
 	assert_true(result["ok"])
-	white_state = wizard_match.get_player_state(ChessMatch.WHITE)
+	white_state = wizard_match.get_player_state(ChessEngine.WHITE)
 	assert_eq(white_state["mana"], 1)
 	assert_eq(white_state["graveyard"].size(), 1)
 	assert_eq(white_state["battlefield"].size(), 0)
@@ -95,11 +95,11 @@ func test_unit_card_requires_valid_target_and_replaces_existing_unit() -> void:
 	var black_deck := _make_uniform_deck(_make_card(CardDefinition.TYPE_SPELL, 0, "spell_b"))
 
 	assert_true(wizard_match.start_match(white_deck, black_deck, 4)["ok"])
-	assert_true(wizard_match.keep_opening_hand(ChessMatch.WHITE)["ok"])
-	assert_true(wizard_match.keep_opening_hand(ChessMatch.BLACK)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessEngine.WHITE)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessEngine.BLACK)["ok"])
 	assert_true(wizard_match.resolve_beginning_phase())
 
-	var white_state := wizard_match.get_player_state(ChessMatch.WHITE)
+	var white_state := wizard_match.get_player_state(ChessEngine.WHITE)
 	var first_unit_id := str(white_state["hand"][0]["instance_id"])
 	var second_unit_id := str(white_state["hand"][1]["instance_id"])
 	var target := wizard_match.create_piece_target(_sq("e2"))
@@ -109,11 +109,11 @@ func test_unit_card_requires_valid_target_and_replaces_existing_unit() -> void:
 	assert_false(invalid_target_result["ok"])
 	assert_eq(invalid_target_result["reason"], "invalid_target")
 
-	white_state = wizard_match.get_player_state(ChessMatch.WHITE)
+	white_state = wizard_match.get_player_state(ChessEngine.WHITE)
 	second_unit_id = str(white_state["hand"][0]["instance_id"])
 	assert_true(wizard_match.play_card_from_hand(second_unit_id, [target])["ok"])
 
-	white_state = wizard_match.get_player_state(ChessMatch.WHITE)
+	white_state = wizard_match.get_player_state(ChessEngine.WHITE)
 	assert_eq(white_state["battlefield"].size(), 1)
 	assert_eq(white_state["graveyard"].size(), 1)
 	assert_eq(white_state["battlefield"][0]["attached_to"], "e2")
@@ -133,15 +133,15 @@ func test_reaction_card_requires_trigger_and_reaction_priority() -> void:
 	var black_deck := _make_uniform_deck(reaction)
 
 	assert_true(wizard_match.start_match(white_deck, black_deck, 5)["ok"])
-	assert_true(wizard_match.keep_opening_hand(ChessMatch.WHITE)["ok"])
-	assert_true(wizard_match.keep_opening_hand(ChessMatch.BLACK)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessEngine.WHITE)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessEngine.BLACK)["ok"])
 	assert_true(wizard_match.resolve_beginning_phase())
 	assert_true(wizard_match.finish_preparation_phase())
 	assert_true(wizard_match.apply_move_action(
 		wizard_match.chess_engine.create_move_action(_sq("e2"), _sq("e4"))
 	)["ok"])
 
-	var black_state := wizard_match.get_player_state(ChessMatch.BLACK)
+	var black_state := wizard_match.get_player_state(ChessEngine.BLACK)
 	var reaction_id := str(black_state["hand"][0]["instance_id"])
 	var denied_result := wizard_match.play_card_from_hand(reaction_id)
 	assert_false(denied_result["ok"])
@@ -149,7 +149,7 @@ func test_reaction_card_requires_trigger_and_reaction_priority() -> void:
 
 	assert_true(wizard_match.pass_reaction_phase())
 	assert_true(wizard_match.play_card_from_hand(reaction_id)["ok"])
-	assert_eq(wizard_match.get_player_state(ChessMatch.BLACK)["graveyard"].size(), 1)
+	assert_eq(wizard_match.get_player_state(ChessEngine.BLACK)["graveyard"].size(), 1)
 	assert_eq(wizard_match.get_active_effects().size(), 1)
 	assert_eq(wizard_match.get_active_effects()[0]["source_card_type"], CardDefinition.TYPE_REACTION)
 
@@ -170,11 +170,11 @@ func test_trap_card_triggers_when_opposing_piece_enters_square() -> void:
 	var black_deck := _make_uniform_deck(_make_card(CardDefinition.TYPE_SPELL, 0, "black_spell"))
 
 	assert_true(wizard_match.start_match(white_deck, black_deck, 6)["ok"])
-	assert_true(wizard_match.keep_opening_hand(ChessMatch.WHITE)["ok"])
-	assert_true(wizard_match.keep_opening_hand(ChessMatch.BLACK)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessEngine.WHITE)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessEngine.BLACK)["ok"])
 	assert_true(wizard_match.resolve_beginning_phase())
 
-	var white_state := wizard_match.get_player_state(ChessMatch.WHITE)
+	var white_state := wizard_match.get_player_state(ChessEngine.WHITE)
 	var trap_id := str(white_state["hand"][0]["instance_id"])
 	assert_true(wizard_match.play_card_from_hand(trap_id, [wizard_match.create_square_target(_sq("e5"))])["ok"])
 	assert_eq(wizard_match.get_active_effects().size(), 1)
@@ -191,7 +191,7 @@ func test_trap_card_triggers_when_opposing_piece_enters_square() -> void:
 		wizard_match.chess_engine.create_move_action(_sq("e7"), _sq("e5"))
 	)["ok"])
 
-	white_state = wizard_match.get_player_state(ChessMatch.WHITE)
+	white_state = wizard_match.get_player_state(ChessEngine.WHITE)
 	assert_eq(white_state["battlefield"].size(), 0)
 	assert_eq(white_state["graveyard"].size(), 1)
 	assert_eq(wizard_match.get_active_effects().size(), 0)
@@ -212,16 +212,16 @@ func test_environment_replaces_previous_environment_and_artifact_persists() -> v
 	var black_deck := _make_uniform_deck(_make_card(CardDefinition.TYPE_SPELL, 0, "black_spell"))
 
 	assert_true(wizard_match.start_match(white_deck, black_deck, 12)["ok"])
-	assert_true(wizard_match.keep_opening_hand(ChessMatch.WHITE)["ok"])
-	assert_true(wizard_match.keep_opening_hand(ChessMatch.BLACK)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessEngine.WHITE)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessEngine.BLACK)["ok"])
 	assert_true(wizard_match.resolve_beginning_phase())
 
-	var white_state := wizard_match.get_player_state(ChessMatch.WHITE)
+	var white_state := wizard_match.get_player_state(ChessEngine.WHITE)
 	assert_true(wizard_match.play_card_from_hand(_hand_card_instance_id(white_state, "blizzard"))["ok"])
-	assert_true(wizard_match.play_card_from_hand(_hand_card_instance_id(wizard_match.get_player_state(ChessMatch.WHITE), "holy_ground"))["ok"])
-	assert_true(wizard_match.play_card_from_hand(_hand_card_instance_id(wizard_match.get_player_state(ChessMatch.WHITE), "crystal_ball"))["ok"])
+	assert_true(wizard_match.play_card_from_hand(_hand_card_instance_id(wizard_match.get_player_state(ChessEngine.WHITE), "holy_ground"))["ok"])
+	assert_true(wizard_match.play_card_from_hand(_hand_card_instance_id(wizard_match.get_player_state(ChessEngine.WHITE), "crystal_ball"))["ok"])
 
-	white_state = wizard_match.get_player_state(ChessMatch.WHITE)
+	white_state = wizard_match.get_player_state(ChessEngine.WHITE)
 	assert_eq(white_state["battlefield"].size(), 2)
 	assert_eq(white_state["graveyard"].size(), 1)
 	var active_effect_ids := []
@@ -261,12 +261,12 @@ func test_end_phase_requires_explicit_hand_limit_discard() -> void:
 	assert_true(wizard_match.pass_reaction_phase())
 	assert_true(wizard_match.resolve_end_phase())
 
-	assert_eq(wizard_match.get_pending_hand_limit_discard_count(ChessMatch.WHITE), 1)
-	var white_state := wizard_match.get_player_state(ChessMatch.WHITE)
+	assert_eq(wizard_match.get_pending_hand_limit_discard_count(ChessEngine.WHITE), 1)
+	var white_state := wizard_match.get_player_state(ChessEngine.WHITE)
 	var discard_id := str(white_state["hand"][0]["instance_id"])
 	assert_true(wizard_match.discard_cards_for_hand_limit([discard_id])["ok"])
 
-	white_state = wizard_match.get_player_state(ChessMatch.WHITE)
+	white_state = wizard_match.get_player_state(ChessEngine.WHITE)
 	assert_eq(white_state["hand"].size(), 2)
 	assert_eq(white_state["graveyard"].size(), 1)
 	assert_eq(wizard_match.phase, WizardMatch.PHASE_BEGINNING)
@@ -309,7 +309,7 @@ func test_runtime_cards_preserve_authored_art_texture_path() -> void:
 
 	assert_true(wizard_match.start_match(deck, deck, 18)["ok"])
 
-	var white_state := wizard_match.get_player_state(ChessMatch.WHITE)
+	var white_state := wizard_match.get_player_state(ChessEngine.WHITE)
 	assert_eq(white_state["hand"][0]["art_texture_path"], "res://assets/ui/wizard_match/order_card_art.png")
 
 
@@ -333,8 +333,8 @@ func _start_active_match(rules: WizardMatchRules = null) -> WizardMatch:
 	var wizard_match := WizardMatch.new(match_rules)
 	var deck := _make_mixed_deck()
 	assert_true(wizard_match.start_match(deck, deck, 11)["ok"])
-	assert_true(wizard_match.keep_opening_hand(ChessMatch.WHITE)["ok"])
-	assert_true(wizard_match.keep_opening_hand(ChessMatch.BLACK)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessEngine.WHITE)["ok"])
+	assert_true(wizard_match.keep_opening_hand(ChessEngine.BLACK)["ok"])
 	return wizard_match
 
 
@@ -380,7 +380,7 @@ func _make_card(card_type: String, mana_cost: int, card_id: String, target_requi
 
 
 func _sq(value: String) -> Vector2i:
-	return ChessMatch.new().algebraic_to_square(value)
+	return ChessEngine.new().algebraic_to_square(value)
 
 
 func _hand_card_instance_id(player_state: Dictionary, card_id: String) -> String:

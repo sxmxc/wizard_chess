@@ -1,34 +1,23 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://c8wahv64dx8p5"]
 
-[ext_resource type="Texture2D" path="res://assets/ui/wizard_match/playmat_parts/card_well.png" id="1"]
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_u5dkk"]
+load_path = "res://.godot/imported/card_well.png-1d80c32d11cabc76cb908509ceafdabe.ctex"
 
-[node name="WizardMatchVisualSlot" type="Control"]
-custom_minimum_size = Vector2(70, 96)
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ykhbu"]
+content_margin_left = 10.0
+content_margin_top = 20.0
+content_margin_right = 10.0
+content_margin_bottom = 20.0
+texture = SubResource("CompressedTexture2D_u5dkk")
+
+[node name="WizardMatchVisualSlot" type="PanelContainer" unique_id=1802094988]
+custom_minimum_size = Vector2(128, 128)
+offset_right = 128.0
+offset_bottom = 128.0
 mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxTexture_ykhbu")
 
-[node name="WellFrame" type="TextureRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("1")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="SlotVisual" type="TextureRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 13.0
-offset_top = 15.0
-offset_right = -13.0
-offset_bottom = -15.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
+[node name="SlotVisual" type="TextureRect" parent="." unique_id=883565712]
+layout_mode = 2
 expand_mode = 1
 stretch_mode = 5

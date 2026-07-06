@@ -37,5 +37,5 @@ godot --headless --path . --log-file .godot/gut.log --script res://addons/gut/gu
 
 - Card timing, targeting, zones, deck validation, and setup flow are implemented as framework rules only.
 - Full card resolution for every card type was completed in Milestone 5 on July 4, 2026.
-- `NetworkMatchBridge` still synchronizes chess-only matches through the compatibility `ChessMatch` wrapper.
+- `NetworkMatchBridge` now targets `WizardMatch` directly, with `ChessEngine` remaining the pure chess subsystem under it.
 - Production gameplay UI for cards, hands, graveyards, and phases remains later milestone work.

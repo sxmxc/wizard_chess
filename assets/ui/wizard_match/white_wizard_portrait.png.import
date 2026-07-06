@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dkeb4wtu6g7jw"
-path="res://.godot/imported/mana_crystal.png-96cab732b7d35b16cbcf1ebbfe86d597.ctex"
+uid="uid://c7g8rdg5487j4"
+path="res://.godot/imported/white_wizard_portrait.png-1d149ba13f9e11a84a77d585c63b9bba.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/wizard_match/generated/mana_crystal.png"
-dest_files=["res://.godot/imported/mana_crystal.png-96cab732b7d35b16cbcf1ebbfe86d597.ctex"]
+source_file="res://assets/ui/wizard_match/white_wizard_portrait.png"
+dest_files=["res://.godot/imported/white_wizard_portrait.png-1d149ba13f9e11a84a77d585c63b9bba.ctex"]
 
 [params]
 

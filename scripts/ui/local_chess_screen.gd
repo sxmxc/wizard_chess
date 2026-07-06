@@ -5,7 +5,7 @@ const DARK_SQUARE := Color("9f7b55")
 const SELECTED_SQUARE := Color("7fc97f")
 const LEGAL_SQUARE := Color("f6d365")
 
-var chess_match: ChessMatch
+var chess_match: ChessEngine
 var selected_square = null
 var selected_moves: Array = []
 var pending_promotion_moves: Array = []
@@ -25,8 +25,8 @@ func _ready() -> void:
 	_refresh_ui()
 
 
-func _initialize_match() -> ChessMatch:
-	return ChessMatch.new()
+func _initialize_match() -> ChessEngine:
+	return ChessEngine.new()
 
 
 func _build_ui() -> void:
@@ -116,7 +116,7 @@ func _refresh_ui() -> void:
 
 func _refresh_status() -> void:
 	var outcome = chess_match.outcome
-	if outcome["status"] == ChessMatch.STATUS_ACTIVE:
+	if outcome["status"] == ChessEngine.STATUS_ACTIVE:
 		status_label.text = "Turn %d: %s to move" % [
 			chess_match.fullmove_number,
 			_match_color_name(chess_match.active_color),
@@ -142,7 +142,7 @@ func _refresh_board() -> void:
 func _refresh_history() -> void:
 	history_list.clear()
 	for entry in chess_match.move_history:
-		var prefix := "%d." % entry["turn_number"] if entry["color"] == ChessMatch.WHITE else "%d..." % entry["turn_number"]
+		var prefix := "%d." % entry["turn_number"] if entry["color"] == ChessEngine.WHITE else "%d..." % entry["turn_number"]
 		history_list.add_item("%s %s" % [prefix, entry["notation"]])
 
 
@@ -150,12 +150,12 @@ func _refresh_claim_button() -> void:
 	var reason := chess_match.claimable_draw_reason
 	claim_draw_button.disabled = (
 		reason.is_empty()
-		or chess_match.outcome["status"] != ChessMatch.STATUS_ACTIVE
+			or chess_match.outcome["status"] != ChessEngine.STATUS_ACTIVE
 		or not _can_submit_actions()
 	)
-	if reason == ChessMatch.DRAW_THREEFOLD_REPETITION:
+	if reason == ChessEngine.DRAW_THREEFOLD_REPETITION:
 		claim_draw_button.text = "Claim Draw (Threefold)"
-	elif reason == ChessMatch.DRAW_FIFTY_MOVE_RULE:
+	elif reason == ChessEngine.DRAW_FIFTY_MOVE_RULE:
 		claim_draw_button.text = "Claim Draw (50-Move)"
 	else:
 		claim_draw_button.text = "Claim Draw"
@@ -173,20 +173,20 @@ func _square_text(square: Vector2i) -> String:
 
 
 func _piece_label(piece: Dictionary) -> String:
-	var color_prefix := "W" if piece["color"] == ChessMatch.WHITE else "B"
+	var color_prefix := "W" if piece["color"] == ChessEngine.WHITE else "B"
 	var piece_letter := ""
 	match piece["type"]:
-		ChessMatch.PIECE_PAWN:
+		ChessEngine.PIECE_PAWN:
 			piece_letter = "P"
-		ChessMatch.PIECE_KNIGHT:
+		ChessEngine.PIECE_KNIGHT:
 			piece_letter = "N"
-		ChessMatch.PIECE_BISHOP:
+		ChessEngine.PIECE_BISHOP:
 			piece_letter = "B"
-		ChessMatch.PIECE_ROOK:
+		ChessEngine.PIECE_ROOK:
 			piece_letter = "R"
-		ChessMatch.PIECE_QUEEN:
+		ChessEngine.PIECE_QUEEN:
 			piece_letter = "Q"
-		ChessMatch.PIECE_KING:
+		ChessEngine.PIECE_KING:
 			piece_letter = "K"
 	return "%s%s" % [color_prefix, piece_letter]
 
@@ -203,7 +203,7 @@ func _square_color(square: Vector2i) -> Color:
 func _on_board_square_pressed(square: Vector2i) -> void:
 	if not pending_promotion_moves.is_empty():
 		return
-	if chess_match.outcome["status"] != ChessMatch.STATUS_ACTIVE:
+	if chess_match.outcome["status"] != ChessEngine.STATUS_ACTIVE:
 		return
 
 	for move in selected_moves:
@@ -281,17 +281,17 @@ func _on_reset_pressed() -> void:
 func _outcome_text() -> String:
 	var outcome = chess_match.outcome
 	match outcome["status"]:
-		ChessMatch.STATUS_CHECKMATE:
+		ChessEngine.STATUS_CHECKMATE:
 			return "Checkmate: %s wins" % _match_color_name(outcome["winner"])
-		ChessMatch.STATUS_STALEMATE:
+		ChessEngine.STATUS_STALEMATE:
 			return "Draw: stalemate"
-		ChessMatch.STATUS_DRAW:
+		ChessEngine.STATUS_DRAW:
 			match outcome["reason"]:
-				ChessMatch.DRAW_INSUFFICIENT_MATERIAL:
+				ChessEngine.DRAW_INSUFFICIENT_MATERIAL:
 					return "Draw: insufficient material"
-				ChessMatch.DRAW_THREEFOLD_REPETITION:
+				ChessEngine.DRAW_THREEFOLD_REPETITION:
 					return "Draw: threefold repetition"
-				ChessMatch.DRAW_FIFTY_MOVE_RULE:
+				ChessEngine.DRAW_FIFTY_MOVE_RULE:
 					return "Draw: fifty-move rule"
 			return "Draw"
 		_:

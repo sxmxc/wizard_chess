@@ -2,7 +2,7 @@
 
 ## Current Truth
 
-The local Milestone 7 match UI is functional and now uses a modular, editor-authored table composition. It is no longer the old debug-screen layout, but it is also not visually complete enough to call final production UI yet.
+The Milestone 7 match UI is now functional in both local and networked Wizard Match flows and uses a modular, editor-authored table composition. It is no longer the old debug-screen layout, but it is also not visually complete enough to call final production UI yet.
 
 Interactive visual review in the Godot editor remains the final acceptance step; headless geometry and state tests do not replace that review.
 
@@ -21,7 +21,7 @@ Current practical status:
 - the chessboard remains fixed at 736x736 and is no longer shrunk to create HUD space
 - hand trays, pile wells, public-card trays, portrait frames, and the inspector are modular authored surfaces
 - hands and portraits are now scene-authored and should be tuned in the editor first, not by adding more hard-coded runtime offsets
-- the local scene is the active Milestone 7 proving ground; multiplayer UI reuse is the next step after local visual acceptance
+- the shared `wizard_match_screen` is now the active Milestone 7 proving ground for both local and networked play
 
 ## Valid Current Architecture
 
@@ -90,9 +90,9 @@ Text stand-ins such as `"White Wizard"`, `"Black Wizard"`, and `"0/0 mana"` shou
 
 Current player-status assets:
 
-- `res://assets/ui/wizard_match/generated/white_wizard_portrait.png`
-- `res://assets/ui/wizard_match/generated/black_wizard_portrait.png`
-- `res://assets/ui/wizard_match/generated/mana_crystal.png`
+- `res://assets/ui/wizard_match/white_wizard_portrait.png`
+- `res://assets/ui/wizard_match/black_wizard_portrait.png`
+- `res://assets/ui/wizard_match/mana_crystal.png`
 
 Current player-status sizes:
 
@@ -163,7 +163,7 @@ Additional current truth after later tuning:
 - local card faces have a composed texture-layer pass; they may still need editor visual QA for typography, spacing, and card-type readability.
 - visual QA is still insufficient; headless tests do not prove the screen feels good at runtime.
 - AI/dev controls and diagnostics still need a cleaner developer-only path.
-- multiplayer has not been visually proven. Keep player identity/status/pile/hand/public-zone views simulation-derived and owner-oriented so local, host, client, spectator, and replay views can reuse the same composed components.
+- multiplayer UI is now wired through the shared Wizard Match screen, but it still needs interactive visual QA in full host/client sessions. Keep player identity/status/pile/hand/public-zone views simulation-derived and owner-oriented so local, host, client, spectator, and replay views can reuse the same composed components.
 
 Known visual gaps still visible in the current local scene:
 
@@ -220,10 +220,10 @@ Do not “fix” this in UI unless the rules change.
 1. Complete interactive visual acceptance at the authored 1920x1080 viewport and tune only scene offsets or modular assets found to be visually incorrect.
 2. Enlarge the opponent hand presentation and continue pushing both hand systems toward deliberate tabletop card presence.
 3. Replace HUD-feeling action/readout presentation with a more authored card/tray surface.
-4. Reuse the local match UI components for the hosted/client multiplayer screen instead of duplicating UI logic.
-5. Prove the same public/hidden information rules through multiplayer snapshots: hand/deck hidden, graveyard/captures/environment/artifacts public, face-down Trap identity and square hidden until reveal.
-6. Move more HUD refresh mapping out of `LocalWizardMatchScreen` only where it reduces real complexity.
-7. Keep headless tests for geometry, scene wiring, data binding, and public/hidden information regressions.
+4. Continue host/client visual QA on the shared multiplayer screen, especially ownership grouping, turn/readout clarity, and trap/graveyard/public-zone readability.
+5. Keep proving the same public/hidden information rules through multiplayer snapshots and live sessions: hand/deck hidden, graveyard/captures/environment/artifacts public, face-down Trap identity and square hidden until reveal.
+6. Move more HUD refresh mapping out of `WizardMatchScreen` only where it reduces real complexity.
+7. Keep headless tests for geometry, scene wiring, data binding, targeted network card submission, and public/hidden information regressions.
 
 ## Validation Commands
 

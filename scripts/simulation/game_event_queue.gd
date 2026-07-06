@@ -42,7 +42,9 @@ func clear() -> void:
 
 func load_history(history: Array) -> void:
 	_pending_events.clear()
-	_resolved_events = history.duplicate(true)
+	_resolved_events.clear()
+	for event_value in history:
+		_resolved_events.append((event_value as Dictionary).duplicate(true))
 	_next_sequence = 1
 	for event_value in _resolved_events:
 		_next_sequence = max(_next_sequence, int(event_value.get("sequence", 0)) + 1)

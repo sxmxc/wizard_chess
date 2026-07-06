@@ -1,0 +1,10 @@
+[gd_resource type="StyleBoxTexture" format=3 uid="uid://ch60ukde3qbxf"]
+
+[ext_resource type="Texture2D" uid="uid://dgnufrwpqbpqf" path="res://assets/ui/wizard_match/playmat_parts/card_well.png" id="1_4n50c"]
+
+[resource]
+content_margin_left = 10.0
+content_margin_top = 20.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+texture = ExtResource("1_4n50c")

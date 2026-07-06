@@ -100,6 +100,8 @@ Gameplay rules should exist only once.
 
 Networking should communicate with the simulation rather than replace it.
 
+For the current prototype, that means `NetworkMatchBridge` should submit actions to `WizardMatch` and distribute WizardMatch-derived snapshots, rather than maintaining a separate chess-only authoritative match type.
+
 ---
 
 # Godot Multiplayer
@@ -323,7 +325,7 @@ Invalid actions must never modify the authoritative game state.
 
 # Prototype Requirements
 
-Before networking architecture is finalized, a prototype must demonstrate:
+The current networking prototype must continue to demonstrate and preserve:
 
 - Client connection
     
@@ -331,7 +333,7 @@ Before networking architecture is finalized, a prototype must demonstrate:
     
 - Authoritative chess movement
     
-- Authoritative card play
+- Authoritative card play, including targeted cards, public zones, traps, and graveyards
     
 - Event Queue synchronization
     
@@ -344,7 +346,7 @@ Before networking architecture is finalized, a prototype must demonstrate:
 - Headless server execution
     
 
-No production networking architecture should be finalized until these goals are successfully demonstrated.
+These goals are now partly demonstrated in the current Wizard Match networking prototype, but they remain the bar for declaring the architecture stable enough to stop changing.
 
 ---
 

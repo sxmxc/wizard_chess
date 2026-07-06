@@ -3,7 +3,8 @@ extends Node
 const DEV_LAUNCHER_SCENE := preload("res://scenes/app/dev_launcher_screen.tscn")
 const LOCAL_CHESS_SCENE := preload("res://scenes/chess/local_chess_screen.tscn")
 const LOCAL_WIZARD_MATCH_SCENE := preload("res://scenes/chess/local_wizard_match_screen.tscn")
-const NETWORK_CHESS_SCENE := preload("res://scenes/chess/network_chess_screen.tscn")
+const NETWORK_WIZARD_MATCH_SCENE := preload("res://scenes/chess/network_wizard_match_screen.tscn")
+const MAIN_MENU_SCENE = preload("res://scenes/app/main_menu.tscn")
 
 @onready var match_bridge: NetworkMatchBridge = $NetworkRoot/MatchBridge
 @onready var content_root: Node = $ContentRoot
@@ -109,7 +110,7 @@ func start_host_session(
 		else:
 			_show_dev_launcher("Failed to start host server.")
 		return false
-	_load_content_scene(NETWORK_CHESS_SCENE)
+	_load_content_scene(NETWORK_WIZARD_MATCH_SCENE)
 	return true
 
 
@@ -137,7 +138,7 @@ func start_client_session(
 		else:
 			_show_dev_launcher("Failed to connect to %s:%d." % [address, port])
 		return false
-	_load_content_scene(NETWORK_CHESS_SCENE)
+	_load_content_scene(NETWORK_WIZARD_MATCH_SCENE)
 	return true
 
 

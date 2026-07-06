@@ -4,7 +4,9 @@ class_name NetworkMatchBridge
 const DEFAULT_PORT := 7000
 const DEFAULT_MAX_CLIENTS := 2
 const SESSION_STORE_PATH := "user://network_session.cfg"
-const MATCH_COLORS := [ChessMatch.WHITE, ChessMatch.BLACK]
+const MATCH_COLORS := [ChessEngine.WHITE, ChessEngine.BLACK]
+const RULES_RESOURCE_PATH := "res://content/config/default_wizard_match_rules.tres"
+const DECK_RESOURCE_PATH := "res://content/decks/sample_ai_battle_deck.tres"
 
 signal snapshot_applied(snapshot: Dictionary)
 signal action_rejected(action: Dictionary, reason: String)
@@ -15,7 +17,7 @@ signal connection_failed
 signal server_disconnected
 signal session_updated(player_id: String, color: String)
 
-var chess_match := ChessMatch.new()
+var wizard_match := _create_authoritative_match()
 var host_player_enabled := false
 var players_by_id := {}
 var peer_to_player := {}
@@ -54,10 +56,11 @@ func start_server(
 	current_server_port = port
 	_reset_session_state()
 	if allow_host_player:
-		var host_player_id := _create_player_session(ChessMatch.WHITE)
+		var host_player_id := _create_player_session(ChessEngine.WHITE)
 		_bind_player_to_peer(host_player_id, 1)
 		local_player_id = host_player_id
 		local_reconnect_token = str(players_by_id[host_player_id]["reconnect_token"])
+	_initialize_authoritative_match()
 	_log_info("Server started.", {
 		"port": port,
 		"max_clients": max_clients,
@@ -97,7 +100,7 @@ func reset_match() -> bool:
 		return false
 
 	_log_info("Resetting authoritative match.")
-	chess_match.reset()
+	_initialize_authoritative_match()
 	_broadcast_snapshot()
 	return true
 
@@ -138,7 +141,7 @@ func get_player_color_assignments() -> Dictionary:
 
 func is_local_players_turn() -> bool:
 	var local_color := get_local_player_color()
-	return not local_color.is_empty() and local_color == chess_match.active_color
+	return wizard_match.can_color_submit_action(local_color)
 
 
 @rpc("any_peer", "reliable")
@@ -163,7 +166,7 @@ func register_player_session(reconnect_token: String) -> void:
 func receive_snapshot(snapshot: Dictionary) -> void:
 	_log_info("Snapshot received.", {
 		"peer_id": multiplayer.get_unique_id(),
-		"active_color": snapshot.get("fen", "").split(" ")[1] if str(snapshot.get("fen", "")).contains(" ") else "",
+		"active_color": snapshot.get("chess_state", {}).get("fen", "").split(" ")[1] if str(snapshot.get("chess_state", {}).get("fen", "")).contains(" ") else "",
 	})
 	_apply_snapshot(snapshot)
 
@@ -199,7 +202,8 @@ func _process_action(sender_id: int, action: Dictionary) -> void:
 		_reject_action(sender_id, action, rejection_reason)
 		return
 
-	var result := chess_match.apply_action_payload(action)
+	var assigned_color := str(players_by_id.get(str(peer_to_player.get(sender_id, "")), {}).get("color", ""))
+	var result := wizard_match.apply_action(action, assigned_color)
 	if not result["ok"]:
 		_reject_action(sender_id, action, str(result["reason"]))
 		return
@@ -207,12 +211,12 @@ func _process_action(sender_id: int, action: Dictionary) -> void:
 	_log_info("Action accepted.", {
 		"sender_id": sender_id,
 		"action": action,
-		"fen": chess_match.to_fen(),
+		"fen": wizard_match.chess_engine.to_fen(),
 	})
 	_broadcast_snapshot()
 
 
-func _validate_action_sender(sender_id: int, action: Dictionary) -> String:
+func _validate_action_sender(sender_id: int, _action: Dictionary) -> String:
 	var player_id := str(peer_to_player.get(sender_id, ""))
 	if player_id.is_empty():
 		return "peer_not_registered"
@@ -221,12 +225,8 @@ func _validate_action_sender(sender_id: int, action: Dictionary) -> String:
 	if assigned_color.is_empty():
 		return "peer_not_assigned"
 
-	if assigned_color != chess_match.active_color:
+	if not wizard_match.can_color_submit_action(assigned_color, _action):
 		return "not_your_turn"
-
-	var action_type := str(action.get("type", ""))
-	if action_type != ChessMatch.ACTION_TYPE_MOVE and action_type != ChessMatch.ACTION_TYPE_CLAIM_DRAW:
-		return "unsupported_action"
 
 	return ""
 
@@ -248,31 +248,37 @@ func _broadcast_snapshot() -> void:
 	var snapshot := _create_snapshot()
 	_log_info("Broadcasting snapshot.", {
 		"peer_count": multiplayer.get_peers().size(),
-		"fen": snapshot.get("fen", ""),
-		"players": snapshot.get("players", {}),
+		"fen": snapshot.get("chess_state", {}).get("fen", ""),
+		"session_players": snapshot.get("session_players", {}),
 	})
-	_apply_snapshot(snapshot)
+	if multiplayer.is_server():
+		var local_viewer_color := get_local_player_color()
+		snapshot_applied.emit(_create_snapshot(local_viewer_color))
+	else:
+		_apply_snapshot(snapshot)
+
 	if not multiplayer.is_server():
 		return
-
 	for peer_id in multiplayer.get_peers():
-		receive_snapshot.rpc_id(peer_id, snapshot)
+		var player_id := str(peer_to_player.get(peer_id, ""))
+		var viewer_color := str(players_by_id.get(player_id, {}).get("color", ""))
+		receive_snapshot.rpc_id(peer_id, _create_snapshot(viewer_color))
 
 
-func _create_snapshot() -> Dictionary:
-	var snapshot := chess_match.create_state_snapshot()
-	snapshot["players"] = _create_public_player_snapshot()
+func _create_snapshot(viewer_color: String = "") -> Dictionary:
+	var snapshot := wizard_match.create_network_snapshot(viewer_color)
+	snapshot["session_players"] = _create_public_player_snapshot()
 	return snapshot
 
 
 func _apply_snapshot(snapshot: Dictionary) -> void:
-	chess_match.load_state_snapshot(snapshot)
+	wizard_match.load_state_snapshot(snapshot)
 	if not multiplayer.is_server():
-		players_by_id = snapshot.get("players", {}).duplicate(true)
+		players_by_id = snapshot.get("session_players", {}).duplicate(true)
 	_log_info("Snapshot applied.", {
 		"peer_id": multiplayer.get_unique_id(),
-		"fen": chess_match.to_fen(),
-		"players": _create_public_player_snapshot() if multiplayer.is_server() else players_by_id,
+		"fen": wizard_match.chess_engine.to_fen(),
+		"session_players": _create_public_player_snapshot() if multiplayer.is_server() else players_by_id,
 	})
 	snapshot_applied.emit(snapshot)
 
@@ -422,7 +428,9 @@ func _create_public_player_snapshot() -> Dictionary:
 
 func _send_snapshot_to_peer(peer_id: int) -> void:
 	_log_info("Sending snapshot to peer.", {"peer_id": peer_id})
-	receive_snapshot.rpc_id(peer_id, _create_snapshot())
+	var player_id := str(peer_to_player.get(peer_id, ""))
+	var viewer_color := str(players_by_id.get(player_id, {}).get("color", ""))
+	receive_snapshot.rpc_id(peer_id, _create_snapshot(viewer_color))
 
 
 func _reset_session_state() -> void:
@@ -472,6 +480,25 @@ func _session_section_name(address: String, port: int, client_profile_id: String
 
 func _generate_identifier(prefix: String) -> String:
 	return "%s_%s_%s" % [prefix, Time.get_ticks_usec(), randi()]
+
+
+func _create_authoritative_match() -> WizardMatch:
+	var rules := load(RULES_RESOURCE_PATH) as WizardMatchRules
+	return WizardMatch.new(rules)
+
+
+func _initialize_authoritative_match() -> void:
+	wizard_match = _create_authoritative_match()
+	var default_deck := CardCatalog.load_deck_definition(DECK_RESOURCE_PATH)
+	if default_deck == null:
+		_log_error("Failed to load default deck for authoritative match.", {"path": DECK_RESOURCE_PATH})
+		return
+	var result := wizard_match.start_match(default_deck, default_deck, 1)
+	if not result["ok"]:
+		_log_error("Failed to initialize authoritative WizardMatch.", {"reason": result["reason"]})
+		return
+	wizard_match.keep_opening_hand(ChessEngine.WHITE)
+	wizard_match.keep_opening_hand(ChessEngine.BLACK)
 
 
 func _role_label() -> String:

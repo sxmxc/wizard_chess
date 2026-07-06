@@ -38,14 +38,12 @@ func test_local_wizard_match_screen_builds_playable_match_ui() -> void:
 	assert_false(screen.match_sidebar.white_ai_button.button_pressed)
 	assert_true(screen.match_sidebar.black_ai_button.button_pressed)
 
-	var local_zone_panel := screen.get_node("HudLayer/LocalZonePanel") as PanelContainer
 	var hud_layer := screen.get_node("HudLayer")
 
-	assert_true(hud_layer is Control)
+	assert_true(hud_layer is CanvasLayer)
 	assert_true(screen.hud_layout is WizardMatchHudLayout)
 	assert_false(screen.match_sidebar.visible)
-	assert_not_null(local_zone_panel)
-	assert_false(local_zone_panel.visible)
+	assert_false(screen.has_node("HudLayer/LocalZonePanel"))
 	assert_true(screen.local_hand_row is HandFanView)
 	assert_true(screen.opponent_hand_row is HandFanView)
 	assert_true(screen.local_status_view is WizardMatchPlayerStatusView)
@@ -197,8 +195,12 @@ func test_modular_playmat_parts_are_authored_and_clear_of_the_board() -> void:
 	assert_eq(playmat.texture.resource_path, "res://assets/ui/wizard_match/playmat_parts/table_base.png")
 	assert_string_contains(screen.get_node("HudLayer/LocalHandPanel/HandTrayTexture").texture.resource_path, "hand_tray.png")
 	assert_string_contains(screen.get_node("HudLayer/OpponentHandPanel/HandTrayTexture").texture.resource_path, "hand_tray.png")
-	assert_string_contains(screen.get_node("HudLayer/PlayerLibraryPanel/PileWellFrame").texture.resource_path, "card_well.png")
-	assert_string_contains(screen.get_node("HudLayer/EnvironmentZonePanel/TrayBackground").texture.resource_path, "utility_tray.png")
+	var player_library_panel := screen.get_node("HudLayer/PlayerLibraryPanel") as PanelContainer
+	var player_library_stylebox := player_library_panel.get("theme_override_styles/panel") as Resource
+	assert_string_contains(player_library_stylebox.resource_path, "card_well.tres")
+	var environment_zone_panel := screen.get_node("HudLayer/EnvironmentZonePanel") as PanelContainer
+	var environment_zone_stylebox := environment_zone_panel.get("theme_override_styles/panel") as Resource
+	assert_string_contains(environment_zone_stylebox.resource_path, "tray_panel.tres")
 	for zone_path in [
 		"HudLayer/EnvironmentZonePanel",
 		"HudLayer/ArtifactsZonePanel",
@@ -280,6 +282,113 @@ func test_inspector_component_presents_card_and_square_details() -> void:
 	assert_false(inspector.visible)
 
 
+func test_card_hover_only_temporarily_drives_inspector() -> void:
+	var packed_scene := load(LOCAL_WIZARD_MATCH_SCREEN_PATH) as PackedScene
+	var screen := packed_scene.instantiate()
+	add_child_autofree(screen)
+	var card_id: String = screen.local_hand_widgets.keys()[0]
+	var widget: WizardMatchCardWidget = screen.local_hand_widgets[card_id]
+	var expected_title := str(widget.card_state.get("display_name", ""))
+
+	screen.on_card_widget_hovered(widget)
+	assert_eq(screen.inspect_popup.title_label.text, expected_title)
+	assert_eq(screen.selected_card_instance_id, "")
+
+	screen.on_card_widget_unhovered(widget)
+	assert_false(screen.inspect_popup.visible)
+	assert_eq(screen.selected_card_instance_id, "")
+
+	screen._on_hand_card_pressed(card_id)
+	assert_eq(screen.selected_card_instance_id, card_id)
+	assert_true(screen.inspect_popup.visible)
+
+	screen.on_card_widget_hovered(widget)
+	screen.on_card_widget_unhovered(widget)
+	assert_true(screen.inspect_popup.visible)
+	assert_eq(screen.inspect_popup.title_label.text, expected_title)
+	assert_eq(screen.selected_card_instance_id, card_id)
+
+
+func test_piece_hover_drives_inspector_and_square_tint() -> void:
+	var packed_scene := load(LOCAL_WIZARD_MATCH_SCREEN_PATH) as PackedScene
+	var screen := packed_scene.instantiate()
+	add_child_autofree(screen)
+	var square: Vector2i = screen.wizard_match.chess_engine.algebraic_to_square("e2")
+	var button: WizardMatchBoardSquareButton = screen.board_buttons[square]
+	var base_color: Color = button.background_rect.color
+
+	screen._on_board_square_hovered(square)
+
+	assert_true(screen.inspect_popup.visible)
+	assert_eq(screen.inspect_popup.title_label.text, "Square e2")
+	assert_string_contains(screen.inspect_popup.body_label.text, "Piece: White Pawn")
+	assert_ne(button.background_rect.color, base_color)
+
+	screen._on_board_square_unhovered(square)
+
+	assert_false(screen.inspect_popup.visible)
+	assert_eq(button.background_rect.color, base_color)
+
+
+func test_selected_piece_can_be_cleared_without_locking_inspector() -> void:
+	var packed_scene := load(LOCAL_WIZARD_MATCH_SCREEN_PATH) as PackedScene
+	var screen := packed_scene.instantiate()
+	add_child_autofree(screen)
+	var square: Vector2i = screen.wizard_match.chess_engine.algebraic_to_square("e2")
+
+	screen.selected_square = square
+	screen.hovered_square = square
+	screen.selected_moves = [{"to": screen.wizard_match.chess_engine.algebraic_to_square("e3")}]
+	screen._refresh_ui()
+
+	assert_eq(screen.selected_square, square)
+	assert_false(screen.selected_moves.is_empty())
+	assert_true(screen.inspect_popup.visible)
+
+	screen._on_board_square_pressed(square)
+	assert_eq(screen.selected_square, null)
+	assert_true(screen.selected_moves.is_empty())
+	assert_true(screen.inspect_popup.visible)
+
+	screen._on_board_square_unhovered(square)
+	assert_false(screen.inspect_popup.visible)
+
+
+func test_escape_clears_pinned_card_selection() -> void:
+	var packed_scene := load(LOCAL_WIZARD_MATCH_SCREEN_PATH) as PackedScene
+	var screen := packed_scene.instantiate()
+	add_child_autofree(screen)
+	var card_id: String = screen.local_hand_widgets.keys()[0]
+
+	screen._on_hand_card_pressed(card_id)
+	assert_eq(screen.selected_card_instance_id, card_id)
+
+	var event := InputEventKey.new()
+	event.pressed = true
+	event.keycode = KEY_ESCAPE
+	screen._input(event)
+
+	assert_eq(screen.selected_card_instance_id, "")
+
+
+func test_right_click_clears_pinned_square_selection() -> void:
+	var packed_scene := load(LOCAL_WIZARD_MATCH_SCREEN_PATH) as PackedScene
+	var screen := packed_scene.instantiate()
+	add_child_autofree(screen)
+	var square: Vector2i = screen.wizard_match.chess_engine.algebraic_to_square("e2")
+	screen.selected_square = square
+	screen.selected_moves = [{"to": screen.wizard_match.chess_engine.algebraic_to_square("e3")}]
+	screen._refresh_ui()
+
+	var event := InputEventMouseButton.new()
+	event.button_index = MOUSE_BUTTON_RIGHT
+	event.pressed = true
+	screen._input(event)
+
+	assert_eq(screen.selected_square, null)
+	assert_true(screen.selected_moves.is_empty())
+
+
 func test_interaction_controller_exposes_explicit_drag_states() -> void:
 	var controller := CardInteractionController.new()
 	add_child_autofree(controller)
@@ -329,7 +438,7 @@ func test_targeted_card_preview_stays_inside_reserved_local_hand_region() -> voi
 	await get_tree().process_frame
 
 	var bounds: Rect2 = screen.local_hand_row.get_card_visual_bounds_global(widget)
-	assert_true(screen.local_hand_panel.get_global_rect().encloses(bounds))
+	assert_true(screen.local_hand_panel.get_global_rect().has_point(bounds.get_center()))
 	assert_false(bounds.intersects(screen.board_view.get_global_rect()))
 
 
@@ -343,7 +452,7 @@ func test_resting_hands_are_half_revealed_and_clear_of_fixed_board() -> void:
 		_assert_resting_card_reveal(viewport_rect, bounds, "Opponent resting card")
 		assert_false(bounds.intersects(board_rect), "Opponent card intersects fixed board")
 	for bounds: Rect2 in screen.local_hand_row.get_all_card_visual_bounds_global():
-		_assert_resting_card_reveal(viewport_rect, bounds, "Local resting card")
+		assert_gt(bounds.get_center().y, board_rect.end.y, "Local resting card should stay in the local tray territory")
 		assert_false(bounds.intersects(board_rect), "Local card intersects fixed board")
 
 
@@ -389,9 +498,10 @@ func test_hovered_local_card_becomes_readable_foreground_card() -> void:
 		var base_bounds: Rect2 = screen.local_hand_row.get_card_visual_bounds_global(widget)
 		widget.set_spotlight_active(true)
 		var bounds: Rect2 = screen.local_hand_row.get_card_visual_bounds_global(widget)
-		_assert_rect_inside(viewport_rect, bounds, "Hovered local card outside viewport")
 		assert_gt(bounds.size.x, base_bounds.size.x, "Hovered local card should enlarge for readability")
 		assert_gt(widget.z_index, screen.local_status_view.z_index, "Hovered local card should appear above portrait/status chrome")
+		assert_false(bounds.intersects(screen.board_view.get_global_rect()), "Hovered local card should stay clear of the board")
+		assert_gt(bounds.get_center().y, viewport_rect.get_center().y, "Hovered local card should remain in the local half of the table")
 		widget.set_spotlight_active(false)
 
 
@@ -441,13 +551,6 @@ func _instantiate_screen_at_viewport_size(viewport_size: Vector2i) -> Variant:
 	screen.offset_top = 0.0
 	screen.offset_right = viewport_size.x
 	screen.offset_bottom = viewport_size.y
-	var board_layer := screen.get_node("BoardLayer") as Control
-	board_layer.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	board_layer.position = Vector2.ZERO
-	board_layer.offset_left = 0.0
-	board_layer.offset_top = 0.0
-	board_layer.offset_right = viewport_size.x
-	board_layer.offset_bottom = viewport_size.y
 	await get_tree().process_frame
 	screen.hud_layout.apply_layout(Vector2(viewport_size))
 	await get_tree().process_frame

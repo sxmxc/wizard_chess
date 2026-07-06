@@ -1,22 +1,22 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://b7q6jcjfjs8fp"]
 
-[ext_resource type="Script" path="res://scripts/ui/wizard_match_hud_layout.gd" id="1"]
+[ext_resource type="Script" uid="uid://cnvn05lyg6ss8" path="res://scripts/ui/wizard_match_hud_layout.gd" id="1"]
 
-[node name="WizardMatchHudLayout" type="Node"]
+[node name="WizardMatchHudLayout" type="Node" unique_id=1528061021]
 script = ExtResource("1")
-board_safe_area_path = NodePath("../../BoardLayer/BoardSafeArea")
-board_frame_path = NodePath("../../BoardLayer/BoardSafeArea/BoardCenter/BoardFrame")
-board_view_path = NodePath("../../BoardLayer/BoardSafeArea/BoardCenter/BoardFrame/BoardMargin/BoardView")
-opponent_hand_panel_path = NodePath("../OpponentHandPanel")
-local_hand_panel_path = NodePath("../LocalHandPanel")
-opponent_library_panel_path = NodePath("../OpponentLibraryPanel")
-opponent_graveyard_panel_path = NodePath("../OpponentGraveyardPanel")
-player_library_panel_path = NodePath("../PlayerLibraryPanel")
-player_graveyard_panel_path = NodePath("../PlayerGraveyardPanel")
-turn_panel_path = NodePath("../TurnPanel")
-local_zone_panel_path = NodePath("../LocalZonePanel")
-opponent_zone_panel_path = NodePath("../OpponentZonePanel")
-match_sidebar_path = NodePath("../MatchSidebar")
-inspect_popup_path = NodePath("../../InspectPopup")
-local_hand_row_path = NodePath("../LocalHandPanel/LocalHandRow")
-opponent_hand_row_path = NodePath("../OpponentHandPanel/OpponentHandRow")
+board_safe_area_path = NodePath("")
+board_frame_path = NodePath("")
+board_view_path = NodePath("")
+opponent_hand_panel_path = NodePath("")
+local_hand_panel_path = NodePath("")
+opponent_library_panel_path = NodePath("")
+opponent_graveyard_panel_path = NodePath("")
+player_library_panel_path = NodePath("")
+player_graveyard_panel_path = NodePath("")
+turn_panel_path = NodePath("")
+local_zone_panel_path = NodePath("")
+opponent_zone_panel_path = NodePath("")
+match_sidebar_path = NodePath("")
+inspect_popup_path = NodePath("")
+local_hand_row_path = NodePath("")
+opponent_hand_row_path = NodePath("")

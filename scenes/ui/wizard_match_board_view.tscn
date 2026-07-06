@@ -1,8 +1,20 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dqumx3cqkl3sm"]
 
-[ext_resource type="Script" path="res://scripts/ui/wizard_match_board_view.gd" id="1"]
+[ext_resource type="Script" uid="uid://btbu3x3urm01" path="res://scripts/ui/wizard_match_board_view.gd" id="1"]
 
-[node name="WizardMatchBoardView" type="Control"]
+[node name="WizardMatchBoardView" type="Control" unique_id=214006063]
 custom_minimum_size = Vector2(512, 512)
-mouse_filter = 0
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -256.0
+offset_top = -256.0
+offset_right = 256.0
+offset_bottom = 256.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1")
+board_padding = 0.0

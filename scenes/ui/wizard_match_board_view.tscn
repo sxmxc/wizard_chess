@@ -1,20 +1,572 @@
 [gd_scene format=3 uid="uid://dqumx3cqkl3sm"]
 
 [ext_resource type="Script" uid="uid://btbu3x3urm01" path="res://scripts/ui/wizard_match_board_view.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://c00auwiuvmwg4" path="res://assets/ui/wizard_match/board/board_square_light.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://pnecwhixrcok" path="res://assets/ui/wizard_match/board/board_square_dark.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://dy0juixuqu77j" path="res://assets/ui/wizard_match/board/board_background.png" id="4"]
+[ext_resource type="StyleBox" uid="uid://cyhbuovqpiuum" path="res://assets/ui/board_frame.tres" id="4_oefuh"]
+[ext_resource type="Script" path="res://scripts/ui/wizard_match_board_square.gd" id="5"]
 
 [node name="WizardMatchBoardView" type="Control" unique_id=214006063]
-custom_minimum_size = Vector2(512, 512)
+custom_minimum_size = Vector2(832, 832)
 layout_mode = 3
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -256.0
-offset_top = -256.0
-offset_right = 256.0
-offset_bottom = 256.0
+offset_left = -416.0
+offset_top = -416.0
+offset_right = 416.0
+offset_bottom = 416.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1")
-board_padding = 0.0
+
+[node name="BoardFrame" type="PanelContainer" parent="." unique_id=2145638794]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = ExtResource("4_oefuh")
+
+[node name="BoardSurface" type="Control" parent="BoardFrame" unique_id=2054561343]
+show_behind_parent = true
+layout_mode = 2
+mouse_filter = 2
+
+[node name="BoardBackground" type="TextureRect" parent="BoardFrame/BoardSurface" unique_id=1012806099]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4")
+expand_mode = 1
+
+[node name="SquareGrid" type="GridContainer" parent="BoardFrame/BoardSurface" unique_id=1721398425]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/v_separation = 5
+columns = 8
+
+[node name="Square00" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1151248856]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square01" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=765389278]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square02" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1038331544]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square03" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=207666687]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square04" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=895872242]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square05" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=791454347]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square06" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=651724072]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square07" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=358369112]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square08" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=919523045]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square09" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1917890702]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square10" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=172203494]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square11" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1848191149]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square12" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=760748632]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square13" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1463524967]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square14" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=2050944872]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square15" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=917407185]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square16" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1148055209]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square17" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=86665201]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square18" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=507808886]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square19" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=645868355]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square20" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=878627513]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square21" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1954978898]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square22" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1960335329]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square23" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1784392019]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square24" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=2120746355]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square25" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1892389722]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square26" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=349521083]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square27" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=827197161]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square28" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=686615058]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square29" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1456018909]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square30" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=884465993]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square31" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=126728805]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square32" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1990045862]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square33" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1665018498]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square34" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=938113851]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square35" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1860179710]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square36" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1452378008]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square37" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=889886570]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square38" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1763439973]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square39" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=574418449]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square40" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=232684583]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square41" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1437610979]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square42" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1162676721]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square43" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1364426713]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square44" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=413555650]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square45" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1650824273]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square46" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=459085637]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square47" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=246340861]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square48" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1885566656]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square49" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=6558952]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square50" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1080384993]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square51" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=466120384]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square52" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1950436844]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square53" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1007047397]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square54" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1854653523]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square55" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=634811580]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square56" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=705005263]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square57" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1841392444]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square58" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=831719849]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square59" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=2103825046]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square60" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=998074393]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square61" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=13366416]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square62" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=828914646]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Square63" type="TextureRect" parent="BoardFrame/BoardSurface/SquareGrid" unique_id=1092670293]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+script = ExtResource("5")
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5

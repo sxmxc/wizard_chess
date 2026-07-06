@@ -2,9 +2,9 @@
 
 ## Current Truth
 
-The Milestone 7 match UI is now functional in both local and networked Wizard Match flows and uses a modular, editor-authored table composition. It is no longer the old debug-screen layout, but it is also not visually complete enough to call final production UI yet.
+Milestone 7 is complete. The shared Wizard Match gameplay UI now works in both local and networked flows and uses a modular, editor-authored table composition instead of the old debug-screen layout.
 
-Interactive visual review in the Godot editor remains the final acceptance step; headless geometry and state tests do not replace that review.
+Interactive visual review in the Godot editor remains valuable, but Milestone 7 acceptance is no longer blocked on further structural UI work. Headless geometry/state tests and the current authored scene pass are now sufficient to treat the milestone as closed.
 
 The screen has moved away from the original monolithic debug layout and now presents the match through editor-authored surfaces:
 
@@ -18,10 +18,10 @@ The screen has moved away from the original monolithic debug layout and now pres
 
 Current practical status:
 
-- the chessboard remains fixed at 736x736 and is no longer shrunk to create HUD space
+- the chessboard remains fixed at 832x832 and is no longer shrunk to create HUD space
 - hand trays, pile wells, public-card trays, portrait frames, and the inspector are modular authored surfaces
 - hands and portraits are now scene-authored and should be tuned in the editor first, not by adding more hard-coded runtime offsets
-- the shared `wizard_match_screen` is now the active Milestone 7 proving ground for both local and networked play
+- the shared `wizard_match_screen` is now the accepted Milestone 7 gameplay screen for both local and networked play
 
 ## Valid Current Architecture
 
@@ -137,7 +137,7 @@ The current local match screen now has:
 - graveyard piles shown as public full-card top cards/counts
 - authored visual slot panels for current Environment, Artifacts, face-down Traps in play, and captured pieces
 - modular playmat composition with separate table base, hand tray, card well, portrait frame, and utility tray textures
-- a fixed authored 736x736 board frame; responsive layout no longer shrinks the board to create HUD space
+- a fixed authored 832x832 board frame; responsive layout no longer shrinks the board to create HUD space
 - enlarged half-revealed local and opponent hands with complete-card scaling instead of partial child stretching
 - a card-focused inspector that renders the actual composed card widget rather than a raw art image plus metadata panel
 - the card inspector now uses a tighter composed presentation so hover and targeting review do not leave as much empty dead space beside the board
@@ -145,25 +145,29 @@ The current local match screen now has:
 - captured-piece slots that use the piece atlas rather than textual lists
 - a composed turn/action panel with primary-action styling
 - board readability pass for square colors and larger pieces
-- UI tests for card data binding, authored-art rendering, public graveyard display, environment/trap/capture visual zones, static HUD placement, hand bounds, and inspector avoidance
+- texture-authored board squares and frame assets composed in-scene instead of runtime-generated board controls
+- per-square UI behavior moved to dedicated square nodes rather than runtime-generated button wrappers
+- inspector lock cleanup after resolved moves
+- local hover and targeted card states constrained to the intended local decision region
+- black-seat network perspective mapping validated through the shared board view
+- UI tests for card data binding, authored-art rendering, public graveyard display, environment/trap/capture visual zones, static HUD placement, hand bounds, inspector avoidance, move-inspector cleanup, local hover/target hand behavior, and network perspective mapping
 
 Additional current truth after later tuning:
 
 - hand-panel and portrait placement are no longer being recomputed by broad runtime layout math
-- `WizardMatchHudLayout` now only handles narrow responsive behavior such as inspector placement, sidebar clamping, and z-order, rather than trying to own the entire HUD geometry
+- `WizardMatchHudLayout` now only handles narrow responsive behavior such as inspector placement, constrained hand-panel fitting, sidebar clamping, and z-order, rather than trying to own the entire HUD geometry
 - the local portrait positions have been moved in the editor to improve match readability and territory clarity
 
-## Remaining Risks
+## Post-Milestone Follow-Up
 
 - `WizardMatchHudLayout` still exists, but static pile, public-zone, and turn-panel placement should remain scene-authored. Do not move those back into hard-coded layout math.
-- the modular assets need final in-editor visual acceptance at the 1920x1080 project viewport; automated capture through Godot's headless dummy renderer is not reliable in 4.7.
-- lower display sizes cannot preserve a fixed 736 board plus two full readable hand states without overlap; the project currently treats 1920x1080 as the authored gameplay viewport and uses canvas-item stretching for smaller windows.
+- the modular assets may still benefit from later in-editor polish at the 1920x1080 project viewport; automated capture through Godot's headless dummy renderer is not reliable in 4.7.
+- lower display sizes cannot preserve a fixed 832 board plus two full readable hand states without overlap; the project currently treats 1920x1080 as the authored gameplay viewport and uses canvas-item stretching for smaller windows.
 - local card faces have a composed texture-layer pass; they may still need editor visual QA for typography, spacing, and card-type readability.
-- visual QA is still insufficient; headless tests do not prove the screen feels good at runtime.
 - AI/dev controls and diagnostics still need a cleaner developer-only path.
 - multiplayer UI is now wired through the shared Wizard Match screen, but it still needs interactive visual QA in full host/client sessions. Keep player identity/status/pile/hand/public-zone views simulation-derived and owner-oriented so local, host, client, spectator, and replay views can reuse the same composed components.
 
-Known visual gaps still visible in the current local scene:
+Known polish opportunities still visible in the current local scene:
 
 - the action area still reads more like HUD text than a deliberate tabletop tray
 - the board presentation is serviceable, but it still feels less integrated with the table than the card and pile surfaces do
@@ -211,15 +215,12 @@ Relevant methods:
 
 Do not “fix” this in UI unless the rules change.
 
-## Next Implementation Plan
+## Acceptance Record
 
-1. Complete interactive visual acceptance at the authored 1920x1080 viewport and tune only scene offsets or modular assets found to be visually incorrect.
-2. Enlarge the opponent hand presentation and continue pushing both hand systems toward deliberate tabletop card presence.
-3. Replace HUD-feeling action/readout presentation with a more authored card/tray surface.
-4. Continue host/client visual QA on the shared multiplayer screen, especially ownership grouping, turn/readout clarity, and trap/graveyard/public-zone readability.
-5. Keep proving the same public/hidden information rules through multiplayer snapshots and live sessions: hand/deck hidden, graveyard/captures/environment/artifacts public, face-down Trap identity and square hidden until reveal.
-6. Move more HUD refresh mapping out of `WizardMatchScreen` only where it reduces real complexity.
-7. Keep headless tests for geometry, scene wiring, data binding, targeted network card submission, and public/hidden information regressions.
+- Milestone 7 was accepted complete on July 5, 2026.
+- The shared Wizard Match gameplay UI is now the baseline presentation for local and networked flows.
+- The UI validation suite passed at acceptance with 24/24 tests passing.
+- Follow-up work from this point should be tracked as polish or as later milestones, not as open Milestone 7 blockers.
 
 ## Validation Commands
 

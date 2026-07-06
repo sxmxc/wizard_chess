@@ -182,7 +182,7 @@ func _configure_static_ui() -> void:
 	board_buttons = board_view.get_square_buttons()
 	board_button_by_name.clear()
 	for square in board_buttons.keys():
-		var button: WizardMatchBoardSquareButton = board_buttons[square]
+		var button = board_buttons[square]
 		board_button_by_name[_square_name(square)] = button
 
 	match_sidebar.card_selected.connect(_on_sidebar_card_selected)
@@ -192,7 +192,7 @@ func _configure_static_ui() -> void:
 	match_sidebar.ai_toggled.connect(_on_ai_toggle)
 	hud_layout.configure_nodes({
 		"board_safe_area": get_node_or_null("BoardLayer/BoardSafeArea") as MarginContainer,
-		"board_frame": get_node_or_null("BoardLayer/BoardSafeArea/BoardCenter/BoardFrame") as PanelContainer,
+		"board_frame": board_view.get_node_or_null("BoardFrame") as Control,
 		"board_view": board_view,
 		"opponent_hand_panel": opponent_hand_panel,
 		"local_hand_panel": local_hand_panel,
@@ -1033,6 +1033,7 @@ func _update_utility_sidebar_visibility() -> void:
 
 func _after_action(result: Dictionary, label: String) -> void:
 	var before_snapshot := previous_state_snapshot.duplicate(true)
+	selected_square = null
 	selected_moves.clear()
 	selected_card_instance_id = ""
 	selected_hand_card_ids.clear()
@@ -1066,6 +1067,7 @@ func _process_ai_step() -> void:
 	var before_snapshot := previous_state_snapshot.duplicate(true)
 	var result: Dictionary = ai_controllers[actor].apply_next_action(wizard_match, actor)
 	match_sidebar.set_ai_action_text("AI %s: %s" % [actor.capitalize(), "acted" if bool(result.get("ok", false)) else str(result.get("reason", "failed"))])
+	selected_square = null
 	selected_moves.clear()
 	selected_card_instance_id = ""
 	selected_hand_card_ids.clear()

@@ -466,9 +466,10 @@ The architecture of Wizard Chess should prioritize:
 
 Current UI architecture notes:
 
-- the local Wizard Match scene is editor-first and scene-authored around a fixed 736x736 chessboard
+- the local Wizard Match scene is editor-first and scene-authored around a fixed 832x832 chessboard
 - `HudLayer` should remain a `Control` so authored anchors resolve correctly at runtime
-- `WizardMatchHudLayout` should stay narrow in scope: inspector placement, sidebar clamping, and z-order are appropriate; hard-coded ownership of all hand/pile/tray geometry is not
+- `WizardMatchHudLayout` should stay narrow in scope: inspector placement, z-order, and constrained responsive hand-panel fitting are appropriate; hard-coded ownership of the full authored HUD is not
+- board presentation should remain node-authored and texture-based, with per-square behavior living on square nodes rather than runtime-generated button wrappers
 - `LocalWizardMatchScreen` still owns too much refresh orchestration, but UI extraction should continue only where it creates real presentation boundaries
     
 

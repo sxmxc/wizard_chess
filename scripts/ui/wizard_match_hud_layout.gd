@@ -20,7 +20,7 @@ extends Node
 @export var opponent_hand_top_offset: float = 36.0
 
 var board_safe_area: MarginContainer
-var board_frame: PanelContainer
+var board_frame: Control
 var board_view: WizardMatchBoardView
 var opponent_hand_panel: Control
 var local_hand_panel: Control
@@ -70,7 +70,7 @@ func _resolve_exported_nodes() -> void:
 	if board_safe_area == null:
 		board_safe_area = get_node_or_null(board_safe_area_path) as MarginContainer
 	if board_frame == null:
-		board_frame = get_node_or_null(board_frame_path) as PanelContainer
+		board_frame = get_node_or_null(board_frame_path) as Control
 	if board_view == null:
 		board_view = get_node_or_null(board_view_path) as WizardMatchBoardView
 	if opponent_hand_panel == null:
@@ -135,6 +135,7 @@ func apply_layout(viewport_size: Vector2) -> void:
 func _finalize_layout(viewport_size: Vector2) -> void:
 	if not is_instance_valid(self):
 		return
+	_layout_hand_panels(viewport_size)
 	if inspect_popup != null:
 		inspect_popup.custom_minimum_size = Vector2(320, 420)
 		inspect_popup.size = Vector2(320, 420)
@@ -142,6 +143,70 @@ func _finalize_layout(viewport_size: Vector2) -> void:
 
 	local_hand_row.refresh_layout()
 	opponent_hand_row.refresh_layout()
+
+
+func _layout_hand_panels(viewport_size: Vector2) -> void:
+	if board_view == null:
+		return
+	var board_rect := board_view.get_global_rect()
+	_layout_opponent_hand_panel(viewport_size, board_rect)
+	_layout_local_hand_panel(viewport_size, board_rect)
+
+
+func _layout_opponent_hand_panel(viewport_size: Vector2, board_rect: Rect2) -> void:
+	if opponent_hand_panel == null:
+		return
+	var width := clampf(viewport_size.x * 0.42, 520.0, 820.0)
+	var max_height := maxf(96.0, board_rect.position.y - 10.0)
+	var height := clampf(max_height, 96.0, 126.0)
+	opponent_hand_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	opponent_hand_panel.position = Vector2((viewport_size.x - width) * 0.5, maxf(0.0, board_rect.position.y - height - 10.0))
+	opponent_hand_panel.size = Vector2(width, height)
+	var tray := opponent_hand_panel.get_node_or_null("HandTrayTexture") as Control
+	if tray != null:
+		tray.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var status_view := opponent_hand_panel.get_node_or_null("OpponentStatusView") as Control
+	if status_view != null:
+		var status_size := Vector2(118.0, minf(118.0, height - 8.0))
+		status_view.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+		status_view.position = Vector2(width - status_size.x - 8.0, 4.0)
+		status_view.size = status_size
+	if opponent_hand_row != null:
+		opponent_hand_row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		opponent_hand_row.offset_top = 0.0
+		opponent_hand_row.offset_bottom = 0.0
+		opponent_hand_row.opponent_top_margin = -72.0
+
+
+func _layout_local_hand_panel(viewport_size: Vector2, board_rect: Rect2) -> void:
+	if local_hand_panel == null:
+		return
+	var width := clampf(viewport_size.x * 0.46, 560.0, 920.0)
+	var available_height := maxf(96.0, viewport_size.y - board_rect.end.y - 10.0)
+	var height := clampf(available_height, 96.0, 120.0)
+	local_hand_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	local_hand_panel.position = Vector2((viewport_size.x - width) * 0.5, viewport_size.y - height)
+	local_hand_panel.size = Vector2(width, height)
+	var tray := local_hand_panel.get_node_or_null("HandTrayTexture") as Control
+	if tray != null:
+		tray.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		tray.offset_top = 0.0
+	var status_view := local_hand_panel.get_node_or_null("LocalStatusView") as Control
+	if status_view != null:
+		var status_size := Vector2(118.0, minf(118.0, height - 8.0))
+		status_view.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+		status_view.position = Vector2(8.0, 4.0)
+		status_view.size = status_size
+		status_view.z_index = 20
+	if local_hand_row != null:
+		local_hand_row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		local_hand_row.offset_top = 42.0
+		local_hand_row.offset_right = 0.0
+		local_hand_row.offset_bottom = 0.0
+		local_hand_row.local_bottom_margin = 0.0
+		local_hand_row.local_curve_height_per_card = 0.0
+		local_hand_row.local_rotation_scale = 0.85
+		local_hand_row.targeted_preview_y = 0.0
 
 
 func _clamp_sidebar_to_viewport(viewport_size: Vector2) -> void:

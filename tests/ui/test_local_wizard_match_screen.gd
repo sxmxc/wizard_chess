@@ -107,8 +107,8 @@ func test_local_wizard_match_screen_builds_playable_match_ui() -> void:
 	first_local_card.set_spotlight_active(false)
 	assert_eq(first_local_card.z_index, fan_z_index)
 
-	var first_square: WizardMatchBoardSquareButton = screen.board_buttons[Vector2i.ZERO]
-	var untargeted_color := first_square.background_rect.color
+	var first_square = screen.board_buttons[Vector2i.ZERO]
+	var untargeted_color: Color = first_square.background_rect.color
 	first_square.set_target_emphasis(true, true)
 	assert_true(first_square.target_indicator.visible)
 	assert_eq(first_square.target_indicator.text, "◆")
@@ -314,7 +314,7 @@ func test_piece_hover_drives_inspector_and_square_tint() -> void:
 	var screen := packed_scene.instantiate()
 	add_child_autofree(screen)
 	var square: Vector2i = screen.wizard_match.chess_engine.algebraic_to_square("e2")
-	var button: WizardMatchBoardSquareButton = screen.board_buttons[square]
+	var button = screen.board_buttons[square]
 	var base_color: Color = button.background_rect.color
 
 	screen._on_board_square_hovered(square)
@@ -351,6 +351,26 @@ func test_selected_piece_can_be_cleared_without_locking_inspector() -> void:
 	assert_true(screen.inspect_popup.visible)
 
 	screen._on_board_square_unhovered(square)
+	assert_false(screen.inspect_popup.visible)
+
+
+func test_after_action_clears_pinned_square_inspector() -> void:
+	var packed_scene := load(LOCAL_WIZARD_MATCH_SCREEN_PATH) as PackedScene
+	var screen := packed_scene.instantiate()
+	add_child_autofree(screen)
+	var square: Vector2i = screen.wizard_match.chess_engine.algebraic_to_square("e2")
+
+	screen.selected_square = square
+	screen.hovered_square = square
+	screen.selected_moves = [{"to": screen.wizard_match.chess_engine.algebraic_to_square("e3")}]
+	screen._refresh_ui()
+
+	assert_true(screen.inspect_popup.visible)
+	assert_eq(screen.inspect_popup.title_label.text, "Square e2")
+
+	screen._after_action({"ok": true}, "Move e2 to e3")
+
+	assert_eq(screen.selected_square, null)
 	assert_false(screen.inspect_popup.visible)
 
 
@@ -447,7 +467,7 @@ func test_resting_hands_are_half_revealed_and_clear_of_fixed_board() -> void:
 	var screen: Variant = await _instantiate_screen_at_viewport_size(viewport_size)
 	var viewport_rect := Rect2(Vector2.ZERO, Vector2(viewport_size))
 	var board_rect: Rect2 = screen.board_view.get_global_rect()
-	assert_eq(screen.get_node("BoardLayer/BoardSafeArea/BoardCenter/BoardFrame").size, Vector2(736, 736))
+	assert_eq(screen.board_view.size, Vector2(832, 832))
 	for bounds: Rect2 in screen.opponent_hand_row.get_all_card_visual_bounds_global():
 		_assert_resting_card_reveal(viewport_rect, bounds, "Opponent resting card")
 		assert_false(bounds.intersects(board_rect), "Opponent card intersects fixed board")

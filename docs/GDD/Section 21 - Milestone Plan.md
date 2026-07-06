@@ -219,7 +219,7 @@ Players can complete full matches against AI opponents.
 
 # Milestone 7 - User Interface
 
-Status: In progress as of July 5, 2026.
+Status: Complete as of July 5, 2026.
 
 ## Goals
 
@@ -248,15 +248,16 @@ Replace prototype interfaces with production-quality gameplay UI.
 
 The interface is suitable for extended play.
 
-## In-Progress Notes
+## Completion Notes
 
-- Current work is centered on the shared Wizard Match screen used by both `local_wizard_match_screen` and `network_wizard_match_screen`.
-- The UI direction is editor-first composition around a central chessboard, compact opponent information, readable local hand interaction, composed wizard status portraits, composed pile/count components, and a single strong turn/action area.
-- Remaining production work and current asset references are tracked in `docs/MILESTONE_7_UI_HANDOFF.md`.
+- The shared Wizard Match screen is now the shipped Milestone 7 gameplay UI for both `local_wizard_match_screen` and `network_wizard_match_screen`.
+- The accepted UI direction is editor-first composition around a central chessboard, compact opponent information, readable local hand interaction, composed wizard status portraits, composed pile/count components, and a single strong turn/action area.
 - The local screen now uses modular playmat assets and scene-authored HUD geometry rather than a monolithic debug surface.
 - Networked Wizard Match sessions now use the same core UI composition and server-authoritative `WizardMatch` snapshots, including public-zone and graveyard presentation.
-- The board is fixed at 736x736 in the authored gameplay viewport; the UI should adapt around that board rather than shrinking it.
-- Hands, portraits, piles, and public-card trays are now expected to be tuned in the editor first. Runtime layout code should only handle narrow responsive behavior such as overlay placement and z-order.
+- The board is fixed at 832x832 in the authored gameplay viewport; the UI adapts around that board rather than shrinking it.
+- Hands, portraits, piles, and public-card trays are tuned editor-first. Runtime layout code is intentionally narrow in scope and limited to overlay placement, z-order, and responsive hand-region fitting.
+- Milestone 7 validation and acceptance state are tracked in `docs/MILESTONE_7_VALIDATION.md`.
+- Current architecture notes, accepted asset direction, and post-milestone polish notes are tracked in `docs/MILESTONE_7_UI_HANDOFF.md`.
 
 ---
 

@@ -40,6 +40,8 @@ The board should always be presented from the active local player's perspective.
 
 Board coordinates should remain visible and consistent.
 
+In the current accepted gameplay viewport, the authored board is a fixed 832x832 surface and the surrounding HUD should adapt around that board rather than shrinking it for layout convenience.
+
 ---
 
 # Piece Selection
@@ -86,6 +88,8 @@ Cards should remain readable while allowing the chessboard to occupy the majorit
 Hovering a card with a mouse or selecting it with touch controls should enlarge the card for inspection.
 
 In the current intended desktop layout, cards may rest partially off-screen so the table can preserve a fixed-size board while still presenting readable card scale. Resting cards should remain identifiable, and hover/target states should raise the active card into a clearly readable foreground state.
+
+Targeted local preview states and hovered local cards must remain within the player's intended tray territory and must not visually overlap the board in a way that obscures movement or square readability.
 
 Cards should clearly indicate when they are playable.
 

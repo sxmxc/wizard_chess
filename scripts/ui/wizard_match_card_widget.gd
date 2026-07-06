@@ -6,7 +6,7 @@ signal pressed
 const CARD_BACK_TEXTURE := preload("res://assets/ui/wizard_match/card_back.png")
 const RARITY_ICONS_TEXTURE := preload("res://assets/ui/wizard_match/card_front/rarity_icons.png")
 const DRAG_THRESHOLD := 14.0
-const HOVER_SCALE := 1.34
+const HOVER_SCALE := 1.18
 const HOVER_Z_INDEX := 720
 
 var screen: Control
@@ -79,10 +79,19 @@ func set_spotlight_active(is_active: bool) -> void:
 	if not is_node_ready():
 		call_deferred("set_spotlight_active", is_active)
 		return
-	offset_transform_position = Vector2(0.0, -80.0 if is_active else 0.0)
+	offset_transform_position = _spotlight_offset(is_active)
 	offset_transform_scale = Vector2.ONE * (HOVER_SCALE if is_active else 1.0)
 	shadow_rect.color = Color(0, 0, 0, 0.3 if is_active else 0.18)
 	z_index = HOVER_Z_INDEX if is_active else int(get_meta("fan_z_index", 0))
+
+
+func _spotlight_offset(is_active: bool) -> Vector2:
+	if not is_active:
+		return Vector2.ZERO
+	var hand_row := get_parent() as HandFanView
+	if hand_row != null and not hand_row.is_opponent_hand:
+		return Vector2(0.0, 42.0)
+	return Vector2(0.0, -24.0)
 
 
 func get_card_center_global() -> Vector2:

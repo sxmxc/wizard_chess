@@ -19,6 +19,9 @@ func _ready() -> void:
 	new_match_button = get_node("HudLayer/HeaderBar/NewMatchButton") as Button
 	match_sidebar.white_ai_button.disabled = true
 	match_sidebar.black_ai_button.disabled = true
+	board_view.set_viewer_color(_display_color())
+	board_buttons = board_view.get_square_buttons()
+	_refresh_board()
 	_refresh_host_controls()
 
 
